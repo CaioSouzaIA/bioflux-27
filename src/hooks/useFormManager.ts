@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { FormConfig } from '@/types/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export const useFormManager = () => {
   const [forms, setForms] = useState<FormConfig[]>([]);
   const [currentFormId, setCurrentFormId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   // Debug logs para useFormManager
   useEffect(() => {

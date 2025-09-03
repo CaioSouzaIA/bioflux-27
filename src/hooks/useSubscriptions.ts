@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export interface SubscriptionData {
   id: string;
@@ -27,7 +27,7 @@ export interface SubscriptionData {
 
 export const useSubscriptions = (options: { fetchAll?: boolean } = {}) => {
   const { fetchAll = false } = options;
-  const { user, userType } = useAuth();
+  const { user, userType } = useAuthContext();
   const userId = user?.id;
 
   const queryKey = fetchAll && userType === 'admin' ? ['subscriptions', 'all'] : ['subscriptions', userId];
