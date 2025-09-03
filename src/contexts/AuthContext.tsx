@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -19,7 +19,6 @@ interface AuthContextType {
   userType: UserType | null;
   userProfile: UserProfile | null;
   loading: boolean;
-  isInitialized: boolean;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: any; data?: any }>;
   signUp: (email: string, password: string, firstName: string, lastName: string, whatsapp: string) => Promise<{ success: boolean; error?: any; data?: any }>;
   signOut: () => Promise<{ success: boolean; error?: any }>;
@@ -47,44 +46,28 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [userType, setUserType] = useState<UserType | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
   
-  // Refs para prevenir múltiplas execuções
-  const authListenerRef = useRef<any>(null);
-  const initializingRef = useRef(false);
-  const fetchingUserTypeRef = useRef(false);
+  // Prevent StrictMode from duplicating bootstrap
+  const bootstrapped = useRef(false);
 
-  // Função memoizada para buscar tipo de usuário
-  const fetchUserType = useCallback(async (userId: string): Promise<UserType> => {
-    // Previne múltiplas chamadas simultâneas
-    if (fetchingUserTypeRef.current) {
-      console.log('⏸️ Busca de tipo já em andamento, ignorando...');
-      return 'client';
-    }
-
-    fetchingUserTypeRef.current = true;
-    
+  // Fetch user profile and type
+  const fetchUserProfile = async (userId: string): Promise<void> => {
     try {
-      console.log('🔍 Buscando tipo de usuário para:', userId);
-      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('id, user_type, email, activated, updated_at')
         .eq('id', userId)
         .maybeSingle();
       
-      console.log('✅ Resposta da query profiles:', { profile, error });
-      
       if (error) {
         console.error('❌ Erro ao buscar perfil:', error);
         setUserType('client');
         setUserProfile(null);
-        return 'client';
+        return;
       }
       
       if (!profile) {
-        console.log('👤 Perfil não encontrado, criando perfil padrão...');
-        
+        // Create default profile
         const { error: insertError } = await supabase
           .from('profiles')
           .insert({
@@ -99,128 +82,77 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         setUserType('client');
         setUserProfile(null);
-        return 'client';
+        return;
       }
       
       const fetchedUserType = (profile.user_type as UserType) || 'client';
-      console.log('✅ Tipo de usuário encontrado:', fetchedUserType);
       setUserType(fetchedUserType);
       setUserProfile(profile as UserProfile);
-      return fetchedUserType;
     } catch (error) {
-      console.error('❌ Erro inesperado ao buscar tipo de usuário:', error);
+      console.error('❌ Erro inesperado ao buscar perfil:', error);
       setUserType('client');
       setUserProfile(null);
-      return 'client';
-    } finally {
-      fetchingUserTypeRef.current = false;
     }
-  }, [user?.email]);
+  };
 
-  // Inicialização única da autenticação
+  // Bootstrap effect - runs once
   useEffect(() => {
-    // Previne múltiplas inicializações
-    if (initializingRef.current || isInitialized) {
-      return;
-    }
+    if (bootstrapped.current) return;
+    bootstrapped.current = true;
 
-    initializingRef.current = true;
-    console.log('🚀 AuthProvider: Inicializando autenticação (ÚNICA VEZ)...');
+    let unsub: (() => void) | null = null;
 
-    const initializeAuth = async () => {
+    (async () => {
       try {
-        // 1. Buscar sessão atual
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('❌ Erro ao obter sessão inicial:', error);
-          setLoading(false);
-          setIsInitialized(true);
-          return;
-        }
+        // 1) Get initial session
+        console.log('🚀 AuthProvider: Bootstrapping session...');
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
 
-        console.log('🔍 Sessão inicial:', initialSession?.user?.id || 'nenhuma');
-
-        // 2. Se há sessão, buscar tipo de usuário
         if (initialSession?.user) {
-          console.log('👤 Sessão encontrada:', initialSession.user.id);
-          setSession(initialSession);
+          console.log('✅ Initial session found:', initialSession.user.id);
           setUser(initialSession.user);
-          
-          const type = await fetchUserType(initialSession.user.id);
-          setUserType(type);
+          setSession(initialSession);
+          // Defer profile fetch to prevent blocking
+          setTimeout(() => fetchUserProfile(initialSession.user.id), 0);
         } else {
-          console.log('🚫 Nenhuma sessão ativa');
-          setUser(null);
-          setSession(null);
-          setUserType(null);
-          setUserProfile(null);
+          console.log('🚫 No initial session');
         }
 
-        // 3. Configurar listener (APENAS UMA VEZ)
-        if (!authListenerRef.current) {
-          console.log('👂 Configurando listener de auth...');
-          
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-              console.log('🔔 Auth event:', event, session?.user?.id);
-
-              setSession(session);
-              setUser(session?.user ?? null);
-
-              if (session?.user && event === 'SIGNED_IN') {
-                console.log('🔐 Usuário logado, buscando tipo...');
-                const type = await fetchUserType(session.user.id);
-                setUserType(type);
-              } else if (event === 'SIGNED_OUT') {
-                console.log('🚪 Usuário deslogado');
-                setUser(null);
-                setSession(null);
-                setUserType(null);
-                setUserProfile(null);
-              }
-            }
-          );
-
-          authListenerRef.current = subscription;
-        }
-
-      } catch (error) {
-        console.error('❌ Erro na inicialização da autenticação:', error);
-      } finally {
         setLoading(false);
-        setIsInitialized(true);
-        initializingRef.current = false;
+
+        // 2) Set up auth state listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log('🔔 Auth event:', event, session?.user?.id);
+          
+          setUser(session?.user ?? null);
+          setSession(session);
+
+          if (session?.user && event === 'SIGNED_IN') {
+            // Defer profile fetch to prevent blocking
+            setTimeout(() => fetchUserProfile(session.user.id), 0);
+          } else if (event === 'SIGNED_OUT') {
+            setUserType(null);
+            setUserProfile(null);
+          }
+
+          setLoading(false);
+        });
+
+        unsub = () => subscription.unsubscribe();
+      } catch (error) {
+        console.error('❌ Auth bootstrap error:', error);
+        setLoading(false);
       }
-    };
+    })();
 
-    initializeAuth();
-
-    // Cleanup function
     return () => {
-      console.log('🧹 Limpando AuthProvider...');
-      if (authListenerRef.current) {
-        authListenerRef.current.unsubscribe();
-        authListenerRef.current = null;
-      }
-      initializingRef.current = false;
+      // Don't reset state - just unsubscribe
+      if (unsub) unsub();
     };
-  }, []); // Array vazio - executa APENAS UMA VEZ
-
-  // Debug - monitorar mudanças de estado
-  useEffect(() => {
-    console.log('📊 AuthProvider - Estado atualizado:', {
-      user: user?.id || 'null',
-      userType,
-      loading,
-      isInitialized,
-      timestamp: new Date().toISOString()
-    });
-  }, [user, userType, loading, isInitialized]);
+  }, []);
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string, whatsapp: string) => {
     try {
-      setLoading(true);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -266,14 +198,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         variant: "destructive",
       });
       return { success: false, error };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
       console.log('Tentando fazer login com:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -321,14 +250,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         variant: "destructive",
       });
       return { success: false, error };
-    } finally {
-      setLoading(false);
     }
   };
 
   const updatePassword = async (newPassword: string) => {
     try {
-      setLoading(true);
       console.log('Atualizando senha do usuário...');
 
       const { error } = await supabase.auth.updateUser({
@@ -361,34 +287,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         variant: "destructive",
       });
       return { success: false, error };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
       console.log('Iniciando logout...');
-      
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
-      if (!currentSession) {
-        console.log('Nenhuma sessão ativa encontrada, limpando estado local');
-        setUser(null);
-        setSession(null);
-        setUserType(null);
-        setUserProfile(null);
-        
-        toast({
-          title: "Logout realizado",
-          description: "Você foi desconectado com sucesso.",
-        });
-        
-        return { success: true };
-      }
-      
-      console.log('Sessão ativa encontrada, fazendo logout...');
-      setLoading(true);
       
       const { error } = await supabase.auth.signOut();
       
@@ -402,11 +306,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return { success: false, error };
       }
 
-      setUser(null);
-      setSession(null);
-      setUserType(null);
-      setUserProfile(null);
-
       console.log('Logout realizado com sucesso');
       
       toast({
@@ -418,25 +317,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } catch (error: any) {
       console.error('Erro inesperado no logout:', error);
       
-      setUser(null);
-      setSession(null);
-      setUserType(null);
-      setUserProfile(null);
-      
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado.",
       });
       
       return { success: true };
-    } finally {
-      setLoading(false);
     }
   };
 
   const refreshUserType = async () => {
     if (user) {
-      await fetchUserType(user.id);
+      await fetchUserProfile(user.id);
     }
   };
 
@@ -446,7 +338,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     userType,
     userProfile,
     loading,
-    isInitialized,
     signIn,
     signUp,
     signOut,
