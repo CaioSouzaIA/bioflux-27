@@ -236,6 +236,9 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
 
       console.log('💾 Salvando avaliação no banco de dados...');
 
+      // Verificar se é a primeira avaliação (para recarregar página depois)
+      const isFirstAssessment = !results; // Se não há resultados, é primeira vez
+      
       // Salvar no banco de dados - sempre inserir nova entrada
       const { error } = await supabase
         .from('metabolic_assessments')
@@ -268,6 +271,14 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
         title: "Sucesso!",
         description: "Avaliação metabólica calculada e salva com sucesso.",
       });
+
+      // Recarregar página apenas na primeira vez para atualizar as restrições
+      if (isFirstAssessment) {
+        console.log('🔄 Primeira avaliação completada - recarregando página para atualizar acesso');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500); // Delay para mostrar o toast
+      }
 
     } catch (error) {
       console.error('❌ Erro no cálculo:', error);
