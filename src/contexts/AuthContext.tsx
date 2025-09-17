@@ -11,6 +11,7 @@ export interface UserProfile {
   email: string;
   activated: boolean;
   updated_at: string;
+  onboarding_completed?: boolean;
 }
 
 interface AuthContextType {
@@ -55,7 +56,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('id, user_type, email, activated, updated_at')
+        .select('id, user_type, email, activated, updated_at, onboarding_completed')
         .eq('id', userId)
         .maybeSingle();
       

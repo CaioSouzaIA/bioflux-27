@@ -235,6 +235,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          onboarding_completed: boolean | null
           unlimited_plan_enabled: boolean | null
           updated_at: string
           user_type: string
@@ -248,6 +249,7 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          onboarding_completed?: boolean | null
           unlimited_plan_enabled?: boolean | null
           updated_at?: string
           user_type?: string
@@ -261,6 +263,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          onboarding_completed?: boolean | null
           unlimited_plan_enabled?: boolean | null
           updated_at?: string
           user_type?: string
@@ -534,7 +537,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
+        Returns: string
       }
       maintain_unlimited_plan_activation: {
         Args: Record<PropertyKey, never>

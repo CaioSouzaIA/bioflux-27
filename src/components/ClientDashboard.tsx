@@ -18,6 +18,7 @@ import { useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
 import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
+import OnboardingModal from '@/components/OnboardingModal';
 
 interface Subscription {
   id: string;
@@ -643,6 +644,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
           </div>
         </div>
       </div>
+      <OnboardingModal />
     </div>
   );
 };
