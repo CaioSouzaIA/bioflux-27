@@ -11,6 +11,7 @@ export interface SubscriptionData {
   created_at: string;
   expires_at?: string | null;
   forms_completed: boolean;
+  updated_at?: string | null;
   subscription_plans: {
     id: string;
     name: string;
@@ -58,6 +59,7 @@ export const useSubscriptions = (options: { fetchAll?: boolean } = {}) => {
           created_at,
           expires_at,
           forms_completed,
+          updated_at,
           subscription_plans (
             id,
             name,

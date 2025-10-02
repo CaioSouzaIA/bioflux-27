@@ -28,18 +28,65 @@ export const ManagementDashboard: React.FC = () => {
     const treinoCount = subscriptions.filter(s => s.service_type === 'treino').length;
     const comboCount = subscriptions.filter(s => s.service_type === 'treino-dieta').length;
 
-    console.log('🔢 [STATS] Estatísticas calculadas (totais):', { 
+    // Calcular % de Churn (canceladas no mês atual / ativas no início do mês)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // Assinaturas que estavam ativas no início do mês
+    const activeAtStartOfMonth = subscriptions.filter(s => {
+      const createdAt = new Date(s.created_at);
+      return createdAt < startOfMonth && (s.status === 'ativo' || s.status === 'cancelado');
+    }).length;
+
+    // Assinaturas canceladas durante este mês
+    const cancelledThisMonth = subscriptions.filter(s => {
+      if (s.status !== 'cancelado' || !s.updated_at) return false;
+      const updatedAt = new Date(s.updated_at);
+      return updatedAt >= startOfMonth && updatedAt <= endOfMonth;
+    }).length;
+
+    const churnRate = activeAtStartOfMonth > 0 
+      ? ((cancelledThisMonth / activeAtStartOfMonth) * 100).toFixed(1)
+      : '0.0';
+
+    // Calcular LTV médio (tempo médio de vida de todas as assinaturas em meses)
+    const subscriptionsWithDates = subscriptions.filter(s => s.created_at);
+    let totalMonths = 0;
+    
+    subscriptionsWithDates.forEach(s => {
+      const createdAt = new Date(s.created_at);
+      const endDate = s.status === 'cancelado' && s.updated_at 
+        ? new Date(s.updated_at) 
+        : now;
+      
+      const diffTime = Math.abs(endDate.getTime() - createdAt.getTime());
+      const diffMonths = diffTime / (1000 * 60 * 60 * 24 * 30);
+      totalMonths += diffMonths;
+    });
+
+    const avgLtv = subscriptionsWithDates.length > 0
+      ? (totalMonths / subscriptionsWithDates.length).toFixed(1)
+      : '0.0';
+
+    console.log('🔢 [STATS] Estatísticas calculadas:', { 
       total, 
       dietaCount, 
       treinoCount, 
-      comboCount 
+      comboCount,
+      churnRate,
+      avgLtv,
+      activeAtStartOfMonth,
+      cancelledThisMonth
     });
 
     return {
       total,
       dieta: dietaCount,
       treino: treinoCount,
-      combo: comboCount
+      combo: comboCount,
+      churnRate: parseFloat(churnRate),
+      avgLtv: parseFloat(avgLtv)
     };
   }, [subscriptions]);
 
