@@ -44,9 +44,11 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
     return createdAt >= lastMonth && createdAt < currentMonth;
   }).length;
 
-  const monthlyGrowth = usersLastMonth > 0 
-    ? ((usersThisMonth - usersLastMonth) / usersLastMonth * 100) 
-    : usersThisMonth > 0 ? 100 : 0;
+  const monthlyGrowth = usersThisMonth === 0
+    ? 0
+    : usersLastMonth > 0
+      ? ((usersThisMonth - usersLastMonth) / usersLastMonth * 100)
+      : 100;
 
   // Plano mais vendido
   const planCounts = subscriptions
