@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Users, Calendar, Award, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Users, Calendar, Award, TriangleAlert as AlertTriangle } from 'lucide-react';
 import type { SubscriptionData } from '@/hooks/useSubscriptions';
 
 interface SalesMetricsProps {
