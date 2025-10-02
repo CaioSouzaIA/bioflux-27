@@ -12,6 +12,7 @@ export interface SubscriptionData {
   expires_at?: string | null;
   forms_completed: boolean;
   updated_at?: string | null;
+  ltv?: number | null;
   subscription_plans: {
     id: string;
     name: string;
@@ -60,6 +61,7 @@ export const useSubscriptions = (options: { fetchAll?: boolean } = {}) => {
           expires_at,
           forms_completed,
           updated_at,
+          ltv,
           subscription_plans (
             id,
             name,
@@ -94,7 +96,7 @@ export const useSubscriptions = (options: { fetchAll?: boolean } = {}) => {
 
       console.log('✅ [SUBSCRIPTIONS] Subscriptions found:', subscriptions?.length || 0);
 
-      return (subscriptions || []) as SubscriptionData[];
+      return (subscriptions || []) as any as SubscriptionData[];
     },
     enabled,
     staleTime: 1000 * 60 * 15, // 15 minutos

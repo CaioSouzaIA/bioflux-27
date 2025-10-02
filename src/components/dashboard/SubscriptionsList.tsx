@@ -40,6 +40,11 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
     }
   };
 
+  const getRenewalLabel = (ltv: number | null | undefined) => {
+    if (!ltv || ltv === 1) return '1ª assinatura';
+    return `${ltv}ª renovação`;
+  };
+
   return (
     <Card className="bg-gray-900 border-gray-700">
       <CardHeader>
@@ -77,9 +82,16 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
                   </div>
                 </div>
                 <div className="text-right">
-                  <Badge className={`${getStatusColor(subscription.status)} text-white`}>
-                    {subscription.status}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge className={`${getStatusColor(subscription.status)} text-white`}>
+                      {subscription.status}
+                    </Badge>
+                    {subscription.status === 'ativo' && (
+                      <span className="text-blue-400 text-xs font-medium">
+                        {getRenewalLabel(subscription.ltv)}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center justify-end text-gray-400 text-xs mt-1">
                     <Calendar className="w-3 h-3 mr-1" />
                     {format(new Date(subscription.created_at), 'dd/MM/yyyy', { locale: ptBR })}

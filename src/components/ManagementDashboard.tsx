@@ -50,23 +50,10 @@ export const ManagementDashboard: React.FC = () => {
       ? ((cancelledThisMonth / activeAtStartOfMonth) * 100).toFixed(1)
       : '0.0';
 
-    // Calcular LTV médio (tempo médio de vida de todas as assinaturas em meses)
-    const subscriptionsWithDates = subscriptions.filter(s => s.created_at);
-    let totalMonths = 0;
-    
-    subscriptionsWithDates.forEach(s => {
-      const createdAt = new Date(s.created_at);
-      const endDate = s.status === 'cancelado' && s.updated_at 
-        ? new Date(s.updated_at) 
-        : now;
-      
-      const diffTime = Math.abs(endDate.getTime() - createdAt.getTime());
-      const diffMonths = diffTime / (1000 * 60 * 60 * 24 * 30);
-      totalMonths += diffMonths;
-    });
-
-    const avgLtv = subscriptionsWithDates.length > 0
-      ? (totalMonths / subscriptionsWithDates.length).toFixed(1)
+    // Calcular LTV médio (média da coluna ltv em meses)
+    const subscriptionsWithLtv = subscriptions.filter(s => s.ltv !== null && s.ltv !== undefined);
+    const avgLtv = subscriptionsWithLtv.length > 0
+      ? (subscriptionsWithLtv.reduce((sum, s) => sum + (s.ltv || 0), 0) / subscriptionsWithLtv.length).toFixed(1)
       : '0.0';
 
     console.log('🔢 [STATS] Estatísticas calculadas:', { 
