@@ -78,7 +78,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
           <Clock className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-500">{stats.avgLtv} meses</div>
+          <div className="text-2xl font-bold text-blue-500">
+            {stats.avgLtv} {stats.avgLtv === 1 ? 'mês' : 'meses'}
+          </div>
           <p className="text-xs text-gray-400">Lifetime Value médio</p>
         </CardContent>
       </Card>
