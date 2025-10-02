@@ -82,16 +82,11 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge className={`${getStatusColor(subscription.status)} text-white`}>
-                      {subscription.status}
-                    </Badge>
-                    {subscription.status === 'ativo' && (
-                      <span className="text-blue-400 text-xs font-medium">
-                        {getRenewalLabel(subscription.ltv)}
-                      </span>
-                    )}
-                  </div>
+                  {subscription.status === 'ativo' && (
+                    <span className="text-blue-400 text-xs font-medium mb-1 block">
+                      {getRenewalLabel(subscription.ltv)}
+                    </span>
+                  )}
                   <div className="flex items-center justify-end text-gray-400 text-xs mt-1">
                     <Calendar className="w-3 h-3 mr-1" />
                     {format(new Date(subscription.created_at), 'dd/MM/yyyy', { locale: ptBR })}
