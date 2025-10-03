@@ -16,17 +16,20 @@ export const ManagementDashboard: React.FC = () => {
     [allSubscriptions]
   );
 
-  // Estatísticas: totais para cada tipo de serviço
+  // Estatísticas: totais para cada tipo de serviço (apenas ativas)
   const stats = React.useMemo(() => {
     console.log('📈 [STATS] Calculando estatísticas das assinaturas:', subscriptions);
     
-    // Total de assinaturas = total de rows na tabela client_subscriptions
-    const total = subscriptions.length;
+    // Filtrar apenas assinaturas ativas
+    const activeSubscriptions = subscriptions.filter(s => s.status === 'ativo');
     
-    // Contagem total para cada tipo de serviço
-    const dietaCount = subscriptions.filter(s => s.service_type === 'dieta').length;
-    const treinoCount = subscriptions.filter(s => s.service_type === 'treino').length;
-    const comboCount = subscriptions.filter(s => s.service_type === 'treino-dieta').length;
+    // Total de assinaturas ativas
+    const total = activeSubscriptions.length;
+    
+    // Contagem total para cada tipo de serviço (apenas ativas)
+    const dietaCount = activeSubscriptions.filter(s => s.service_type === 'dieta').length;
+    const treinoCount = activeSubscriptions.filter(s => s.service_type === 'treino').length;
+    const comboCount = activeSubscriptions.filter(s => s.service_type === 'treino-dieta').length;
 
     // Calcular % de Churn (canceladas no mês atual / ativas no início do mês)
     const now = new Date();
