@@ -85,8 +85,9 @@ export const ManagementDashboard: React.FC = () => {
       ? ((cancelledThisMonth / activeAtStartOfMonth) * 100).toFixed(1)
       : '0.0';
 
-    // Calcular LTV médio (média da coluna ltv em meses)
-    const subscriptionsWithLtv = subscriptions.filter(s => s.ltv !== null && s.ltv !== undefined);
+    // Calcular LTV médio (média da coluna ltv em meses) - SEMPRE usar todas as assinaturas
+    const allClientSubscriptions = allSubscriptions.filter(s => s.profiles?.user_type === 'client');
+    const subscriptionsWithLtv = allClientSubscriptions.filter(s => s.ltv !== null && s.ltv !== undefined);
     const avgLtv = subscriptionsWithLtv.length > 0
       ? (subscriptionsWithLtv.reduce((sum, s) => sum + (s.ltv || 0), 0) / subscriptionsWithLtv.length).toFixed(1)
       : '0.0';
@@ -110,7 +111,7 @@ export const ManagementDashboard: React.FC = () => {
       churnRate: parseFloat(churnRate),
       avgLtv: parseFloat(avgLtv)
     };
-  }, [subscriptions]);
+  }, [subscriptions, allSubscriptions]);
 
   // Calcular MRR (apenas receita mensal recorrente)
   const financialStats = React.useMemo(() => {
