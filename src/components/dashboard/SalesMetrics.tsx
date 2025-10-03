@@ -63,8 +63,10 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
     count > (max.count || 0) ? { name, count } : max, { name: 'Nenhum', count: 0 }
   );
 
-  // Planos cancelados
-  const cancelledPlans = subscriptions.filter(s => s.status === 'cancelado').length;
+  // Planos cancelados e expirados
+  const cancelledAndExpiredPlans = subscriptions.filter(s => 
+    s.status === 'cancelado' || s.status === 'expirado'
+  ).length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -145,15 +147,15 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
 
       <Card className="bg-gray-900 border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-white">Planos Cancelados</CardTitle>
+          <CardTitle className="text-sm font-medium text-white">Planos Cancelados/Expirados</CardTitle>
           <AlertTriangle className="h-4 w-4 text-red-500" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
-            {cancelledPlans}
+            {cancelledAndExpiredPlans}
           </div>
           <p className="text-xs text-gray-400">
-            total de cancelamentos
+            total de cancelamentos e expirações
           </p>
         </CardContent>
       </Card>

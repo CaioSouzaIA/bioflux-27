@@ -165,8 +165,8 @@ export const ManagementDashboard: React.FC = () => {
         <SalesMetrics subscriptions={subscriptions} />
       </div>
 
-      {/* Lista de assinaturas recentes */}
-      <SubscriptionsList subscriptions={subscriptions} />
+      {/* Lista de assinaturas recentes (apenas ativas) */}
+      <SubscriptionsList subscriptions={subscriptions.filter(s => s.status === 'ativo')} />
     </div>
   );
 };
