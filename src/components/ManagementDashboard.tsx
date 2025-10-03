@@ -6,15 +6,47 @@ import { SubscriptionsList } from './dashboard/SubscriptionsList';
 import { SalesMetrics } from './dashboard/SalesMetrics';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CalendarIcon } from 'lucide-react';
 import { subHours } from 'date-fns';
 
 export const ManagementDashboard: React.FC = () => {
   const { data: allSubscriptions = [], isLoading, error } = useSubscriptions({ fetchAll: true });
+  const [selectedMonth, setSelectedMonth] = React.useState<string>('all');
 
-  const subscriptions = React.useMemo(
-    () => allSubscriptions.filter((s) => s.profiles?.user_type === 'client'),
-    [allSubscriptions]
-  );
+  const months = [
+    { value: 'all', label: 'Todos os meses' },
+    { value: '0', label: 'Janeiro' },
+    { value: '1', label: 'Fevereiro' },
+    { value: '2', label: 'Março' },
+    { value: '3', label: 'Abril' },
+    { value: '4', label: 'Maio' },
+    { value: '5', label: 'Junho' },
+    { value: '6', label: 'Julho' },
+    { value: '7', label: 'Agosto' },
+    { value: '8', label: 'Setembro' },
+    { value: '9', label: 'Outubro' },
+    { value: '10', label: 'Novembro' },
+    { value: '11', label: 'Dezembro' },
+  ];
+
+  const subscriptions = React.useMemo(() => {
+    const clientSubscriptions = allSubscriptions.filter((s) => s.profiles?.user_type === 'client');
+    
+    // Se "Todos os meses" estiver selecionado, retornar todas
+    if (selectedMonth === 'all') {
+      return clientSubscriptions;
+    }
+    
+    // Filtrar por mês específico
+    const monthIndex = parseInt(selectedMonth);
+    const currentYear = new Date().getFullYear();
+    
+    return clientSubscriptions.filter(s => {
+      const createdDate = new Date(s.created_at);
+      return createdDate.getMonth() === monthIndex && createdDate.getFullYear() === currentYear;
+    });
+  }, [allSubscriptions, selectedMonth]);
 
   // Estatísticas: totais para cada tipo de serviço (apenas ativas)
   const stats = React.useMemo(() => {
@@ -154,7 +186,27 @@ export const ManagementDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Dashboard de Gestão</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold text-white">Dashboard de Gestão</h2>
+        
+        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+          <SelectTrigger className="w-[200px] bg-gray-800 border-gray-600 text-white">
+            <CalendarIcon className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Selecionar mês" />
+          </SelectTrigger>
+          <SelectContent className="bg-gray-800 border-gray-600 text-white z-50">
+            {months.map((month) => (
+              <SelectItem 
+                key={month.value} 
+                value={month.value}
+                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+              >
+                {month.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       
       {/* Cards de estatísticas */}
       <DashboardStats stats={stats} />
