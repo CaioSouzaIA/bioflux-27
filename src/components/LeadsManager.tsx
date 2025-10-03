@@ -8,6 +8,7 @@ import { Download, Search, Users, RotateCcw, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { WhatsAppPopup } from './WhatsAppPopup';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ClientProfile {
   id: string;
@@ -21,6 +22,7 @@ interface ClientProfile {
     id: string;
     status: string;
     forms_completed: boolean;
+    updated_at: string | null;
   }>;
 }
 
@@ -28,6 +30,7 @@ export const LeadsManager: React.FC = () => {
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [filteredClients, setFilteredClients] = useState<ClientProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ativos' | 'inativos'>('ativos');
   const [loading, setLoading] = useState(true);
   const [resettingClient, setResettingClient] = useState<string | null>(null);
   const [toggleingUnlimited, setToggleingUnlimited] = useState<string | null>(null);
@@ -39,7 +42,7 @@ export const LeadsManager: React.FC = () => {
 
   useEffect(() => {
     filterClients();
-  }, [clients, searchTerm]);
+  }, [clients, searchTerm, statusFilter]);
 
   const loadClients = async () => {
     try {
@@ -55,14 +58,14 @@ export const LeadsManager: React.FC = () => {
           whatsapp, 
           created_at,
           unlimited_plan_enabled,
-          client_subscriptions!inner(
+          client_subscriptions(
             id,
             status,
-            forms_completed
+            forms_completed,
+            updated_at
           )
         `)
         .eq('user_type', 'client')
-        .eq('client_subscriptions.status', 'ativo')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -89,13 +92,20 @@ export const LeadsManager: React.FC = () => {
   };
 
   const filterClients = () => {
+    // Filtrar por status (ativos/inativos)
+    let statusFiltered = clients.filter(client => {
+      const hasActiveSubscription = client.client_subscriptions?.some(sub => sub.status === 'ativo');
+      return statusFilter === 'ativos' ? hasActiveSubscription : !hasActiveSubscription;
+    });
+
+    // Filtrar por termo de busca
     if (!searchTerm) {
-      setFilteredClients(clients);
+      setFilteredClients(statusFiltered);
       return;
     }
 
     const lowercasedSearchTerm = searchTerm.toLowerCase();
-    const filtered = clients.filter(client => {
+    const filtered = statusFiltered.filter(client => {
       const fullName = `${client.first_name || ''} ${client.last_name || ''}`.toLowerCase();
       const whatsapp = client.whatsapp || '';
       return fullName.includes(lowercasedSearchTerm) || whatsapp.includes(searchTerm);
@@ -288,6 +298,17 @@ export const LeadsManager: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'ativos' | 'inativos')} className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2 bg-gray-800">
+              <TabsTrigger value="ativos" className="data-[state=active]:bg-green-600">
+                Ativos
+              </TabsTrigger>
+              <TabsTrigger value="inativos" className="data-[state=active]:bg-red-600">
+                Inativos
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -323,6 +344,9 @@ export const LeadsManager: React.FC = () => {
                     <TableHead className="text-gray-300">Nome Completo</TableHead>
                     <TableHead className="text-gray-300">WhatsApp</TableHead>
                     <TableHead className="text-gray-300">Data de Cadastro</TableHead>
+                    {statusFilter === 'inativos' && (
+                      <TableHead className="text-gray-300">Data Inativação</TableHead>
+                    )}
                     <TableHead className="text-gray-300">Status Formulários</TableHead>
                     <TableHead className="text-gray-300">Plano Ilimitado</TableHead>
                     <TableHead className="text-gray-300">Ações</TableHead>
@@ -330,7 +354,9 @@ export const LeadsManager: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredClients.map((client) => {
-                    const formsCompleted = client.client_subscriptions?.[0]?.forms_completed || false;
+                    const activeSub = client.client_subscriptions?.find(sub => sub.status === 'ativo');
+                    const inactiveSub = client.client_subscriptions?.find(sub => sub.status !== 'ativo');
+                    const formsCompleted = activeSub?.forms_completed || false;
                     const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim();
                     
                     return (
@@ -340,6 +366,14 @@ export const LeadsManager: React.FC = () => {
                         <TableCell className="text-gray-300">
                           {new Date(client.created_at).toLocaleDateString('pt-BR')}
                         </TableCell>
+                        {statusFilter === 'inativos' && (
+                          <TableCell className="text-gray-300">
+                            {inactiveSub?.updated_at 
+                              ? new Date(inactiveSub.updated_at).toLocaleDateString('pt-BR')
+                              : '-'
+                            }
+                          </TableCell>
+                        )}
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             formsCompleted 
