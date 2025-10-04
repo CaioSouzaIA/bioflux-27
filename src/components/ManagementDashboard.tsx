@@ -218,7 +218,7 @@ export const ManagementDashboard: React.FC = () => {
       {/* Métricas de Vendas */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold text-white">Métricas de Vendas</h3>
-        <SalesMetrics subscriptions={subscriptions} />
+        <SalesMetrics subscriptions={subscriptions} selectedMonth={selectedMonth} />
       </div>
 
       {/* Lista de assinaturas recentes (apenas ativas) */}

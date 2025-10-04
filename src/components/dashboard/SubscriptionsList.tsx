@@ -17,7 +17,6 @@ interface SubscriptionData {
   expires_at?: string | null;
   forms_completed: boolean;
   updated_at?: string | null;
-  ltv?: number | null;
   subscription_plans: {
     id: string;
     name: string;
@@ -51,7 +50,6 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
           expires_at,
           forms_completed,
           updated_at,
-          ltv,
           subscription_plans!inner (
             id,
             name,
@@ -66,6 +64,7 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
           )
         `)
         .eq('status', 'ativo')
+        .neq('subscription_plans.name', 'Plano Ilimitado - Treino + Dieta')
         .gt('subscription_plans.price', 0)
         .order('updated_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
@@ -74,7 +73,9 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
       if (error) throw error;
 
       const filtered = (data || []).filter(sub =>
-        sub.subscription_plans?.price && sub.subscription_plans.price > 0
+        sub.subscription_plans?.price && 
+        sub.subscription_plans.price > 0 &&
+        sub.subscription_plans.name !== 'Plano Ilimitado - Treino + Dieta'
       );
 
       return filtered as SubscriptionData[];
@@ -108,10 +109,6 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
     }
   };
 
-  const getRenewalLabel = (ltv: number | null | undefined) => {
-    if (!ltv || ltv === 1) return '1ª assinatura';
-    return `${ltv}ª renovação`;
-  };
 
   return (
     <Card className="bg-gray-900 border-gray-700">
@@ -152,11 +149,6 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
                   </div>
                 </div>
                 <div className="text-right">
-                  {subscription.status === 'ativo' && (
-                    <span className="text-blue-400 text-xs font-medium mb-1 block">
-                      {getRenewalLabel(subscription.ltv)}
-                    </span>
-                  )}
                   <div className="flex items-center justify-end text-gray-400 text-xs mt-1">
                     <Calendar className="w-3 h-3 mr-1" />
                     {format(new Date(subscription.updated_at || subscription.created_at), 'dd/MM/yyyy', { locale: ptBR })}

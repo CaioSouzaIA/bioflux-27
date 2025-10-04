@@ -5,50 +5,44 @@ import type { SubscriptionData } from '@/hooks/useSubscriptions';
 
 interface SalesMetricsProps {
   subscriptions: SubscriptionData[];
+  selectedMonth?: string;
 }
 
-export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => {
+export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions, selectedMonth = 'all' }) => {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentYear = now.getFullYear();
+  
+  // Se um mês específico foi selecionado, usar esse mês; caso contrário, usar o mês atual
+  const targetMonth = selectedMonth === 'all' ? now.getMonth() : parseInt(selectedMonth);
+  
+  const today = new Date(currentYear, targetMonth, now.getDate());
+  const monthStart = new Date(currentYear, targetMonth, 1);
+  const monthEnd = new Date(currentYear, targetMonth + 1, 0);
+  const lastMonth = new Date(currentYear, targetMonth - 1, 1);
+  const lastMonthEnd = new Date(currentYear, targetMonth, 0);
 
-  // Filtrar apenas NOVAS assinaturas (ltv === 1 ou ltv === null) e excluir planos gratuitos
-  const newSubscriptions = subscriptions.filter(s =>
-    (!s.ltv || s.ltv === 1) &&
+  // Filtrar apenas planos pagos, excluir planos ilimitados e gratuitos
+  const paidSubscriptions = subscriptions.filter(s =>
     s.subscription_plans?.price &&
-    s.subscription_plans.price > 0
+    s.subscription_plans.price > 0 &&
+    s.subscription_plans.name !== 'Plano Ilimitado - Treino + Dieta'
   );
 
-  // Planos vendidos hoje
-  const soldToday = newSubscriptions.filter(s => {
+  // Novas assinaturas e renovações no mês selecionado
+  const soldThisMonth = paidSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
-    return createdAt >= today;
+    return createdAt >= monthStart && createdAt <= monthEnd;
   }).length;
 
-  // Planos vendidos esta semana
-  const soldThisWeek = newSubscriptions.filter(s => {
+  // Crescimento mensal de usuários
+  const usersThisMonth = paidSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
-    return createdAt >= weekAgo;
+    return createdAt >= monthStart && createdAt <= monthEnd;
   }).length;
 
-  // Planos vendidos este mês
-  const soldThisMonth = newSubscriptions.filter(s => {
+  const usersLastMonth = paidSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
-    return createdAt >= currentMonth;
-  }).length;
-
-  // Crescimento mensal de usuários (apenas novos)
-  const usersThisMonth = newSubscriptions.filter(s => {
-    const createdAt = new Date(s.created_at);
-    return createdAt >= currentMonth;
-  }).length;
-
-  const usersLastMonth = newSubscriptions.filter(s => {
-    const createdAt = new Date(s.created_at);
-    return createdAt >= lastMonth && createdAt < currentMonth;
+    return createdAt >= lastMonth && createdAt <= lastMonthEnd;
   }).length;
 
   const monthlyGrowth = usersThisMonth === 0
@@ -57,13 +51,9 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
       ? ((usersThisMonth - usersLastMonth) / usersLastMonth * 100)
       : 100;
 
-  // Plano mais vendido (excluir planos gratuitos)
-  const planCounts = subscriptions
-    .filter(s =>
-      s.status === 'ativo' &&
-      s.subscription_plans?.price &&
-      s.subscription_plans.price > 0
-    )
+  // Plano mais vendido (excluir planos gratuitos e ilimitados)
+  const planCounts = paidSubscriptions
+    .filter(s => s.status === 'ativo')
     .reduce((acc, sub) => {
       const planName = sub.subscription_plans?.name || 'Plano Desconhecido';
       acc[planName] = (acc[planName] || 0) + 1;
@@ -113,37 +103,7 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
 
       <Card className="bg-gray-900 border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-white">Vendas Hoje</CardTitle>
-          <Calendar className="h-4 w-4 text-blue-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-white">
-            {soldToday}
-          </div>
-          <p className="text-xs text-gray-400">
-            planos vendidos hoje
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gray-900 border-gray-700">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-white">Vendas da Semana</CardTitle>
-          <Calendar className="h-4 w-4 text-purple-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-white">
-            {soldThisWeek}
-          </div>
-          <p className="text-xs text-gray-400">
-            planos vendidos esta semana
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gray-900 border-gray-700">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-white">Vendas do Mês</CardTitle>
+          <CardTitle className="text-sm font-medium text-white">Vendas no Período</CardTitle>
           <Users className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
@@ -151,7 +111,7 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
             {soldThisMonth}
           </div>
           <p className="text-xs text-gray-400">
-            planos vendidos este mês
+            planos vendidos no período selecionado
           </p>
         </CardContent>
       </Card>
