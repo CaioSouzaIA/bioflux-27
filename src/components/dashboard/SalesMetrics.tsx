@@ -15,31 +15,34 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
   const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+  // Filtrar apenas NOVAS assinaturas (ltv === 1 ou ltv === null)
+  const newSubscriptions = subscriptions.filter(s => !s.ltv || s.ltv === 1);
+
   // Planos vendidos hoje
-  const soldToday = subscriptions.filter(s => {
+  const soldToday = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
     return createdAt >= today && s.status === 'ativo';
   }).length;
 
   // Planos vendidos esta semana
-  const soldThisWeek = subscriptions.filter(s => {
+  const soldThisWeek = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
     return createdAt >= weekAgo && s.status === 'ativo';
   }).length;
 
   // Planos vendidos este mês
-  const soldThisMonth = subscriptions.filter(s => {
+  const soldThisMonth = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
     return createdAt >= currentMonth && s.status === 'ativo';
   }).length;
 
-  // Crescimento mensal de usuários
-  const usersThisMonth = subscriptions.filter(s => {
+  // Crescimento mensal de usuários (apenas novos)
+  const usersThisMonth = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
     return createdAt >= currentMonth;
   }).length;
 
-  const usersLastMonth = subscriptions.filter(s => {
+  const usersLastMonth = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
     return createdAt >= lastMonth && createdAt < currentMonth;
   }).length;

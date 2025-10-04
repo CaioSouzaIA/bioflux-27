@@ -12,7 +12,13 @@ interface SubscriptionsListProps {
 }
 
 export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscriptions }) => {
-  const recentSubscriptions = subscriptions.slice(0, 10); // Últimas 10 assinaturas
+  // Ordenar por updated_at (renovações) e created_at (novas), pegando as 10 mais recentes
+  const sortedSubscriptions = [...subscriptions].sort((a, b) => {
+    const dateA = new Date(a.updated_at || a.created_at);
+    const dateB = new Date(b.updated_at || b.created_at);
+    return dateB.getTime() - dateA.getTime();
+  });
+  const recentSubscriptions = sortedSubscriptions.slice(0, 10);
 
   const getStatusColor = (status: string) => {
     switch (status) {
