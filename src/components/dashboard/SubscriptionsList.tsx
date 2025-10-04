@@ -67,6 +67,7 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
         `)
         .eq('status', 'ativo')
         .neq('subscription_plans.name', 'Plano Ilimitado - Treino + Dieta')
+        .gt('subscription_plans.price', 0)
         .order('updated_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(10);
