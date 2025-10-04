@@ -5,24 +5,77 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { User, Calendar, Crown } from 'lucide-react';
-import { SubscriptionData } from '@/hooks/useSubscriptions';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
+interface SubscriptionData {
+  id: string;
+  user_id: string;
+  service_type: string;
+  status: string;
+  created_at: string;
+  expires_at?: string | null;
+  forms_completed: boolean;
+  updated_at?: string | null;
+  ltv?: number | null;
+  subscription_plans: {
+    id: string;
+    name: string;
+    price: number;
+  } | null;
+  profiles: {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    user_type: string;
+  } | null;
+}
 
 interface SubscriptionsListProps {
   subscriptions: SubscriptionData[];
 }
 
 export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscriptions }) => {
-  // Filtrar "Plano Ilimitado - Treino + Dieta" e ordenar por updated_at (renovações) e created_at (novas)
-  const filteredSubscriptions = subscriptions.filter(s => 
-    s.subscription_plans?.name !== 'Plano Ilimitado - Treino + Dieta'
-  );
-  
-  const sortedSubscriptions = [...filteredSubscriptions].sort((a, b) => {
-    const dateA = new Date(a.updated_at || a.created_at);
-    const dateB = new Date(b.updated_at || b.created_at);
-    return dateB.getTime() - dateA.getTime();
+  const { data: recentSubscriptions = [], isLoading } = useQuery({
+    queryKey: ['recent-subscriptions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('client_subscriptions')
+        .select(`
+          id,
+          user_id,
+          service_type,
+          status,
+          created_at,
+          expires_at,
+          forms_completed,
+          updated_at,
+          ltv,
+          subscription_plans (
+            id,
+            name,
+            price
+          ),
+          profiles (
+            id,
+            first_name,
+            last_name,
+            email,
+            user_type
+          )
+        `)
+        .eq('status', 'ativo')
+        .neq('subscription_plans.name', 'Plano Ilimitado - Treino + Dieta')
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return (data || []) as SubscriptionData[];
+    },
+    staleTime: 1000 * 60 * 5,
   });
-  const recentSubscriptions = sortedSubscriptions.slice(0, 10);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -60,11 +113,13 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <User className="w-5 h-5" />
-          Assinaturas Recentes
+          Assinaturas Recentes (10 mais recentes)
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {recentSubscriptions.length === 0 ? (
+        {isLoading ? (
+          <p className="text-gray-400 text-center py-8">Carregando...</p>
+        ) : recentSubscriptions.length === 0 ? (
           <p className="text-gray-400 text-center py-8">
             Nenhuma assinatura encontrada.
           </p>
