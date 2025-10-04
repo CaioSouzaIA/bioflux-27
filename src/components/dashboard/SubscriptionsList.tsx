@@ -12,8 +12,12 @@ interface SubscriptionsListProps {
 }
 
 export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscriptions }) => {
-  // Ordenar por updated_at (renovações) e created_at (novas), pegando as 10 mais recentes
-  const sortedSubscriptions = [...subscriptions].sort((a, b) => {
+  // Filtrar planos ilimitados e ordenar por updated_at (renovações) e created_at (novas)
+  const filteredSubscriptions = subscriptions.filter(s => 
+    s.subscription_plans?.name?.toLowerCase() !== 'ilimitado'
+  );
+  
+  const sortedSubscriptions = [...filteredSubscriptions].sort((a, b) => {
     const dateA = new Date(a.updated_at || a.created_at);
     const dateB = new Date(b.updated_at || b.created_at);
     return dateB.getTime() - dateA.getTime();
