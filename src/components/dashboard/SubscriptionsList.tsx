@@ -52,7 +52,7 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
           forms_completed,
           updated_at,
           ltv,
-          subscription_plans (
+          subscription_plans!inner (
             id,
             name,
             price
@@ -66,13 +66,18 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
           )
         `)
         .eq('status', 'ativo')
-        .neq('subscription_plans.name', 'Plano ilimitado')
+        .gt('subscription_plans.price', 0)
         .order('updated_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
-      return (data || []) as SubscriptionData[];
+
+      const filtered = (data || []).filter(sub =>
+        sub.subscription_plans?.price && sub.subscription_plans.price > 0
+      );
+
+      return filtered as SubscriptionData[];
     },
     staleTime: 1000 * 60 * 5,
   });
