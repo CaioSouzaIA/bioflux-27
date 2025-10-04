@@ -95,7 +95,7 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
                   )}
                   <div className="flex items-center justify-end text-gray-400 text-xs mt-1">
                     <Calendar className="w-3 h-3 mr-1" />
-                    {format(new Date(subscription.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                    {format(new Date(subscription.updated_at || subscription.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                   </div>
                   <p className="text-green-400 text-sm font-medium">
                     R$ {subscription.subscription_plans?.price?.toFixed(2) || '0,00'}
