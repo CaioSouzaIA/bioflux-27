@@ -12,9 +12,9 @@ interface SubscriptionsListProps {
 }
 
 export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscriptions }) => {
-  // Filtrar planos ilimitados e ordenar por updated_at (renovações) e created_at (novas)
+  // Filtrar "Plano Ilimitado - Treino + Dieta" e ordenar por updated_at (renovações) e created_at (novas)
   const filteredSubscriptions = subscriptions.filter(s => 
-    s.subscription_plans?.name?.toLowerCase() !== 'ilimitado'
+    s.subscription_plans?.name !== 'Plano Ilimitado - Treino + Dieta'
   );
   
   const sortedSubscriptions = [...filteredSubscriptions].sort((a, b) => {
