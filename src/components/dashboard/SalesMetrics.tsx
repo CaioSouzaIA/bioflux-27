@@ -21,19 +21,19 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
   // Planos vendidos hoje
   const soldToday = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
-    return createdAt >= today && s.status === 'ativo';
+    return createdAt >= today;
   }).length;
 
   // Planos vendidos esta semana
   const soldThisWeek = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
-    return createdAt >= weekAgo && s.status === 'ativo';
+    return createdAt >= weekAgo;
   }).length;
 
   // Planos vendidos este mês
   const soldThisMonth = newSubscriptions.filter(s => {
     const createdAt = new Date(s.created_at);
-    return createdAt >= currentMonth && s.status === 'ativo';
+    return createdAt >= currentMonth;
   }).length;
 
   // Crescimento mensal de usuários (apenas novos)
