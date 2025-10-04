@@ -15,8 +15,12 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
   const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // Filtrar apenas NOVAS assinaturas (ltv === 1 ou ltv === null)
-  const newSubscriptions = subscriptions.filter(s => !s.ltv || s.ltv === 1);
+  // Filtrar apenas NOVAS assinaturas (ltv === 1 ou ltv === null) e excluir planos gratuitos
+  const newSubscriptions = subscriptions.filter(s =>
+    (!s.ltv || s.ltv === 1) &&
+    s.subscription_plans?.price &&
+    s.subscription_plans.price > 0
+  );
 
   // Planos vendidos hoje
   const soldToday = newSubscriptions.filter(s => {
@@ -53,9 +57,13 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions }) => 
       ? ((usersThisMonth - usersLastMonth) / usersLastMonth * 100)
       : 100;
 
-  // Plano mais vendido
+  // Plano mais vendido (excluir planos gratuitos)
   const planCounts = subscriptions
-    .filter(s => s.status === 'ativo')
+    .filter(s =>
+      s.status === 'ativo' &&
+      s.subscription_plans?.price &&
+      s.subscription_plans.price > 0
+    )
     .reduce((acc, sub) => {
       const planName = sub.subscription_plans?.name || 'Plano Desconhecido';
       acc[planName] = (acc[planName] || 0) + 1;
