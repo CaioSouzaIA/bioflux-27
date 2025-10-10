@@ -12,8 +12,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, Key, LifeBuoy, RefreshCcw, User, X } from 'lucide-react';
+import { LogOut, Key, LifeBuoy, RefreshCcw, User, X, Camera } from 'lucide-react';
 import PasswordReset from './PasswordReset';
+import { AvatarUpload } from './AvatarUpload';
 
 
 interface ClientDropdownProps {
@@ -24,6 +25,7 @@ interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  avatar_url: string | null;
 }
 
 const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
@@ -31,6 +33,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [showAvatarUpload, setShowAvatarUpload] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -44,7 +47,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('first_name, last_name, email')
+        .select('first_name, last_name, email, avatar_url')
         .eq('id', user.id)
         .single();
 
@@ -121,6 +124,14 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           <DropdownMenuSeparator className="bg-gray-700" />
           
           <DropdownMenuItem 
+            onClick={() => setShowAvatarUpload(true)}
+            className="text-white flex items-center bg-gray-900 hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 cursor-pointer"
+          >
+            <Camera className="mr-2 h-4 w-4" />
+            Foto de perfil
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem
             onClick={handlePasswordReset}
             className="text-white flex items-center bg-gray-900 hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 cursor-pointer"
           >
@@ -164,6 +175,12 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <AvatarUpload
+        open={showAvatarUpload}
+        onOpenChange={setShowAvatarUpload}
+        currentAvatarUrl={userProfile?.avatar_url}
+        userName={getDisplayName()}
+      />
     </>
   );
 };
