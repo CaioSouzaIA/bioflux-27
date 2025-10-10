@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
       client_subscriptions: {
         Row: {
           created_at: string
@@ -21,6 +45,7 @@ export type Database = {
           forms_completed: boolean
           id: string
           last_reset_date: string | null
+          ltv: number | null
           plan_id: string
           responses_used: number | null
           service_type: string
@@ -34,6 +59,7 @@ export type Database = {
           forms_completed?: boolean
           id?: string
           last_reset_date?: string | null
+          ltv?: number | null
           plan_id: string
           responses_used?: number | null
           service_type: string
@@ -47,6 +73,7 @@ export type Database = {
           forms_completed?: boolean
           id?: string
           last_reset_date?: string | null
+          ltv?: number | null
           plan_id?: string
           responses_used?: number | null
           service_type?: string
@@ -230,6 +257,7 @@ export type Database = {
         Row: {
           activated: boolean
           ai_config: Json | null
+          avatar_url: string | null
           created_at: string
           email: string | null
           first_name: string | null
@@ -244,6 +272,7 @@ export type Database = {
         Insert: {
           activated?: boolean
           ai_config?: Json | null
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           first_name?: string | null
@@ -258,6 +287,7 @@ export type Database = {
         Update: {
           activated?: boolean
           ai_config?: Json | null
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           first_name?: string | null
@@ -387,6 +417,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_forms: {
         Row: {

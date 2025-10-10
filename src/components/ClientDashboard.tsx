@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { FileText, Dumbbell, UtensilsCrossed, Calendar, Calculator, Activity, Lock } from 'lucide-react';
+import { FileText, Dumbbell, UtensilsCrossed, Calendar, Calculator, Activity, Lock, Trophy } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import ClientDropdown from '@/components/ClientDropdown';
@@ -257,6 +257,10 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     navigate('/client/prescriptions');
   };
 
+  const handleAchievementsAccess = () => {
+    navigate('/client/achievements');
+  };
+
   const handleMetabolicAssessment = () => {
     setActiveView('metabolic');
   };
@@ -482,6 +486,32 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   onClick={handlePrescriptionsAccess}
                 >
                   Ver Prescrições
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-3">
+                  <Trophy className="w-6 h-6 text-yellow-500" />
+                  Conquistas
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Veja suas conquistas e badges desbloqueados
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center mb-4">
+                  <div className="text-center">
+                    <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-gray-400 text-sm">Desbloqueie conquistas</p>
+                  </div>
+                </div>
+                <Button 
+                  className="w-full bg-yellow-600 hover:bg-yellow-700"
+                  onClick={handleAchievementsAccess}
+                >
+                  Ver Conquistas
                 </Button>
               </CardContent>
             </Card>
