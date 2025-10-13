@@ -8,6 +8,8 @@ import { ptBR } from "date-fns/locale";
 import { BackgroundAnimation } from "@/components/BackgroundAnimation";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import ClientDropdown from "@/components/ClientDropdown";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface Achievement {
   id: string;
@@ -22,6 +24,12 @@ interface Achievement {
 
 export default function Achievements() {
   const navigate = useNavigate();
+  const { signOut } = useAuthContext();
+  
+  const handleLogout = async () => {
+    await signOut();
+    window.location.reload();
+  };
 
   const { data: profile } = useQuery({
     queryKey: ["profile"],
@@ -83,17 +91,27 @@ export default function Achievements() {
     <div className="min-h-screen relative bg-black overflow-hidden">
       <BackgroundAnimation />
       
-      <div className="relative z-10 min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <Button
-              onClick={() => navigate('/client')}
-              variant="outline"
-              className="bg-gray-900/90 border-gray-700 text-white hover:bg-gray-800/70"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
-            </Button>
+      <div className="relative z-10 min-h-screen p-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8 pt-8">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/client')}
+                className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:border-gray-600 hover:text-white"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar ao Dashboard
+              </Button>
+              <img 
+                src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
+                alt="BIOFLUX.AI" 
+                className="h-10"
+              />
+            </div>
+            
+            <ClientDropdown onLogout={handleLogout} />
           </div>
 
           {/* Header com perfil do usuário */}

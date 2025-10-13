@@ -138,7 +138,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('💥 Erro no webhook:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       aiConfig: null,
       formResponseId: null,
       timestamp: new Date().toISOString(),
