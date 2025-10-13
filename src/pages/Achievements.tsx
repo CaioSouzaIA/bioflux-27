@@ -40,31 +40,43 @@ export default function Achievements() {
     },
   });
 
-  const { data: achievements, isLoading } = useQuery({
-    queryKey: ["achievements"],
+  // Buscar todas as badges disponíveis
+  const { data: allBadges, isLoading: isBadgesLoading } = useQuery({
+    queryKey: ["all-badges"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("badges")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Buscar conquistas do usuário
+  const { data: userAchievements, isLoading: isAchievementsLoading } = useQuery({
+    queryKey: ["user-achievements"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from("user_achievements")
-        .select(`
-          id,
-          earned_at,
-          badges (
-            id,
-            name,
-            description,
-            image_url
-          )
-        `)
-        .eq("user_id", user.id)
-        .order("earned_at", { ascending: false });
+        .select("badge_id, earned_at")
+        .eq("user_id", user.id);
 
       if (error) throw error;
-      return data as Achievement[];
+      return data;
     },
   });
+
+  const isLoading = isBadgesLoading || isAchievementsLoading;
+
+  // Criar mapa de conquistas do usuário
+  const achievementsMap = new Map(
+    userAchievements?.map(a => [a.badge_id, a.earned_at]) || []
+  );
 
   const getAvatarUrl = () => {
     if (profile?.avatar_url) {
@@ -119,7 +131,7 @@ export default function Achievements() {
                     {profile?.first_name} {profile?.last_name}
                   </h1>
                   <p className="text-gray-300">
-                    {achievements?.length || 0} conquistas desbloqueadas
+                    {achievementsMap.size} conquistas desbloqueadas
                   </p>
                 </div>
               </div>
@@ -128,63 +140,87 @@ export default function Achievements() {
 
           {/* Lista de conquistas */}
           <div>
-            <div className="flex items-center gap-2 mb-6">
-              <Trophy className="h-6 w-6 text-yellow-500" />
-              <h2 className="text-xl font-semibold text-white">Suas Conquistas</h2>
-            </div>
+          <div className="flex items-center gap-2 mb-6">
+            <Trophy className="h-6 w-6 text-yellow-500" />
+            <h2 className="text-xl font-semibold text-white">
+              Conquistas ({achievementsMap.size} / {allBadges?.length || 0})
+            </h2>
+          </div>
 
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="p-6 animate-pulse bg-gray-900/90 border-gray-700">
-                    <div className="h-24 bg-gray-800 rounded mb-4" />
-                    <div className="h-4 bg-gray-800 rounded mb-2" />
-                    <div className="h-3 bg-gray-800 rounded" />
-                  </Card>
-                ))}
-              </div>
-            ) : achievements && achievements.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {achievements.map((achievement) => (
-                  <Card key={achievement.id} className="p-6 bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all">
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="p-6 animate-pulse bg-gray-900/90 border-gray-700">
+                  <div className="h-24 bg-gray-800 rounded mb-4" />
+                  <div className="h-4 bg-gray-800 rounded mb-2" />
+                  <div className="h-3 bg-gray-800 rounded" />
+                </Card>
+              ))}
+            </div>
+          ) : allBadges && allBadges.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {allBadges.map((badge) => {
+                const earnedDate = achievementsMap.get(badge.id);
+                const isEarned = !!earnedDate;
+                
+                return (
+                  <Card 
+                    key={badge.id} 
+                    className={`p-6 backdrop-blur-sm transition-all ${
+                      isEarned 
+                        ? 'bg-gray-900/90 border-yellow-500/50 hover:bg-gray-800/70' 
+                        : 'bg-gray-900/50 border-gray-700 opacity-60'
+                    }`}
+                  >
                     <div className="flex flex-col items-center text-center">
-                      <div className="mb-4 rounded-full bg-yellow-500/10 p-4 border-2 border-yellow-500/30">
+                      <div className={`mb-4 rounded-full p-4 border-2 ${
+                        isEarned 
+                          ? 'bg-yellow-500/10 border-yellow-500/30' 
+                          : 'bg-gray-800/20 border-gray-700/30'
+                      }`}>
                         <img
-                          src={achievement.badges.image_url}
-                          alt={achievement.badges.name}
-                          className="h-16 w-16 object-contain"
+                          src={badge.image_url}
+                          alt={badge.name}
+                          className={`h-16 w-16 object-contain ${!isEarned && 'grayscale'}`}
                         />
                       </div>
                       <h3 className="font-semibold text-lg mb-2 text-white">
-                        {achievement.badges.name}
+                        {badge.name}
                       </h3>
                       <p className="text-sm text-gray-300 mb-3">
-                        {achievement.badges.description}
+                        {badge.description}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
-                        <Calendar className="h-3 w-3" />
-                        <span>
-                          Conquistado em{" "}
-                          {format(new Date(achievement.earned_at), "dd/MM/yyyy", {
-                            locale: ptBR,
-                          })}
-                        </span>
-                      </div>
+                      {isEarned ? (
+                        <div className="flex items-center gap-2 text-xs text-yellow-400">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            Conquistado em{" "}
+                            {format(new Date(earnedDate), "dd/MM/yyyy", {
+                              locale: ptBR,
+                            })}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-500 italic">
+                          Conquista bloqueada
+                        </div>
+                      )}
                     </div>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-12 text-center bg-gray-900/90 border-gray-700 backdrop-blur-sm">
-                <Trophy className="h-12 w-12 text-yellow-500/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2 text-white">
-                  Nenhuma conquista ainda
-                </h3>
-                <p className="text-gray-300">
-                  Continue usando a plataforma para desbloquear conquistas!
-                </p>
-              </Card>
-            )}
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="p-12 text-center bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+              <Trophy className="h-12 w-12 text-yellow-500/50 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2 text-white">
+                Nenhuma conquista disponível
+              </h3>
+              <p className="text-gray-300">
+                Aguarde novas conquistas serem adicionadas!
+              </p>
+            </Card>
+          )}
           </div>
         </div>
       </div>
