@@ -8,8 +8,6 @@ import { ptBR } from "date-fns/locale";
 import { BackgroundAnimation } from "@/components/BackgroundAnimation";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import ClientDropdown from "@/components/ClientDropdown";
-import { useAuthContext } from "@/contexts/AuthContext";
 
 interface Achievement {
   id: string;
@@ -24,12 +22,6 @@ interface Achievement {
 
 export default function Achievements() {
   const navigate = useNavigate();
-  const { signOut } = useAuthContext();
-  
-  const handleLogout = async () => {
-    await signOut();
-    window.location.reload();
-  };
 
   const { data: profile } = useQuery({
     queryKey: ["profile"],
@@ -110,8 +102,6 @@ export default function Achievements() {
                 className="h-10"
               />
             </div>
-            
-            <ClientDropdown onLogout={handleLogout} />
           </div>
 
           {/* Header com perfil do usuário */}
