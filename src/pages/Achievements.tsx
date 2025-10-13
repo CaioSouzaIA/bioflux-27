@@ -102,7 +102,7 @@ export default function Achievements() {
                 className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:border-gray-600 hover:text-white"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar ao Dashboard
+                Voltar
               </Button>
               <img 
                 src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
