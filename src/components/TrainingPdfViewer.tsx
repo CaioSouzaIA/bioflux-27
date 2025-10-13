@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Calendar, Dumbbell, Eye } from 'lucide-react';
+import { Calendar, Dumbbell, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TrainingPrescription } from '@/hooks/useTrainingPrescriptions';
@@ -48,34 +48,6 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
     }
   };
 
-  const handleDownload = async (prescription: TrainingPrescription) => {
-    try {
-      const response = await fetch(prescription.file_path);
-      
-      if (!response.ok) {
-        throw new Error('Erro ao buscar o PDF');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = prescription.file_name || 'arquivo.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('❌ [TRAINING PDF DOWNLOAD] Erro ao baixar PDF:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível baixar o PDF. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (isLoading) {
     return (
@@ -145,25 +117,15 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-end">
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleView(prescription)}
-                    className="border-gray-600 bg-white text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                    size="sm"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Visualizar
-                  </Button>
-                  <Button
-                    onClick={() => handleDownload(prescription)}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                    size="sm"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Baixar PDF
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => handleView(prescription)}
+                  className="border-gray-600 bg-white text-gray-900 hover:bg-gray-100 hover:text-gray-800"
+                  size="sm"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Visualizar
+                </Button>
               </div>
             </CardContent>
           </Card>
