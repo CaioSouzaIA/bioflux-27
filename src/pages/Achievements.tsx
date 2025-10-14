@@ -40,6 +40,11 @@ export default function Achievements() {
     },
   });
 
+  // Calcular dias desde a criação da conta
+  const accountAgeDays = profile?.created_at 
+    ? Math.floor((new Date().getTime() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
   // Buscar todas as badges disponíveis
   const { data: allBadges, isLoading: isBadgesLoading } = useQuery({
     queryKey: ["all-badges"],
@@ -77,6 +82,16 @@ export default function Achievements() {
   const achievementsMap = new Map(
     userAchievements?.map(a => [a.badge_id, a.earned_at]) || []
   );
+
+  // Calcular total de conquistas (incluindo as baseadas em tempo)
+  const earnedCount = allBadges?.filter(badge => {
+    const earnedDate = achievementsMap.get(badge.id);
+    const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+    const isAccountAgeBadge = metadata?.type === 'account_age';
+    const daysRequired = metadata?.days_required || 0;
+    const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
+    return !!earnedDate || isEarnedByTime;
+  }).length || 0;
 
   const getAvatarUrl = () => {
     if (profile?.avatar_url) {
@@ -131,7 +146,7 @@ export default function Achievements() {
                     {profile?.first_name} {profile?.last_name}
                   </h1>
                   <p className="text-gray-300">
-                    {achievementsMap.size} conquistas desbloqueadas
+                    {earnedCount} conquistas desbloqueadas
                   </p>
                 </div>
               </div>
@@ -143,7 +158,7 @@ export default function Achievements() {
           <div className="flex items-center gap-2 mb-6">
             <Trophy className="h-6 w-6 text-yellow-500" />
             <h2 className="text-xl font-semibold text-white">
-              Conquistas ({achievementsMap.size} / {allBadges?.length || 0})
+              Conquistas ({earnedCount} / {allBadges?.length || 0})
             </h2>
           </div>
 
@@ -161,7 +176,15 @@ export default function Achievements() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {allBadges.map((badge) => {
                 const earnedDate = achievementsMap.get(badge.id);
-                const isEarned = !!earnedDate;
+                
+                // Verificar se é conquista de Lealdade baseada em idade da conta
+                const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+                const isAccountAgeBadge = metadata?.type === 'account_age';
+                const daysRequired = metadata?.days_required || 0;
+                const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
+                
+                // Badge é considerado conquistado se já está em user_achievements OU se atingiu os dias necessários
+                const isEarned = !!earnedDate || isEarnedByTime;
                 
                 return (
                   <Card 
@@ -195,14 +218,26 @@ export default function Achievements() {
                           <Calendar className="h-3 w-3" />
                           <span>
                             Conquistado em{" "}
-                            {format(new Date(earnedDate), "dd/MM/yyyy", {
-                              locale: ptBR,
-                            })}
+                            {earnedDate 
+                              ? format(new Date(earnedDate), "dd/MM/yyyy", { locale: ptBR })
+                              : isAccountAgeBadge && profile?.created_at
+                                ? format(
+                                    new Date(
+                                      new Date(profile.created_at).getTime() + 
+                                      daysRequired * 24 * 60 * 60 * 1000
+                                    ), 
+                                    "dd/MM/yyyy", 
+                                    { locale: ptBR }
+                                  )
+                                : format(new Date(), "dd/MM/yyyy", { locale: ptBR })
+                            }
                           </span>
                         </div>
                       ) : (
                         <div className="text-xs text-gray-500 italic">
-                          Conquista bloqueada
+                          {isAccountAgeBadge && daysRequired > 0 
+                            ? `Faltam ${daysRequired - accountAgeDays} dias`
+                            : 'Conquista bloqueada'}
                         </div>
                       )}
                     </div>
