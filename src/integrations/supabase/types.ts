@@ -20,6 +20,7 @@ export type Database = {
           description: string
           id: string
           image_url: string
+          metadata: Json | null
           name: string
         }
         Insert: {
@@ -27,6 +28,7 @@ export type Database = {
           description: string
           id?: string
           image_url: string
+          metadata?: Json | null
           name: string
         }
         Update: {
@@ -34,6 +36,7 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string
+          metadata?: Json | null
           name?: string
         }
         Relationships: []
