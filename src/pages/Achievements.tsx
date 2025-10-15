@@ -1,13 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Calendar, ArrowLeft } from "lucide-react";
+import { Trophy, Calendar, ArrowLeft, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BackgroundAnimation } from "@/components/BackgroundAnimation";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState, useEffect } from "react";
 
 interface Achievement {
   id: string;
@@ -22,6 +31,9 @@ interface Achievement {
 
 export default function Achievements() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [showNewAchievementModal, setShowNewAchievementModal] = useState(false);
+  const [newAchievements, setNewAchievements] = useState<any[]>([]);
 
   const { data: profile } = useQuery({
     queryKey: ["profile"],
@@ -83,6 +95,47 @@ export default function Achievements() {
     userAchievements?.map(a => [a.badge_id, a.earned_at]) || []
   );
 
+  // Mutation para salvar novas conquistas
+  const saveAchievementMutation = useMutation({
+    mutationFn: async (badgeId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("user_achievements")
+        .insert({
+          user_id: user.id,
+          badge_id: badgeId,
+          earned_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-achievements"] });
+    },
+  });
+
+  // Detectar novas conquistas baseadas em tempo
+  useEffect(() => {
+    if (!allBadges || !userAchievements || !profile) return;
+
+    const newlyEarned = allBadges.filter(badge => {
+      const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+      const isAccountAgeBadge = metadata?.type === 'account_age';
+      const daysRequired = metadata?.days_required || 0;
+      const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
+      const alreadyRecorded = achievementsMap.has(badge.id);
+      
+      return isEarnedByTime && !alreadyRecorded;
+    });
+
+    if (newlyEarned.length > 0) {
+      setNewAchievements(newlyEarned);
+      setShowNewAchievementModal(true);
+    }
+  }, [allBadges, userAchievements, accountAgeDays, profile]);
+
   // Calcular total de conquistas (incluindo as baseadas em tempo)
   const earnedCount = allBadges?.filter(badge => {
     const earnedDate = achievementsMap.get(badge.id);
@@ -92,6 +145,15 @@ export default function Achievements() {
     const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
     return !!earnedDate || isEarnedByTime;
   }).length || 0;
+
+  const handleCloseModal = async () => {
+    // Salvar todas as novas conquistas no banco
+    for (const badge of newAchievements) {
+      await saveAchievementMutation.mutateAsync(badge.id);
+    }
+    setShowNewAchievementModal(false);
+    setNewAchievements([]);
+  };
 
   const getAvatarUrl = () => {
     if (profile?.avatar_url) {
@@ -196,7 +258,7 @@ export default function Achievements() {
                     }`}
                   >
                     <div className="flex flex-col items-center text-center">
-                      <div className={`mb-4 rounded-full p-4 border-2 ${
+                      <div className={`mb-4 rounded-full p-1 border-2 ${
                         isEarned 
                           ? 'bg-yellow-500/10 border-yellow-500/30' 
                           : 'bg-gray-800/20 border-gray-700/30'
@@ -204,7 +266,7 @@ export default function Achievements() {
                         <img
                           src={badge.image_url}
                           alt={badge.name}
-                          className={`h-16 w-16 object-contain ${!isEarned && 'grayscale'}`}
+                          className={`h-20 w-20 object-cover rounded-full ${!isEarned && 'grayscale'}`}
                         />
                       </div>
                       <h3 className="font-semibold text-lg mb-2 text-white">
@@ -259,6 +321,53 @@ export default function Achievements() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Nova Conquista */}
+      <AlertDialog open={showNewAchievementModal} onOpenChange={setShowNewAchievementModal}>
+        <AlertDialogContent className="bg-gray-900 border-yellow-500/50">
+          <AlertDialogHeader>
+            <div className="flex justify-center mb-4">
+              <div className="relative">
+                <Sparkles className="h-16 w-16 text-yellow-500 animate-pulse" />
+                <Trophy className="h-8 w-8 text-yellow-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-2xl text-center text-white">
+              🎉 Nova{newAchievements.length > 1 ? 's' : ''} Conquista{newAchievements.length > 1 ? 's' : ''}!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-gray-300">
+              Parabéns! Você desbloqueou:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="space-y-4 my-4">
+            {newAchievements.map((badge) => (
+              <div key={badge.id} className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-yellow-500/30">
+                <div className="rounded-full p-1 bg-yellow-500/10 border-2 border-yellow-500/30">
+                  <img
+                    src={badge.image_url}
+                    alt={badge.name}
+                    className="h-16 w-16 object-cover rounded-full"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg text-white">{badge.name}</h3>
+                  <p className="text-sm text-gray-300">{badge.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <AlertDialogFooter>
+            <Button
+              onClick={handleCloseModal}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold"
+            >
+              Continuar
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
