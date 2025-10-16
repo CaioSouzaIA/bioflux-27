@@ -277,6 +277,10 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     setActiveView('periodization');
   };
 
+  const handleWorkoutCheckin = () => {
+    navigate('/client/workout-checkin');
+  };
+
   if (loading || prescriptionsLoading || metabolicLoading) {
     return (
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
@@ -668,6 +672,29 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                       Recurso disponível apenas no plano Pro
                     </p>
                   )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Check-in de Treino */}
+            {hasTrainingSubscription && (
+              <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-3">
+                    <Dumbbell className="w-6 h-6 text-cyan-500" />
+                    Check-in de Treino
+                  </CardTitle>
+                  <CardDescription className="text-gray-300">
+                    Registre seus treinos e acompanhe sua frequência
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    className="w-full bg-cyan-600 hover:bg-cyan-700"
+                    onClick={handleWorkoutCheckin}
+                  >
+                    Registrar Treino
+                  </Button>
                 </CardContent>
               </Card>
             )}

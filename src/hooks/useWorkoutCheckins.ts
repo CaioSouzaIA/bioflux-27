@@ -1,0 +1,72 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { startOfWeek, endOfWeek } from 'date-fns';
+
+interface WorkoutCheckin {
+  id: string;
+  user_id: string;
+  workout_date: string;
+  workout_division: string;
+  created_at: string;
+}
+
+export const useWorkoutCheckins = (userId: string | undefined) => {
+  const queryClient = useQueryClient();
+
+  // Buscar todos os check-ins do usuário
+  const { data: allCheckins = [], isLoading } = useQuery<WorkoutCheckin[]>({
+    queryKey: ['workout-checkins', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+
+      const { data, error } = await (supabase as any)
+        .from('workout_checkins')
+        .select('*')
+        .eq('user_id', userId)
+        .order('workout_date', { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as WorkoutCheckin[];
+    },
+    enabled: !!userId,
+  });
+
+  // Filtrar check-ins da semana atual
+  const weeklyCheckins = allCheckins.filter((checkin) => {
+    const checkinDate = new Date(checkin.workout_date);
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
+    const weekEnd = endOfWeek(new Date(), { weekStartsOn: 0 });
+    
+    return checkinDate >= weekStart && checkinDate <= weekEnd;
+  });
+
+  // Mutation para adicionar novo check-in
+  const addCheckin = useMutation({
+    mutationFn: async (newCheckin: { workout_division: string; workout_date: string }) => {
+      if (!userId) throw new Error('Usuário não autenticado');
+
+      const { data, error } = await (supabase as any)
+        .from('workout_checkins')
+        .insert({
+          user_id: userId,
+          workout_division: newCheckin.workout_division,
+          workout_date: newCheckin.workout_date,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout-checkins', userId] });
+    },
+  });
+
+  return {
+    allCheckins,
+    weeklyCheckins,
+    isLoading,
+    addCheckin,
+  };
+};

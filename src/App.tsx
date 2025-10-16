@@ -17,6 +17,7 @@ import ClientForms from "./pages/ClientForms";
 import ClientPrescriptions from "./pages/ClientPrescriptions";
 import ChangePassword from "./pages/ChangePassword";
 import Achievements from "./pages/Achievements";
+import WorkoutCheckin from "./pages/WorkoutCheckin";
 import DebugMonitor from "./components/DebugMonitor";
 
 const queryClient = new QueryClient({
@@ -91,6 +92,11 @@ const App = () => {
           <Route path="/client/achievements" element={
             <ProtectedClientRoute>
               <Achievements />
+            </ProtectedClientRoute>
+          } />
+          <Route path="/client/workout-checkin" element={
+            <ProtectedClientRoute>
+              <WorkoutCheckin />
             </ProtectedClientRoute>
           } />
           <Route path="/change-password" element={
