@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CalendarIcon, Dumbbell } from 'lucide-react';
+import { ArrowLeft, CalendarIcon, Dumbbell, Loader2, Trash2 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
@@ -21,12 +21,14 @@ const WorkoutCheckin: React.FC = () => {
   const [workoutDivision, setWorkoutDivision] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const {
     weeklyCheckins,
     allCheckins,
     isLoading,
     addCheckin,
+    deleteCheckin,
   } = useWorkoutCheckins(user?.id);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +37,7 @@ const WorkoutCheckin: React.FC = () => {
     if (!workoutDivision.trim()) {
       toast({
         title: 'Erro',
-        description: 'Por favor, informe a divisão de treino',
+        description: 'Por favor, informe a divisão de treino.',
         variant: 'destructive',
       });
       return;
@@ -49,15 +51,17 @@ const WorkoutCheckin: React.FC = () => {
 
       toast({
         title: 'Check-in registrado!',
-        description: 'Seu treino foi registrado com sucesso',
+        description: 'Seu treino foi registrado com sucesso.',
       });
 
       setWorkoutDivision('');
       setSelectedDate(new Date());
-    } catch (error: any) {
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível registrar o check-in.';
       toast({
         title: 'Erro ao registrar check-in',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     }
@@ -67,134 +71,215 @@ const WorkoutCheckin: React.FC = () => {
     navigate('/client');
   };
 
+  const handleDelete = async (checkinId: string) => {
+    if (deleteCheckin.isPending) {
+      return;
+    }
+
+    setDeletingId(checkinId);
+
+    try {
+      await deleteCheckin.mutateAsync(checkinId);
+      toast({
+        title: 'Check-in removido',
+        description: 'O registro de treino foi excluído.',
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível remover o check-in.';
+      toast({
+        title: 'Erro ao remover treino',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
       <BackgroundAnimation />
-      
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Button>
-        </div>
 
-        <div className="space-y-6">
-          {/* Card de registro */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Dumbbell className="h-5 w-5" />
-                Check-in de Treino
-              </CardTitle>
-              <CardDescription>
-                Registre seus treinos e acompanhe sua frequência semanal
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="division">Divisão de Treino</Label>
-                  <Input
-                    id="division"
-                    value={workoutDivision}
-                    onChange={(e) => setWorkoutDivision(e.target.value)}
-                    placeholder="Ex: Treino A - Peito e Tríceps"
-                  />
-                </div>
+      <div className="relative z-10">
+        <div className="container mx-auto max-w-5xl space-y-8 px-4 py-10">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleBack}
+                className="gap-2 rounded-md border border-white/15 bg-[#1f1f1f] px-4 text-white transition-colors hover:bg-[#292929] hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
+              <img
+                src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png"
+                alt="Bioflux.ai"
+                className="h-10 w-auto"
+              />
+            </div>
+            <div>
+              <h1 className="text-3xl font-semibold leading-tight">Check-in de Treino</h1>
+              <p className="mt-1 text-sm text-white/60">
+                Registre seus treinos e acompanhe sua frequência semanal em um só lugar.
+              </p>
+            </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label>Data do Treino</Label>
-                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !selectedDate && "text-muted-foreground"
-                        )}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <Card className="bg-[#161616] text-white shadow-xl border border-white/15 lg:col-span-2">
+              <CardHeader className="space-y-2">
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Dumbbell className="h-5 w-5 text-emerald-400" />
+                  Registrar novo treino
+                </CardTitle>
+                <CardDescription className="text-white/60">
+                  Informe a divisão e a data para manter seu histórico sempre organizado.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="division" className="text-sm font-medium text-white">
+                      Divisão de treino
+                    </Label>
+                    <Input
+                      id="division"
+                      value={workoutDivision}
+                      onChange={(e) => setWorkoutDivision(e.target.value)}
+                      placeholder="Ex: Treino A - Peito e Tríceps"
+                      className="border-white/15 bg-[#1c1c1c] text-white placeholder:text-white/40 focus-visible:border-emerald-400/60 focus-visible:ring-emerald-400/40"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-white">Data do treino</Label>
+                    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            'w-full justify-start gap-2 rounded-lg border border-white/15 bg-[#1f1f1f] text-white transition-colors hover:bg-[#292929] hover:text-white',
+                            !selectedDate && 'text-white/50'
+                          )}
+                        >
+                          <CalendarIcon className="h-4 w-4" />
+                          {selectedDate
+                            ? format(selectedDate, 'PPP', { locale: ptBR })
+                            : 'Selecione a data'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto rounded-xl border border-white/15 bg-[#181818] p-0 text-white"
+                        align="start"
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP", { locale: ptBR }) : "Selecione a data"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => {
-                          setSelectedDate(date || new Date());
-                          setIsCalendarOpen(false);
-                        }}
-                        initialFocus
-                        locale={ptBR}
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date) => {
+                            setSelectedDate(date || new Date());
+                            setIsCalendarOpen(false);
+                          }}
+                          initialFocus
+                          locale={ptBR}
+                          className="rounded-xl"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full rounded-lg bg-emerald-500 text-black transition-colors hover:bg-emerald-400"
+                    disabled={addCheckin.isPending}
+                  >
+                    {addCheckin.isPending ? 'Registrando...' : 'Registrar treino'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-[#161616] text-white shadow-xl border border-white/15">
+              <CardHeader className="space-y-2">
+                <CardTitle className="text-white">Frequência semanal</CardTitle>
+                <CardDescription className="text-white/60">
+                  Semana de {format(startOfWeek(new Date(), { locale: ptBR }), 'dd/MM')} a{' '}
+                  {format(endOfWeek(new Date(), { locale: ptBR }), 'dd/MM')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-6 text-center">
+                  <span className="text-5xl font-bold text-emerald-400">
+                    {weeklyCheckins.length}/7
+                  </span>
+                  <p className="text-sm text-white/70">treinos nesta semana</p>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                <Button type="submit" className="w-full" disabled={addCheckin.isPending}>
-                  {addCheckin.isPending ? 'Registrando...' : 'Registrar Treino'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Card de estatísticas semanais */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Frequência Semanal</CardTitle>
-              <CardDescription>
-                Semana de {format(startOfWeek(new Date(), { locale: ptBR }), 'dd/MM')} a{' '}
-                {format(endOfWeek(new Date(), { locale: ptBR }), 'dd/MM')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <div className="text-5xl font-bold text-primary mb-2">
-                  {weeklyCheckins.length}/7
-                </div>
-                <p className="text-muted-foreground">treinos esta semana</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Lista de check-ins recentes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Treinos</CardTitle>
-              <CardDescription>
-                Seus últimos treinos registrados
+          <Card className="bg-[#161616] text-white shadow-xl border border-white/15">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-white">Histórico de treinos</CardTitle>
+              <CardDescription className="text-white/60">
+                Seus registros mais recentes
               </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <p className="text-center text-muted-foreground">Carregando...</p>
+                <p className="text-center text-sm text-white/60">Carregando...</p>
               ) : allCheckins.length === 0 ? (
-                <p className="text-center text-muted-foreground">
-                  Nenhum treino registrado ainda
+                <p className="text-center text-sm text-white/60">
+                  Nenhum treino registrado ainda.
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {allCheckins.slice(0, 10).map((checkin) => (
-                    <div
-                      key={checkin.id}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-card"
-                    >
-                      <div>
-                        <p className="font-medium">{checkin.workout_division}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(checkin.workout_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                        </p>
+                  {allCheckins.slice(0, 10).map((checkin) => {
+                    const isDeleting = deletingId === checkin.id && deleteCheckin.isPending;
+                    return (
+                      <div
+                        key={checkin.id}
+                        className="flex flex-col gap-3 rounded-xl border border-white/10 bg-[#1c1c1c] p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-300">
+                            <Dumbbell className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">{checkin.workout_division}</p>
+                            <p className="text-sm text-white/60">
+                              {format(new Date(checkin.workout_date), "dd 'de' MMMM 'de' yyyy", {
+                                locale: ptBR,
+                              })}
+                            </p>
+                          </div>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => handleDelete(checkin.id)}
+                          className="flex items-center gap-2 self-start rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 md:self-auto"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Removendo...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="h-4 w-4" />
+                              Remover
+                            </>
+                          )}
+                        </Button>
                       </div>
-                      <Dumbbell className="h-5 w-5 text-primary" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

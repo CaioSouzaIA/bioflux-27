@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek } from 'date-fns';
 
@@ -36,7 +36,7 @@ export const useWorkoutCheckins = (userId: string | undefined) => {
     const checkinDate = new Date(checkin.workout_date);
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
     const weekEnd = endOfWeek(new Date(), { weekStartsOn: 0 });
-    
+
     return checkinDate >= weekStart && checkinDate <= weekEnd;
   });
 
@@ -63,10 +63,29 @@ export const useWorkoutCheckins = (userId: string | undefined) => {
     },
   });
 
+  const deleteCheckin = useMutation({
+    mutationFn: async (checkinId: string) => {
+      if (!userId) throw new Error('Usuário não autenticado');
+
+      const { error } = await (supabase as any)
+        .from('workout_checkins')
+        .delete()
+        .eq('id', checkinId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return checkinId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout-checkins', userId] });
+    },
+  });
+
   return {
     allCheckins,
     weeklyCheckins,
     isLoading,
     addCheckin,
+    deleteCheckin,
   };
 };
