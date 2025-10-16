@@ -20,7 +20,7 @@ const HomePage = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 w-full max-w-2xl">
-          <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/90 transition-all cursor-pointer">
+          <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all cursor-pointer">
             <CardHeader className="text-center">
               <Shield className="w-12 h-12 text-white mx-auto mb-4" />
               <CardTitle className="text-xl text-white">Área Administrativa</CardTitle>
@@ -38,9 +38,9 @@ const HomePage = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/90 transition-all cursor-pointer">
+          <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all cursor-pointer">
             <CardHeader className="text-center">
-              <User className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+              <User className="w-12 h-12 text-white mx-auto mb-4" />
               <CardTitle className="text-xl text-white">Área do Cliente</CardTitle>
               <CardDescription className="text-gray-300">
                 Acesse suas prescrições e formulários
@@ -49,7 +49,7 @@ const HomePage = () => {
             <CardContent>
               <Button
                 onClick={() => navigate('/client')}
-                className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                className="w-full bg-[#1f1f1f] text-white hover:bg-[#292929]"
               >
                 Acessar Cliente
               </Button>

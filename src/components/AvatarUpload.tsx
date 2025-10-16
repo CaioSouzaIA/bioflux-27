@@ -135,7 +135,7 @@ export function AvatarUpload({ open, onOpenChange, currentAvatarUrl, userName }:
               <Button
                 type="button"
                 disabled={uploading}
-                className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                className="bg-[#1f1f1f] hover:bg-[#292929] cursor-pointer"
                 onClick={() => document.getElementById('avatar-upload')?.click()}
               >
                 {uploading ? (

@@ -9,7 +9,7 @@ export const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleTheme}
-      className={`relative inline-flex items-center w-16 h-8 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+      className={`relative inline-flex items-center w-16 h-8 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1f1f1f] ${
         theme === 'dark' 
           ? 'bg-gray-800 border-2 border-gray-600' 
           : 'bg-gray-200 border-2 border-gray-300'

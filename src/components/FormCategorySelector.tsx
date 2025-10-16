@@ -59,6 +59,9 @@ export const FormCategorySelector: React.FC<FormCategorySelectorProps> = ({
         <div className="grid gap-4 mb-6">
           {categories.map((category) => {
             const IconComponent = category.icon;
+            const isGrayCategory = category.color === 'blue';
+            const backgroundClass = isGrayCategory ? 'bg-[#1f1f1f]' : `bg-${category.color}-500/20`;
+            const iconColorClass = isGrayCategory ? 'text-white' : `text-${category.color}-500`;
             return (
               <Card
                 key={category.id}
@@ -67,8 +70,8 @@ export const FormCategorySelector: React.FC<FormCategorySelectorProps> = ({
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center bg-${category.color}-500/20`}>
-                      <IconComponent className={`w-6 h-6 text-${category.color}-500`} />
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${backgroundClass}`}>
+                      <IconComponent className={`w-6 h-6 ${iconColorClass}`} />
                     </div>
                     <div className="flex-1">
                       <h4 className="text-white font-semibold">{category.title}</h4>

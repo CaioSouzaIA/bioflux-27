@@ -104,13 +104,13 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="bg-gray-800 border-gray-700 hover:bg-gray-700 hover:border-gray-600 text-white"
+            className="bg-[#161616] border-gray-700 hover:bg-[#1c1c1c] hover:border-gray-600 text-white"
           >
             <User className="w-5 h-5 mr-2" />
             Minha Conta
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64 bg-gray-900 border-gray-700 text-white">
+        <DropdownMenuContent className="w-64 bg-[#161616] border-gray-700 text-white">
           <DropdownMenuLabel className="text-gray-300 px-3 py-2">
             <div className="flex flex-col">
               <span className="text-white font-medium text-sm">
@@ -125,7 +125,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={() => setShowAvatarUpload(true)}
-            className="text-white flex items-center bg-gray-900 hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
           >
             <Camera className="mr-2 h-4 w-4" />
             Foto de perfil
@@ -133,7 +133,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem
             onClick={handlePasswordReset}
-            className="text-white flex items-center bg-gray-900 hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
           >
             <Key className="mr-2 h-4 w-4" />
             Trocar senha
@@ -141,7 +141,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handlePlanChange}
-            className="text-white flex items-center bg-gray-900 hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
           >
             <RefreshCcw className="mr-2 h-4 w-4" />
             Trocar plano
@@ -149,7 +149,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
 
           <DropdownMenuItem 
             onClick={handleCancelSubscription}
-            className="text-red-400 flex items-center bg-gray-900 hover:bg-gray-200 hover:text-red-600 focus:bg-gray-200 focus:text-red-600 cursor-pointer"
+            className="text-red-400 flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-red-300 focus:bg-[#1c1c1c] focus:text-red-300 cursor-pointer"
           >
             <X className="mr-2 h-4 w-4" />
             Cancelar assinatura
@@ -157,7 +157,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handleSupport}
-            className="text-white flex items-center bg-gray-900 hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
           >
             <LifeBuoy className="mr-2 h-4 w-4" />
             Suporte
@@ -167,7 +167,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={onLogout}
-            className="text-red-400 flex items-center bg-gray-900 hover:bg-gray-200 hover:text-red-600 focus:bg-gray-200 focus:text-red-600 cursor-pointer"
+            className="text-red-400 flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-red-300 focus:bg-[#1c1c1c] focus:text-red-300 cursor-pointer"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sair

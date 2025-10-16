@@ -194,11 +194,11 @@ const PlanSelector: React.FC<PlanSelectorProps> = ({ onSubscriptionCreated, isUp
             
             {/* Mostrar plano atual se existir */}
             {activeSubscription && (
-              <div className="mb-4 p-3 bg-blue-500/20 rounded-lg">
-                <p className="text-blue-200 text-sm">
+              <div className="mb-4 p-3 bg-[#1f1f1f] rounded-lg">
+                <p className="text-white text-sm">
                   Plano atual: <strong>{activeSubscription.subscription_plans?.name}</strong>
                 </p>
-                <p className="text-blue-300 text-xs">
+                <p className="text-white/80 text-xs">
                   {isUpgrade ? 'Selecione um novo plano para substituir o atual' : 'Você já possui um plano ativo'}
                 </p>
               </div>
@@ -264,7 +264,7 @@ const PlanSelector: React.FC<PlanSelectorProps> = ({ onSubscriptionCreated, isUp
             <Button
               onClick={handleSubscribe}
               disabled={!selectedPlan || subscriptionLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium"
+              className="w-full bg-[#1f1f1f] hover:bg-[#292929] text-white font-medium"
             >
               {subscriptionLoading ? 'Processando...' : 
                (activeSubscription ? 'Trocar Plano no Ticto' : 'Assinar no Ticto')}

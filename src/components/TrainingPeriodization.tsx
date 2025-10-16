@@ -17,7 +17,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Card className="bg-gray-900/90 border-gray-700 animate-pulse">
+        <Card className="bg-[#161616] border-gray-700 animate-pulse">
           <CardContent className="p-6">
             <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
             <div className="h-3 bg-gray-700 rounded w-1/2"></div>
@@ -29,7 +29,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
 
   if (error) {
     return (
-      <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+      <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
         <CardContent className="p-12 text-center">
           <div className="text-red-500 mb-4">
             <Activity className="w-16 h-16 mx-auto mb-4" />
@@ -47,7 +47,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
 
   if (!periodization) {
     return (
-      <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+      <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
         <CardContent className="p-12 text-center">
           <Activity className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
@@ -67,7 +67,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
   return (
     <div className="space-y-6">
       {/* Header Card */}
-      <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+      <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -93,7 +93,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
 
       {/* Informações da Periodização */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+        <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-3">
               <Target className="w-5 h-5 text-red-500" />
@@ -107,7 +107,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+        <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-3">
               <Activity className="w-5 h-5 text-red-500" />
@@ -121,7 +121,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+        <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-3">
               <Gauge className="w-5 h-5 text-red-500" />
@@ -135,7 +135,7 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({ us
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+        <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-3">
               <BookOpen className="w-5 h-5 text-red-500" />

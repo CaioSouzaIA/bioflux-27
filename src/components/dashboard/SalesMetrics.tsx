@@ -71,7 +71,7 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions, selec
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-white">Crescimento Mensal</CardTitle>
           <TrendingUp className="h-4 w-4 text-green-500" />
@@ -86,7 +86,7 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions, selec
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-white">Plano Mais Vendido</CardTitle>
           <Award className="h-4 w-4 text-yellow-500" />
@@ -101,7 +101,7 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions, selec
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-white">Vendas no Período</CardTitle>
           <Users className="h-4 w-4 text-green-500" />
@@ -116,7 +116,7 @@ export const SalesMetrics: React.FC<SalesMetricsProps> = ({ subscriptions, selec
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-white">Planos Cancelados/Expirados</CardTitle>
           <AlertTriangle className="h-4 w-4 text-red-500" />

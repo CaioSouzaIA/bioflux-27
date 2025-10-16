@@ -194,7 +194,7 @@ export default function Achievements() {
           </div>
 
           {/* Header com perfil do usuário */}
-          <Card className="mb-8 bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+          <Card className="mb-8 bg-[#161616] border-gray-700 backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 border-2 border-gray-700">
@@ -227,7 +227,7 @@ export default function Achievements() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="p-6 animate-pulse bg-gray-900/90 border-gray-700">
+                <Card key={i} className="p-6 animate-pulse bg-[#161616] border-gray-700">
                   <div className="h-24 bg-gray-800 rounded mb-4" />
                   <div className="h-4 bg-gray-800 rounded mb-2" />
                   <div className="h-3 bg-gray-800 rounded" />
@@ -253,7 +253,7 @@ export default function Achievements() {
                     key={badge.id} 
                     className={`p-6 backdrop-blur-sm transition-all ${
                       isEarned 
-                        ? 'bg-gray-900/90 border-yellow-500/50 hover:bg-gray-800/70' 
+                        ? 'bg-[#161616] border-yellow-500/50 hover:bg-[#1c1c1c]' 
                         : 'bg-gray-900/50 border-gray-700 opacity-60'
                     }`}
                   >
@@ -308,7 +308,7 @@ export default function Achievements() {
               })}
             </div>
           ) : (
-            <Card className="p-12 text-center bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+            <Card className="p-12 text-center bg-[#161616] border-gray-700 backdrop-blur-sm">
               <Trophy className="h-12 w-12 text-yellow-500/50 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2 text-white">
                 Nenhuma conquista disponível

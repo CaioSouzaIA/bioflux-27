@@ -85,7 +85,7 @@ export const FormsList: React.FC<FormsListProps> = ({
   const getCategoryBadgeColor = (category: string) => {
     switch (category) {
       case 'anamnese-dieta':
-        return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
+        return 'bg-[#1f1f1f] text-white border-white/20';
       case 'anamnese-treino':
         return 'bg-orange-500/20 text-orange-500 border-orange-500/30';
       case 'anamnese-suplementacao':
@@ -121,7 +121,7 @@ export const FormsList: React.FC<FormsListProps> = ({
       case 'feedback':
         return 'border-red-500/50';
       case 'anamnese-dieta':
-        return 'border-blue-500/50';
+        return 'border-white/20';
       case 'anamnese-treino':
         return 'border-orange-500/50';
       case 'anamnese-suplementacao':
@@ -152,7 +152,7 @@ export const FormsList: React.FC<FormsListProps> = ({
 
       <div className="grid gap-6">
         {forms.length === 0 ? (
-          <Card className="bg-gray-900 border-gray-700">
+          <Card className="bg-[#161616] border-gray-700">
             <CardContent className="pt-8">
               <div className="text-center py-12">
                 <p className="text-gray-300 mb-6">Nenhum formulário criado ainda.</p>
@@ -169,7 +169,7 @@ export const FormsList: React.FC<FormsListProps> = ({
           forms.map((form) => (
             <Card 
               key={form.id} 
-              className={`bg-gray-900 transition-all duration-300 ${getFormBorderClass(form.category || 'livre')}`}
+              className={`bg-[#161616] transition-all duration-300 ${getFormBorderClass(form.category || 'livre')}`}
             >
               <CardHeader>
                 <div className="flex flex-col lg:flex-row justify-between items-start gap-4">

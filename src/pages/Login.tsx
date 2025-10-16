@@ -52,7 +52,7 @@ const Login = () => {
         <AuthHeader />
         
         <div className="flex-1 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+          <Card className="w-full max-w-md bg-[#161616] border-gray-700 backdrop-blur-sm">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-white">Área Administrativa</CardTitle>
               <CardDescription className="text-gray-300">
@@ -62,7 +62,7 @@ const Login = () => {
                 <Button
                   onClick={() => window.location.href = '/client'}
                   variant="outline"
-                  className="w-full border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white"
+                  className="w-full border-white/15 text-white hover:bg-[#292929] hover:text-white"
                 >
                   Sou Cliente - Acessar Área do Cliente
                 </Button>

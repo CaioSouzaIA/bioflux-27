@@ -65,7 +65,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
         <div className="relative z-10 text-center">
           <div className="text-white text-xl mb-4">Usuário não autenticado</div>
-          <Button onClick={onBack} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={onBack} className="bg-[#1f1f1f] hover:bg-[#292929]">
             Voltar ao Dashboard
           </Button>
         </div>
@@ -353,7 +353,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
             </p>
           </div>
 
-          <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+          <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white">Dados Antropométricos</CardTitle>
               <CardDescription className="text-gray-300">
@@ -450,7 +450,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
               <Button 
                 onClick={calculateTMB} 
                 disabled={!isFormValid() || loading || !user}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600"
+                className="w-full bg-[#1f1f1f] hover:bg-[#292929] disabled:bg-gray-600"
               >
                 <Calculator className="w-4 h-4 mr-2" />
                 {loading ? 'Calculando...' : results ? 'Recalcular TMB e GET' : 'Calcular TMB e GET'}
@@ -459,17 +459,17 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
           </Card>
 
           {results && (
-            <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+            <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-white">Resultados da Avaliação</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="text-center p-6 bg-blue-600/20 rounded-lg border border-blue-500/30">
-                    <h3 className="text-lg font-semibold text-blue-300 mb-2">
+                  <div className="text-center p-6 bg-[#1f1f1f] rounded-lg border border-white/20">
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       Taxa Metabólica Basal (TMB)
                     </h3>
-                    <p className="text-3xl font-bold text-blue-400">{results.tmb}</p>
+                    <p className="text-3xl font-bold text-white">{results.tmb}</p>
                     <p className="text-sm text-gray-300 mt-1">kcal/dia</p>
                     <p className="text-xs text-gray-400 mt-2">
                       Energia necessária em repouso absoluto

@@ -77,7 +77,7 @@ export const DietPdfUploader: React.FC<DietPdfUploaderProps> = ({
   };
 
   return (
-    <Card className="bg-gray-900 border-gray-700">
+    <Card className="bg-[#161616] border-gray-700">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <Upload className="w-5 h-5 text-green-500" />

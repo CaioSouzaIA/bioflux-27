@@ -85,10 +85,10 @@ const ProfileDropdown = () => {
         <DropdownMenuItem className="text-white hover:bg-gray-800 focus:bg-gray-800 hover:text-white focus:text-white cursor-default">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-2">
-              <Zap className="w-4 h-4 text-blue-400" />
+              <Zap className="w-4 h-4 text-white" />
               <span>Planos automatizados</span>
             </div>
-            <span className="text-blue-400 font-medium">{totalResponses}</span>
+            <span className="text-white font-medium">{totalResponses}</span>
           </div>
         </DropdownMenuItem>
         

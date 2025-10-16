@@ -58,7 +58,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
   };
 
   return (
-    <Card ref={setNodeRef} style={style} className="bg-gray-900 border-gray-700">
+    <Card ref={setNodeRef} style={style} className="bg-[#161616] border-gray-700">
       <CardContent className="pt-6">
         <div className="flex items-center gap-2 mb-4">
           <div

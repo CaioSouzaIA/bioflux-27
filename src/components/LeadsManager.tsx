@@ -280,7 +280,7 @@ export const LeadsManager: React.FC = () => {
 
   if (loading) {
     return (
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardContent className="p-6">
           <p className="text-center text-gray-400">Carregando clientes...</p>
         </CardContent>
@@ -290,7 +290,7 @@ export const LeadsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <Users className="w-5 h-5 text-cyan-400" />

@@ -64,7 +64,7 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-8 mb-12 px-2 max-w-6xl mx-auto">
-          <Card className="bg-gray-900 border-gray-800 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-500 cursor-pointer hover:border-orange-500/50 hover:scale-105" onClick={() => setCurrentView('ai-config')}>
+          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-500 cursor-pointer hover:border-orange-500/50 hover:scale-105" onClick={() => setCurrentView('ai-config')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
               <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-gradient-to-br from-orange-500/20 to-orange-600/30 rounded-2xl flex items-center justify-center mb-3 md:mb-6">
                 <Bot className="w-6 h-6 md:w-10 md:h-10 text-orange-500" />
@@ -81,7 +81,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900 border-gray-800 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-500 cursor-pointer hover:border-green-500/50 hover:scale-105" onClick={() => setCurrentView('forms-list')}>
+          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-500 cursor-pointer hover:border-green-500/50 hover:scale-105" onClick={() => setCurrentView('forms-list')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
               <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-gradient-to-br from-green-500/20 to-green-600/30 rounded-2xl flex items-center justify-center mb-3 md:mb-6">
                 <Settings className="w-6 h-6 md:w-10 md:h-10 text-green-500" />
@@ -98,7 +98,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900 border-gray-800 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-500 cursor-pointer hover:border-purple-500/50 hover:scale-105" onClick={() => setCurrentView('leads')}>
+          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-500 cursor-pointer hover:border-purple-500/50 hover:scale-105" onClick={() => setCurrentView('leads')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
               <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-gradient-to-br from-purple-500/20 to-purple-600/30 rounded-2xl flex items-center justify-center mb-3 md:mb-6">
                 <Users className="w-6 h-6 md:w-10 md:h-10 text-purple-500" />
@@ -115,10 +115,10 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900 border-gray-800 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-500 cursor-pointer hover:border-blue-500/50 hover:scale-105" onClick={() => setCurrentView('management')}>
+          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-[0_0_35px_rgba(31,31,31,0.1)] transition-all duration-500 cursor-pointer hover:border-white/20 hover:scale-105" onClick={() => setCurrentView('management')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
-              <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/30 rounded-2xl flex items-center justify-center mb-3 md:mb-6">
-                <BarChart className="w-6 h-6 md:w-10 md:h-10 text-blue-500" />
+              <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-[#1f1f1f] rounded-2xl flex items-center justify-center mb-3 md:mb-6">
+                <BarChart className="w-6 h-6 md:w-10 md:h-10 text-white" />
               </div>
               <CardTitle className="text-lg md:text-2xl text-white mb-2 md:mb-4">Gestão</CardTitle>
             </CardHeader>
@@ -126,7 +126,7 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Dashboard com gráficos e estatísticas dos planos assinados pelos leads.
               </p>
-              <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg transition-all duration-300">
+              <Button className="w-full bg-[#1f1f1f] hover:bg-[#292929] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg transition-all duration-300">
                 Ver Dashboard
               </Button>
             </CardContent>

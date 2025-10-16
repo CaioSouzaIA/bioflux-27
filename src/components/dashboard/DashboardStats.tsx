@@ -17,7 +17,7 @@ interface DashboardStatsProps {
 export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">Total de Assinaturas</CardTitle>
           <Users className="h-4 w-4 text-gray-400" />
@@ -28,7 +28,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">Planos Dieta</CardTitle>
           <TrendingUp className="h-4 w-4 text-green-500" />
@@ -39,7 +39,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">Planos Treino</CardTitle>
           <DollarSign className="h-4 w-4 text-orange-500" />
@@ -50,7 +50,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">Planos Completos</CardTitle>
           <Calendar className="h-4 w-4 text-purple-500" />
@@ -61,7 +61,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">% de Churn</CardTitle>
           <TrendingDown className="h-4 w-4 text-red-500" />
@@ -72,13 +72,13 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">LTV Médio</CardTitle>
-          <Clock className="h-4 w-4 text-blue-500" />
+          <Clock className="h-4 w-4 text-white" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-500">
+          <div className="text-2xl font-bold text-white">
             {stats.avgLtv} {stats.avgLtv === 1 ? 'mês' : 'meses'}
           </div>
           <p className="text-xs text-gray-400">Lifetime Value médio</p>

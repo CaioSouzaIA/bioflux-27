@@ -134,7 +134,7 @@ const ClientForms: React.FC = () => {
       case 'anamnese-treino':
         return 'bg-orange-100 text-orange-800';
       case 'feedback':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[#1f1f1f] text-white';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -247,7 +247,7 @@ const ClientForms: React.FC = () => {
           {/* Lista de Formulários */}
           <div className="grid gap-6">
             {forms.length === 0 ? (
-              <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+              <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
                 <CardContent className="text-center py-12">
                   <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-white mb-2">
@@ -260,7 +260,7 @@ const ClientForms: React.FC = () => {
               </Card>
             ) : (
               forms.map((form) => (
-                <Card key={form.id} className={`bg-gray-900/90 border-gray-700 backdrop-blur-sm transition-all ${formsCompleted ? 'opacity-60' : 'hover:bg-gray-800/70'}`}>
+                <Card key={form.id} className={`bg-[#161616] border-gray-700 backdrop-blur-sm transition-all ${formsCompleted ? 'opacity-60' : 'hover:bg-[#1c1c1c]'}`}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>

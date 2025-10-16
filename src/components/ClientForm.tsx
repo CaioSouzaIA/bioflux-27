@@ -90,7 +90,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       case 'anamnese-suplementacao':
         return 'bg-purple-100 text-purple-800';
       case 'feedback':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[#1f1f1f] text-white';
       case 'livre':
         return 'bg-gray-100 text-gray-800';
       default:
@@ -438,7 +438,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     console.error('❌ formConfig.fields não é válido:', formConfig.fields);
     return (
       <div className="max-w-2xl mx-auto px-4">
-        <Card className="bg-gray-900 border-gray-700">
+        <Card className="bg-[#161616] border-gray-700">
           <CardContent className="p-8 text-center">
             <p className="text-red-400 text-lg mb-4">
               Erro: Campos do formulário não encontrados
@@ -458,7 +458,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
 
   return (
     <div className="max-w-2xl mx-auto px-4">
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardHeader>
           <div className="flex items-center justify-between mb-4">
             <Badge className={getCategoryColor(formConfig.category)}>

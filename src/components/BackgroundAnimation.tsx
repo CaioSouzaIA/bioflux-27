@@ -16,7 +16,7 @@ export const BackgroundAnimation: React.FC = () => {
                left: '25%', 
                animation: 'moveVertical 6s linear infinite reverse, pulse 1.5s ease-in-out infinite alternate'
              }}></div>
-        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent" 
+        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-[#1f1f1f] to-transparent" 
              style={{ 
                left: '40%', 
                animation: 'moveVertical 5s linear infinite, pulse 1.2s ease-in-out infinite alternate'
@@ -48,7 +48,7 @@ export const BackgroundAnimation: React.FC = () => {
                top: '40%', 
                animation: 'moveHorizontal 9s linear infinite reverse, pulse 2s ease-in-out infinite alternate'
              }}></div>
-        <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" 
+        <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-[#1f1f1f] to-transparent" 
              style={{ 
                top: '60%', 
                animation: 'moveHorizontal 8s linear infinite, pulse 1.2s ease-in-out infinite alternate'

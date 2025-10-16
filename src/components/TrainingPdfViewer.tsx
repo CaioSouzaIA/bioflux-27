@@ -53,7 +53,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="bg-gray-900/90 border-gray-700 animate-pulse">
+          <Card key={i} className="bg-[#161616] border-gray-700 animate-pulse">
             <CardContent className="p-6">
               <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
               <div className="h-3 bg-gray-700 rounded w-1/2"></div>
@@ -66,7 +66,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
 
   if (prescriptions.length === 0) {
     return (
-      <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+      <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
         <CardContent className="p-12 text-center">
           <Dumbbell className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
@@ -88,7 +88,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
         return (
           <Card 
             key={prescription.id} 
-            className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all"
+            className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all"
           >
             <CardHeader>
               <div className="flex items-start justify-between">

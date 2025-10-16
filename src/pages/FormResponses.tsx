@@ -325,7 +325,7 @@ const FormResponses = () => {
             <div className="w-[100px]"></div>
           </div>
 
-          <Card className="bg-gray-900 border-gray-700">
+          <Card className="bg-[#161616] border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <User className="w-5 h-5 text-cyan-400" />
@@ -377,7 +377,7 @@ const FormResponses = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleViewResponse(response)}
-                                    className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                                    className="border-white/15 text-white hover:bg-[#292929] hover:text-white"
                                   >
                                     <Eye className="w-4 h-4" />
                                     Ver Feedback
@@ -397,7 +397,7 @@ const FormResponses = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleViewResponse(response)}
-                                    className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                                    className="border-white/15 text-white hover:bg-[#292929] hover:text-white"
                                   >
                                     <Eye className="w-4 h-4" />
                                     Ver Resposta
@@ -457,7 +457,7 @@ const FormResponses = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleViewResponse(response)}
-                                    className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                                    className="border-white/15 text-white hover:bg-[#292929] hover:text-white"
                                   >
                                     <Eye className="w-4 h-4" />
                                     Ver Resposta

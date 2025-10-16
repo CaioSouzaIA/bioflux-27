@@ -188,7 +188,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
             <div className="w-[100px]"></div>
           </div>
 
-          <Card className="bg-gray-900 border-gray-700">
+          <Card className="bg-[#161616] border-gray-700">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Bot className="w-5 h-5 text-orange-500" />

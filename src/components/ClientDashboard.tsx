@@ -389,7 +389,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
           {/* Assinaturas Ativas */}
           <div className="grid gap-6 mb-8">
-            <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm">
+            <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-white">Suas Assinaturas</CardTitle>
                 <CardDescription className="text-gray-300">
@@ -458,10 +458,10 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
           {/* Seções Principais */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all">
+            <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-blue-500" />
+                  <FileText className="w-6 h-6 text-white" />
                   Prescrições
                 </CardTitle>
                 <CardDescription className="text-gray-300">
@@ -471,7 +471,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardContent>
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-500">{totalPrescriptions}</div>
+                    <div className="text-3xl font-bold text-white">{totalPrescriptions}</div>
                     <p className="text-gray-400 text-sm">Prescrições disponíveis</p>
                     <div className="flex gap-4 mt-2 text-xs">
                       <span className="text-green-400">
@@ -494,7 +494,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all">
+            <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <Trophy className="w-6 h-6 text-yellow-500" />
@@ -520,7 +520,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className={`bg-gray-900/90 border-gray-700 backdrop-blur-sm transition-all ${
+            <Card className={`bg-[#161616] border-gray-700 backdrop-blur-sm transition-all ${
               hasMetabolicAssessment 
                 ? 'hover:bg-gray-800/70 cursor-pointer' 
                 : 'opacity-60 cursor-not-allowed'
@@ -565,7 +565,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all">
+            <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <Calculator className="w-6 h-6 text-orange-500" />
@@ -595,7 +595,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             </Card>
 
             {/* AI Coach - Bloqueado para plano Standard */}
-            <Card className={`bg-gray-900/90 border-gray-700 backdrop-blur-sm transition-all ${
+            <Card className={`bg-[#161616] border-gray-700 backdrop-blur-sm transition-all ${
               !hasStandardPlan 
                 ? 'hover:bg-gray-800/70 cursor-pointer' 
                 : 'opacity-60 cursor-not-allowed'
@@ -636,7 +636,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
             {/* Periodização de Treino - Bloqueado para plano Standard */}
             {hasTrainingSubscription && (
-              <Card className={`bg-gray-900/90 border-gray-700 backdrop-blur-sm transition-all ${
+              <Card className={`bg-[#161616] border-gray-700 backdrop-blur-sm transition-all ${
                 !hasStandardPlan 
                   ? 'hover:bg-gray-800/70 cursor-pointer' 
                   : 'opacity-60 cursor-not-allowed'
@@ -678,7 +678,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
             {/* Check-in de Treino */}
             {hasTrainingSubscription && (
-              <Card className="bg-gray-900/90 border-gray-700 backdrop-blur-sm hover:bg-gray-800/70 transition-all">
+              <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-3">
                     <Dumbbell className="w-6 h-6 text-cyan-500" />

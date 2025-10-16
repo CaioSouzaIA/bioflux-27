@@ -61,7 +61,7 @@ export const DietPdfViewer: React.FC<DietPdfViewerProps> = ({
     return (
       <div className="space-y-4">
         {[1, 2].map((i) => (
-          <Card key={i} className="bg-gray-900 border-gray-700">
+          <Card key={i} className="bg-[#161616] border-gray-700">
             <CardContent className="p-6">
               <div className="animate-pulse">
                 <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
@@ -76,7 +76,7 @@ export const DietPdfViewer: React.FC<DietPdfViewerProps> = ({
 
   if (!prescriptions || prescriptions.length === 0) {
     return (
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-[#161616] border-gray-700">
         <CardContent className="text-center py-12">
           <UtensilsCrossed className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
@@ -96,7 +96,7 @@ export const DietPdfViewer: React.FC<DietPdfViewerProps> = ({
         const isMostRecent = index === 0; // As prescrições vêm ordenadas por created_at desc
         
         return (
-          <Card key={prescription.id} className="bg-gray-900 border-gray-700 hover:bg-gray-800/70 transition-all">
+          <Card key={prescription.id} className="bg-[#161616] border-gray-700 hover:bg-[#1c1c1c] transition-all">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="flex items-start gap-3">

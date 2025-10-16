@@ -148,7 +148,7 @@ export const ManagementDashboard: React.FC = () => {
         <h2 className="text-2xl font-bold text-white">Dashboard de Gestão</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="bg-gray-900 border-gray-700">
+            <Card key={i} className="bg-[#161616] border-gray-700">
               <CardContent className="p-6">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>

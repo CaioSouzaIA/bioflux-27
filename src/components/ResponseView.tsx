@@ -360,7 +360,7 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
           </div>
 
           {responses.length === 0 ? (
-            <Card className="bg-gray-900 border-gray-700">
+            <Card className="bg-[#161616] border-gray-700">
               <CardContent className="p-8 text-center">
                 <p className="text-gray-400 text-lg">
                   Nenhuma resposta foi enviada ainda.
@@ -371,7 +371,7 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
             <div className="space-y-6">
               {responses.map((response, index) => (
                 <div key={response.id || index} className="space-y-4">
-                  <Card className="bg-gray-900 border-gray-700">
+                  <Card className="bg-[#161616] border-gray-700">
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle className="text-white flex items-center gap-2">
                         <User className="w-5 h-5 text-cyan-500" />
@@ -401,7 +401,7 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
                                   variant="outline"
                                   size="sm"
                                   onClick={() => toggleUploader(response.id || '')}
-                                  className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white text-xs sm:text-sm px-2 sm:px-3"
+                                  className="border-white/15 text-white hover:bg-[#292929] hover:text-white text-xs sm:text-sm px-2 sm:px-3"
                                 >
                                   <Upload className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
                                   <span className="hidden sm:inline">PDF</span>
