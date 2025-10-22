@@ -64,7 +64,7 @@ const ClientPrescriptions: React.FC = () => {
                 Voltar
               </Button>
               <img 
-                src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
+                src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
                 alt="BIOFLUX.AI" 
                 className="h-10"
               />
