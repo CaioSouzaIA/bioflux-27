@@ -110,7 +110,7 @@ const ChangePassword: React.FC = () => {
   const canSubmit = passwordsMatch && isPasswordValid && isEmailValid && newPassword && confirmPassword && email;
 
   return (
-    <div className="min-h-screen relative bg-black overflow-hidden">
+    <div className="min-h-screen relative bg-[#161616] overflow-hidden">
       <BackgroundAnimation />
       
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
@@ -118,9 +118,9 @@ const ChangePassword: React.FC = () => {
           {/* Header with back button */}
           <div className="flex items-center mb-8">
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={() => navigate('/client')}
-              className="text-white hover:bg-gray-800 p-2"
+              className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
               Voltar
@@ -128,7 +128,7 @@ const ChangePassword: React.FC = () => {
           </div>
 
           {/* Form card */}
-          <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
+          <div className="bg-[#161616] border-white rounded-lg p-8">
             <h1 className="text-2xl font-bold text-white mb-6 text-center">
               Trocar Senha
             </h1>
@@ -225,7 +225,7 @@ const ChangePassword: React.FC = () => {
                 type="submit"
                 disabled={!canSubmit || loading}
                 className={`w-full ${
-                  !canSubmit ? 'opacity-50 cursor-not-allowed' : 'bg-white text-black hover:bg-gray-200'
+                  !canSubmit ? 'opacity-50 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white'
                 }`}
               >
                 {loading ? "Atualizando..." : "Atualizar Senha"}
