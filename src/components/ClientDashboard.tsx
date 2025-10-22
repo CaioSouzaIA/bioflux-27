@@ -633,7 +633,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     onClick={handleWhatsAppRedirect}
                     disabled={hasStandardPlan}
                   >
-                    {!hasStandardPlan ? 'Conversar no WhatsApp' : 'Apenas no Plano Pro'}
+                    {!hasStandardPlan ? 'Chamar no WhatsApp' : 'Apenas no Plano Pro'}
                   </Button>
                 </div>
                 {hasStandardPlan && (
@@ -665,33 +665,33 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     Veja os detalhes do seu treino atual
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col justify-between">
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="text-center">
-                      <Activity className="w-12 h-12 text-red-500 mx-auto mb-2" />
-                      <p className="text-gray-400 text-sm">Acompanhe sua periodização</p>
-                    </div>
+              <CardContent className="flex-1 flex flex-col justify-between">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="text-center">
+                    <Activity className="w-12 h-12 text-red-500 mx-auto mb-2" />
+                    <p className="text-gray-400 text-sm">Acompanhe sua periodização</p>
                   </div>
-                  <div className="flex justify-center">
-                    <Button 
-                      className={`w-full ${
-                        !hasStandardPlan 
-                          ? 'bg-red-600 hover:bg-red-700' 
-                          : 'bg-gray-600 cursor-not-allowed'
-                      }`}
-                      onClick={handleTrainingPeriodization}
-                      disabled={hasStandardPlan}
-                    >
-                      {!hasStandardPlan ? 'Ver Periodização' : 'Apenas no Plano Pro'}
-                    </Button>
-                  </div>
-                  {hasStandardPlan && (
-                    <p className="text-xs text-red-400 mt-2 text-center">
-                      Recurso disponível apenas no plano Pro
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+                <div className="flex justify-center">
+                  <Button 
+                    className={`w-full ${
+                      !hasStandardPlan 
+                        ? 'bg-red-600 hover:bg-red-700' 
+                        : 'bg-gray-600 cursor-not-allowed'
+                    }`}
+                    onClick={handleTrainingPeriodization}
+                    disabled={hasStandardPlan}
+                  >
+                    {!hasStandardPlan ? 'Ver Periodização' : 'Apenas no Plano Pro'}
+                  </Button>
+                </div>
+                {hasStandardPlan && (
+                  <p className="text-xs text-red-400 mt-2 text-center">
+                    Recurso disponível apenas no plano Pro
+                  </p>
+                )}
+              </CardContent>
+            </Card>
             )}
 
             {/* Check-in de Treino */}
