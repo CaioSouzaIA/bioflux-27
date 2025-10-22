@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { Calculator, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 
 interface MetabolicAssessmentProps {
   onBack: () => void;
@@ -353,7 +353,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
             </p>
           </div>
 
-          <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
+          <Card className="bg-[#161616] border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Dados Antropométricos</CardTitle>
               <CardDescription className="text-gray-300">
@@ -450,7 +450,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
               <Button 
                 onClick={calculateTMB} 
                 disabled={!isFormValid() || loading || !user}
-                className="w-full bg-[#1f1f1f] hover:bg-[#292929] disabled:bg-gray-600"
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600"
               >
                 <Calculator className="w-4 h-4 mr-2" />
                 {loading ? 'Calculando...' : results ? 'Recalcular TMB e GET' : 'Calcular TMB e GET'}
@@ -459,7 +459,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
           </Card>
 
           {results && (
-            <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
+            <Card className="bg-[#161616] border-gray-700">
               <CardHeader>
                 <CardTitle className="text-white">Resultados da Avaliação</CardTitle>
               </CardHeader>
