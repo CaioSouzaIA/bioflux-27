@@ -1,9 +1,8 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Dumbbell, Eye } from 'lucide-react';
+import { Eye, Calendar, Dumbbell } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TrainingPrescription } from '@/hooks/useTrainingPrescriptions';
@@ -20,7 +19,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
 }) => {
   const { toast } = useToast();
 
-  const handleView = (prescription: TrainingPrescription) => {
+  const handleViewPdf = (prescription: TrainingPrescription) => {
     try {
       console.log('👁️ [TRAINING PDF VIEWER] Abrindo PDF:', {
         fileName: prescription.file_name,
@@ -49,14 +48,26 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
   };
 
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="bg-[#161616] border-gray-700 animate-pulse">
+          <Card key={i} className="bg-[#161616] border-black animate-pulse">
             <CardContent className="p-6">
-              <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -64,16 +75,16 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
     );
   }
 
-  if (prescriptions.length === 0) {
+  if (!prescriptions || prescriptions.length === 0) {
     return (
-      <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
-        <CardContent className="p-12 text-center">
+      <Card className="bg-[#161616] border-black">
+        <CardContent className="text-center py-12">
           <Dumbbell className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
-            Nenhuma Prescrição de Treino Encontrada
+            Nenhuma prescrição de treino encontrada
           </h3>
           <p className="text-gray-400">
-            Você ainda não possui prescrições de treino disponíveis.
+            Suas prescrições de treino em PDF aparecerão aqui quando estiverem prontas.
           </p>
         </CardContent>
       </Card>
@@ -86,12 +97,9 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
         const isMostRecent = index === 0; // As prescrições vêm ordenadas por created_at desc
         
         return (
-          <Card 
-            key={prescription.id} 
-            className="bg-[#161616] border-gray-700 backdrop-blur-sm hover:bg-[#1c1c1c] transition-all"
-          >
+          <Card key={prescription.id} className="bg-[#161616] border-black hover:bg-[#1c1c1c] transition-all">
             <CardHeader>
-              <div className="flex items-start justify-between">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-orange-500/20 rounded-lg">
                     <Dumbbell className="w-6 h-6 text-orange-500" />
@@ -107,20 +115,22 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
                         </Badge>
                       )}
                     </div>
-                    <CardDescription className="flex items-center gap-2 text-gray-400">
+                    <div className="flex items-center gap-2 text-gray-400">
                       <Calendar className="w-4 h-4" />
-                      Criado em: {format(new Date(prescription.created_at), 'dd/MM/yyyy \'às\' HH:mm', { locale: ptBR })}
-                    </CardDescription>
+                      <span className="text-sm">
+                        Criado em: {formatDate(prescription.created_at)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-end">
-                <Button
+                <Button 
                   variant="outline"
-                  onClick={() => handleView(prescription)}
                   className="border-gray-600 bg-white text-gray-900 hover:bg-gray-100 hover:text-gray-800"
+                  onClick={() => handleViewPdf(prescription)}
                   size="sm"
                 >
                   <Eye className="w-4 h-4 mr-2" />
