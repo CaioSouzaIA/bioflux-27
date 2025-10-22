@@ -579,7 +579,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <Calculator className="w-12 h-12 text-orange-500 mx-auto mb-2" />
-                    <p className="text-gray-400 text-sm">Calcule sua TMB</p>
                   </div>
                 </div>
                 <div className="flex justify-center mb-4">
@@ -626,7 +625,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <MessageCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
-                    <p className="text-gray-400 text-sm">Converse com seu assistente</p>
                   </div>
                 </div>
                 <div className="flex justify-center">
@@ -675,7 +673,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <Activity className="w-12 h-12 text-red-500 mx-auto mb-2" />
-                    <p className="text-gray-400 text-sm">Acompanhe sua periodização</p>
                   </div>
                 </div>
                 <div className="flex justify-center">
@@ -716,17 +713,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <div className="flex items-center justify-center mb-4">
                     <div className="text-center">
                       <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
-                      <p className="text-gray-400 text-sm">Registre seus treinos</p>
-                    </div>
                   </div>
-                  <div className="flex justify-center">
-                    <Button 
-                      className="w-full bg-cyan-600 hover:bg-cyan-700"
-                      onClick={handleWorkoutCheckin}
-                    >
-                      Registrar Treino
-                    </Button>
-                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full bg-cyan-600 hover:bg-cyan-700"
+                    onClick={handleWorkoutCheckin}
+                  >
+                    Registrar Treino
+                  </Button>
+                </div>
                 </CardContent>
             </Card>
             )}
