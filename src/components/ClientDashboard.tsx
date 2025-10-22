@@ -469,11 +469,11 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-white">{totalPrescriptions}</div>
                     <p className="text-gray-400 text-sm">Prescrições disponíveis</p>
-                    <div className="flex gap-4 mt-2 text-xs">
+                    <div className="flex gap-4 mt-2 text-xs justify-center">
                       <span className="text-green-400">
                         <UtensilsCrossed className="w-3 h-3 inline mr-1" />
                         {dietPrescriptions.length} Dieta
@@ -485,12 +485,14 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     </div>
                   </div>
                 </div>
-                <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  onClick={handlePrescriptionsAccess}
-                >
-                  Ver Prescrições
-                </Button>
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={handlePrescriptionsAccess}
+                  >
+                    Ver Prescrições
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -511,12 +513,14 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     <p className="text-gray-400 text-sm">Desbloqueie conquistas</p>
                   </div>
                 </div>
-                <Button 
-                  className="w-full bg-yellow-600 hover:bg-yellow-700"
-                  onClick={handleAchievementsAccess}
-                >
-                  Ver Conquistas
-                </Button>
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full bg-yellow-600 hover:bg-yellow-700"
+                    onClick={handleAchievementsAccess}
+                  >
+                    Ver Conquistas
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -540,23 +544,25 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-purple-500">{formsCount}</div>
                     <p className="text-gray-400 text-sm">Formulários disponíveis</p>
                   </div>
                 </div>
-                <Button 
-                  className={`w-full ${
-                    hasMetabolicAssessment 
-                      ? 'bg-purple-600 hover:bg-purple-700' 
-                      : 'bg-gray-600 cursor-not-allowed'
-                  }`}
-                  onClick={handleFormsAccess}
-                  disabled={!hasMetabolicAssessment}
-                >
-                  {hasMetabolicAssessment ? 'Ver Formulários' : 'Bloqueado'}
-                </Button>
+                <div className="flex justify-center">
+                  <Button 
+                    className={`w-full ${
+                      hasMetabolicAssessment 
+                        ? 'bg-purple-600 hover:bg-purple-700' 
+                        : 'bg-gray-600 cursor-not-allowed'
+                    }`}
+                    onClick={handleFormsAccess}
+                    disabled={!hasMetabolicAssessment}
+                  >
+                    {hasMetabolicAssessment ? 'Ver Formulários' : 'Bloqueado'}
+                  </Button>
+                </div>
                 {!hasMetabolicAssessment && (
                   <p className="text-xs text-red-400 mt-2 text-center">
                     Complete a avaliação metabólica primeiro
@@ -578,19 +584,21 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardContent>
                 <div className="mb-4">
                   {hasMetabolicAssessment && (
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 justify-center">
                       <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10">
                         Completa
                       </Badge>
                     </div>
                   )}
                 </div>
-                <Button 
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                  onClick={handleMetabolicAssessment}
-                >
-                  {hasMetabolicAssessment ? 'Ver/Atualizar TMB' : 'Calcular TMB'}
-                </Button>
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    onClick={handleMetabolicAssessment}
+                  >
+                    {hasMetabolicAssessment ? 'Ver/Atualizar TMB' : 'Calcular TMB'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -615,17 +623,19 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button 
-                  className={`w-full ${
-                    !hasStandardPlan 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'bg-gray-600 cursor-not-allowed'
-                  }`}
-                  onClick={handleWhatsAppRedirect}
-                  disabled={hasStandardPlan}
-                >
-                  {!hasStandardPlan ? 'Conversar no WhatsApp' : 'Apenas no Plano Pro'}
-                </Button>
+                <div className="flex justify-center">
+                  <Button 
+                    className={`w-full ${
+                      !hasStandardPlan 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-gray-600 cursor-not-allowed'
+                    }`}
+                    onClick={handleWhatsAppRedirect}
+                    disabled={hasStandardPlan}
+                  >
+                    {!hasStandardPlan ? 'Conversar no WhatsApp' : 'Apenas no Plano Pro'}
+                  </Button>
+                </div>
                 {hasStandardPlan && (
                   <p className="text-xs text-red-400 mt-2 text-center">
                     Recurso disponível apenas no plano Pro
@@ -655,7 +665,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     Veja os detalhes do seu treino atual
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+              <CardContent>
+                <div className="flex justify-center">
                   <Button 
                     className={`w-full ${
                       !hasStandardPlan 
@@ -667,13 +678,14 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   >
                     {!hasStandardPlan ? 'Ver Periodização' : 'Apenas no Plano Pro'}
                   </Button>
-                  {hasStandardPlan && (
-                    <p className="text-xs text-red-400 mt-2 text-center">
-                      Recurso disponível apenas no plano Pro
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+                {hasStandardPlan && (
+                  <p className="text-xs text-red-400 mt-2 text-center">
+                    Recurso disponível apenas no plano Pro
+                  </p>
+                )}
+              </CardContent>
+            </Card>
             )}
 
             {/* Check-in de Treino */}
@@ -688,15 +700,17 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     Registre seus treinos e acompanhe sua frequência
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+              <CardContent>
+                <div className="flex justify-center">
                   <Button 
                     className="w-full bg-cyan-600 hover:bg-cyan-700"
                     onClick={handleWorkoutCheckin}
                   >
                     Registrar Treino
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
             )}
           </div>
         </div>
