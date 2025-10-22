@@ -706,13 +706,13 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     Check-in de Treino
                   </CardTitle>
                   <CardDescription className="text-gray-300">
-                    Registre seus treinos e acompanhe sua frequência
+                    Registre seus treinos
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col justify-between">
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="text-center">
-                      <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
+              <CardContent className="flex-1 flex flex-col justify-between">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="text-center">
+                    <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
                   </div>
                 </div>
                 <div className="flex justify-center">
@@ -723,7 +723,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     Registrar Treino
                   </Button>
                 </div>
-                </CardContent>
+              </CardContent>
             </Card>
             )}
           </div>
