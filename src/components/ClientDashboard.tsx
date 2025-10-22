@@ -315,12 +315,12 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 <Button 
                   variant="outline" 
                   onClick={() => setActiveView('dashboard')}
-                  className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:border-gray-600 hover:text-white"
+                  className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
                 >
                   ← Voltar ao Dashboard
                 </Button>
                 <img 
-                  src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
+                  src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
                   alt="BIOFLUX.AI" 
                   className="h-10"
                 />
@@ -347,7 +347,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
           <div className="flex justify-between items-center mb-8 pt-8">
             <div className="flex items-center gap-3">
               <img 
-                src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
+                src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
                 alt="BIOFLUX.AI" 
                 className="h-10"
               />
@@ -712,15 +712,15 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                       <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
                       <p className="text-gray-400 text-sm">Registre seus treinos</p>
                     </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <Button 
-                      className="w-full bg-cyan-600 hover:bg-cyan-700"
-                      onClick={handleWorkoutCheckin}
-                    >
-                      Registrar Treino
-                    </Button>
-                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full bg-cyan-600 hover:bg-cyan-700"
+                    onClick={handleWorkoutCheckin}
+                  >
+                    Registrar Treino
+                  </Button>
+                </div>
                 </CardContent>
             </Card>
             )}

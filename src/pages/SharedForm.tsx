@@ -152,7 +152,7 @@ const SharedForm = () => {
           <Button 
             variant="outline" 
             onClick={handleBack}
-            className="border-gray-700 text-white bg-gray-800 hover:bg-gray-700"
+            className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar

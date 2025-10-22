@@ -180,7 +180,7 @@ export default function Achievements() {
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/client')}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar

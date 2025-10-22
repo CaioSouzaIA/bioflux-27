@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -109,7 +109,7 @@ const WorkoutCheckin: React.FC = () => {
                 type="button"
                 variant="ghost"
                 onClick={handleBack}
-                className="gap-2 rounded-md border border-white/15 bg-[#1f1f1f] px-4 text-white transition-colors hover:bg-[#292929] hover:text-white"
+                className="gap-2 rounded-md border border-white bg-[#161616] px-4 text-white transition-colors hover:bg-gray-800 hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
@@ -162,7 +162,7 @@ const WorkoutCheckin: React.FC = () => {
                           type="button"
                           variant="outline"
                           className={cn(
-                            'w-full justify-start gap-2 rounded-lg border border-white/15 bg-[#1f1f1f] text-white transition-colors hover:bg-[#292929] hover:text-white',
+                            'w-full justify-start gap-2 rounded-lg border border-white/15 bg-[#1c1c1c] text-white transition-colors hover:bg-gray-800 hover:text-white',
                             !selectedDate && 'text-white/50'
                           )}
                         >

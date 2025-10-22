@@ -122,7 +122,7 @@ const ChangePassword: React.FC = () => {
               onClick={() => navigate('/client')}
               className="text-white hover:bg-gray-800 p-2"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <ArrowLeft className="h-5 w-5 mr-2" />
               Voltar
             </Button>
           </div>

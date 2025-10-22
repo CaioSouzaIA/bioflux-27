@@ -65,7 +65,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
         <div className="relative z-10 text-center">
           <div className="text-white text-xl mb-4">Usuário não autenticado</div>
-          <Button onClick={onBack} className="bg-[#1f1f1f] hover:bg-[#292929]">
+          <Button onClick={onBack} className="bg-[#161616] hover:bg-gray-800">
             Voltar ao Dashboard
           </Button>
         </div>
@@ -332,13 +332,13 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
               <Button 
                 variant="outline" 
                 onClick={onBack}
-                className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:border-gray-600 hover:text-white"
+                className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar
               </Button>
               <img 
-                src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
+                src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
                 alt="BIOFLUX.AI" 
                 className="h-10"
               />

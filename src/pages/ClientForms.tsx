@@ -204,7 +204,7 @@ const ClientForms: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/client')}
-                className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:border-gray-600 hover:text-white"
+                className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar
