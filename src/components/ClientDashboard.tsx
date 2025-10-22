@@ -576,7 +576,13 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="mb-4">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="text-center">
+                    <Calculator className="w-12 h-12 text-orange-500 mx-auto mb-2" />
+                    <p className="text-gray-400 text-sm">Calcule sua TMB</p>
+                  </div>
+                </div>
+                <div className="flex justify-center mb-4">
                   {hasMetabolicAssessment && (
                     <div className="flex items-center gap-2 mb-2 justify-center">
                       <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10">
