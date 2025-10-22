@@ -109,7 +109,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
             Minha Conta
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64 bg-[#161616] border-gray-700 text-white">
+        <DropdownMenuContent className="w-64 bg-[#161616] border-white text-white">
           <DropdownMenuLabel className="text-gray-300 px-3 py-2">
             <div className="flex flex-col">
               <span className="text-white font-medium text-sm">
