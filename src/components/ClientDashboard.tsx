@@ -452,7 +452,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
           {/* Seções Principais */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <FileText className="w-6 h-6 text-white" />
@@ -490,7 +490,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <Trophy className="w-6 h-6 text-yellow-500" />
@@ -520,7 +520,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
             <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
               hasMetabolicAssessment 
-                ? 'hover:bg-gray-800/70 cursor-pointer' 
+                ? 'hover:bg-gray-800 cursor-pointer' 
                 : 'opacity-60 cursor-not-allowed'
             }`}>
               <CardHeader>
@@ -565,7 +565,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <Calculator className="w-6 h-6 text-orange-500" />
@@ -599,7 +599,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             {/* AI Coach - Bloqueado para plano Standard */}
             <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
               !hasStandardPlan 
-                ? 'hover:bg-gray-800/70 cursor-pointer' 
+                ? 'hover:bg-gray-800 cursor-pointer' 
                 : 'opacity-60 cursor-not-allowed'
             }`}>
               <CardHeader>
@@ -648,7 +648,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             {hasTrainingSubscription && (
               <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
                 !hasStandardPlan 
-                  ? 'hover:bg-gray-800/70 cursor-pointer' 
+                  ? 'hover:bg-gray-800 cursor-pointer' 
                   : 'opacity-60 cursor-not-allowed'
               }`}>
                 <CardHeader>
@@ -696,7 +696,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
             {/* Check-in de Treino */}
             {hasTrainingSubscription && (
-              <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
+              <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-3">
                     <Dumbbell className="w-6 h-6 text-cyan-500" />
