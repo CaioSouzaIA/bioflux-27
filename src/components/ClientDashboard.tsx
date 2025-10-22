@@ -617,6 +617,12 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="text-center">
+                    <MessageCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                    <p className="text-gray-400 text-sm">Converse com seu assistente</p>
+                  </div>
+                </div>
                 <div className="flex justify-center">
                   <Button 
                     className={`w-full ${
@@ -660,6 +666,12 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-between">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="text-center">
+                      <Activity className="w-12 h-12 text-red-500 mx-auto mb-2" />
+                      <p className="text-gray-400 text-sm">Acompanhe sua periodização</p>
+                    </div>
+                  </div>
                   <div className="flex justify-center">
                     <Button 
                       className={`w-full ${
@@ -695,6 +707,12 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-between">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="text-center">
+                      <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
+                      <p className="text-gray-400 text-sm">Registre seus treinos</p>
+                    </div>
+                  </div>
                   <div className="flex justify-center">
                     <Button 
                       className="w-full bg-cyan-600 hover:bg-cyan-700"
@@ -704,7 +722,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+            </Card>
             )}
           </div>
         </div>
