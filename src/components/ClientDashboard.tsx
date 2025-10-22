@@ -190,16 +190,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   const getServiceIcon = (serviceType: string) => {
     switch (serviceType) {
       case 'treino':
-        return <Dumbbell className="w-5 h-5 text-orange-500" />;
+        return <Dumbbell className="w-5 h-5 text-[#68fad9]" />;
       case 'dieta':
-        return <UtensilsCrossed className="w-5 h-5 text-green-500" />;
+        return <UtensilsCrossed className="w-5 h-5 text-[#68fad9]" />;
       case 'treino-dieta':
         return <div className="flex gap-1">
-          <Dumbbell className="w-4 h-4 text-orange-500" />
-          <UtensilsCrossed className="w-4 h-4 text-green-500" />
+          <Dumbbell className="w-4 h-4 text-[#68fad9]" />
+          <UtensilsCrossed className="w-4 h-4 text-[#68fad9]" />
         </div>;
       default:
-        return <FileText className="w-5 h-5" />;
+        return <FileText className="w-5 h-5 text-[#68fad9]" />;
     }
   };
 
@@ -361,7 +361,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             <Card className="bg-orange-900/50 border-orange-500/50 backdrop-blur-sm mb-6">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <Calculator className="w-5 h-5 text-orange-400" />
+                  <Calculator className="w-5 h-5 text-[#68fad9]" />
                   <div>
                     <h3 className="text-orange-200 font-medium">Complete sua Avaliação Metabólica</h3>
                     <p className="text-orange-300 text-sm">
@@ -370,7 +370,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   </div>
                   <Button 
                     onClick={handleMetabolicAssessment}
-                    className="bg-orange-600 hover:bg-orange-700"
+                    className="bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
                     size="sm"
                   >
                     Fazer Avaliação
@@ -455,7 +455,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-white" />
+                  <FileText className="w-6 h-6 text-[#68fad9]" />
                   Prescrições
                 </CardTitle>
                 <CardDescription className="text-gray-300">
@@ -468,11 +468,11 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     <div className="text-3xl font-bold text-white">{totalPrescriptions}</div>
                     <p className="text-gray-400 text-sm">Prescrições disponíveis</p>
                     <div className="flex gap-4 mt-2 text-xs justify-center">
-                      <span className="text-green-400">
+                      <span className="text-[#68fad9]">
                         <UtensilsCrossed className="w-3 h-3 inline mr-1" />
                         {dietPrescriptions.length} Dieta
                       </span>
-                      <span className="text-orange-400">
+                      <span className="text-[#68fad9]">
                         <Dumbbell className="w-3 h-3 inline mr-1" />
                         {trainingPrescriptions.length} Treino
                       </span>
@@ -481,7 +481,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </div>
                 <div className="flex justify-center">
                   <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
                     onClick={handlePrescriptionsAccess}
                   >
                     Ver Prescrições
@@ -493,7 +493,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
-                  <Trophy className="w-6 h-6 text-yellow-500" />
+                  <Trophy className="w-6 h-6 text-[#68fad9]" />
                   Conquistas
                 </CardTitle>
                 <CardDescription className="text-gray-300">
@@ -503,13 +503,13 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
-                    <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-2" />
+                    <Trophy className="w-12 h-12 text-[#68fad9] mx-auto mb-2" />
                     <p className="text-gray-400 text-sm">Desbloqueie conquistas</p>
                   </div>
                 </div>
                 <div className="flex justify-center">
                   <Button 
-                    className="w-full bg-yellow-600 hover:bg-yellow-700"
+                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
                     onClick={handleAchievementsAccess}
                   >
                     Ver Conquistas
@@ -526,7 +526,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <div className="relative">
-                    <FileText className="w-6 h-6 text-purple-500" />
+                    <FileText className="w-6 h-6 text-[#68fad9]" />
                     {!hasMetabolicAssessment && (
                       <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                     )}
@@ -540,7 +540,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-purple-500">{formsCount}</div>
+                    <div className="text-3xl font-bold text-[#68fad9]">{formsCount}</div>
                     <p className="text-gray-400 text-sm">Formulários disponíveis</p>
                   </div>
                 </div>
@@ -548,7 +548,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <Button 
                     className={`w-full ${
                       hasMetabolicAssessment 
-                        ? 'bg-purple-600 hover:bg-purple-700' 
+                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-white' 
                         : 'bg-gray-600 cursor-not-allowed'
                     }`}
                     onClick={handleFormsAccess}
@@ -568,7 +568,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
-                  <Calculator className="w-6 h-6 text-orange-500" />
+                  <Calculator className="w-6 h-6 text-[#68fad9]" />
                   Avaliação metabólica
                 </CardTitle>
                 <CardDescription className="text-gray-300">
@@ -587,7 +587,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </div>
                 <div className="flex justify-center">
                   <Button 
-                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
                     onClick={handleMetabolicAssessment}
                   >
                     {hasMetabolicAssessment ? 'Ver/Atualizar TMB' : 'Calcular TMB'}
@@ -605,7 +605,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <div className="relative">
-                    <MessageCircle className="w-6 h-6 text-green-500" />
+                    <MessageCircle className="w-6 h-6 text-[#68fad9]" />
                     {hasStandardPlan && (
                       <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                     )}
@@ -619,7 +619,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
-                    <MessageCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                    <MessageCircle className="w-12 h-12 text-[#68fad9] mx-auto mb-2" />
                     <p className="text-gray-400 text-sm">Converse com seu assistente</p>
                   </div>
                 </div>
@@ -627,7 +627,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <Button 
                     className={`w-full ${
                       !hasStandardPlan 
-                        ? 'bg-green-600 hover:bg-green-700' 
+                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-white' 
                         : 'bg-gray-600 cursor-not-allowed'
                     }`}
                     onClick={handleWhatsAppRedirect}
@@ -654,7 +654,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-3">
                     <div className="relative">
-                      <Activity className="w-6 h-6 text-red-500" />
+                      <Activity className="w-6 h-6 text-[#68fad9]" />
                       {hasStandardPlan && (
                         <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                       )}
@@ -668,7 +668,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
-                    <Activity className="w-12 h-12 text-red-500 mx-auto mb-2" />
+                    <Activity className="w-12 h-12 text-[#68fad9] mx-auto mb-2" />
                     <p className="text-gray-400 text-sm">Acompanhe sua periodização</p>
                   </div>
                 </div>
@@ -676,7 +676,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <Button 
                     className={`w-full ${
                       !hasStandardPlan 
-                        ? 'bg-red-600 hover:bg-red-700' 
+                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-white' 
                         : 'bg-gray-600 cursor-not-allowed'
                     }`}
                     onClick={handleTrainingPeriodization}
@@ -699,7 +699,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-3">
-                    <Dumbbell className="w-6 h-6 text-cyan-500" />
+                    <Dumbbell className="w-6 h-6 text-[#68fad9]" />
                     Check-in de Treino
                   </CardTitle>
                   <CardDescription className="text-gray-300">
@@ -709,13 +709,13 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 <CardContent className="flex-1 flex flex-col justify-between">
                   <div className="flex items-center justify-center mb-4">
                     <div className="text-center">
-                      <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
+                      <Dumbbell className="w-12 h-12 text-[#68fad9] mx-auto mb-2" />
                       <p className="text-gray-400 text-sm">Registre seus treinos</p>
                     </div>
                   </div>
                   <div className="flex justify-center">
                     <Button 
-                      className="w-full bg-cyan-600 hover:bg-cyan-700"
+                      className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
                       onClick={handleWorkoutCheckin}
                     >
                       Registrar Treino
