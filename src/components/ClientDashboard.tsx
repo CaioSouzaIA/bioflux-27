@@ -458,7 +458,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
           {/* Seções Principais */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <FileText className="w-6 h-6 text-white" />
@@ -468,7 +468,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   Visualize suas prescrições de treino e dieta
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-white">{totalPrescriptions}</div>
@@ -496,7 +496,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <Trophy className="w-6 h-6 text-yellow-500" />
@@ -506,7 +506,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   Veja suas conquistas e badges desbloqueados
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-2" />
@@ -524,7 +524,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all ${
+            <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
               hasMetabolicAssessment 
                 ? 'hover:bg-gray-800/70 cursor-pointer' 
                 : 'opacity-60 cursor-not-allowed'
@@ -543,7 +543,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   Preencha formulários de avaliação e feedback
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-center mb-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-purple-500">{formsCount}</div>
@@ -571,7 +571,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <Calculator className="w-6 h-6 text-orange-500" />
@@ -581,7 +581,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   Calcule sua TMB e gasto energético total
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="mb-4">
                   {hasMetabolicAssessment && (
                     <div className="flex items-center gap-2 mb-2 justify-center">
@@ -603,7 +603,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             </Card>
 
             {/* AI Coach - Bloqueado para plano Standard */}
-            <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all ${
+            <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
               !hasStandardPlan 
                 ? 'hover:bg-gray-800/70 cursor-pointer' 
                 : 'opacity-60 cursor-not-allowed'
@@ -622,7 +622,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   Tire dúvidas com seu AI coach
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <div className="flex justify-center">
                   <Button 
                     className={`w-full ${
@@ -646,7 +646,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
             {/* Periodização de Treino - Bloqueado para plano Standard */}
             {hasTrainingSubscription && (
-              <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all ${
+              <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
                 !hasStandardPlan 
                   ? 'hover:bg-gray-800/70 cursor-pointer' 
                   : 'opacity-60 cursor-not-allowed'
@@ -665,32 +665,32 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     Veja os detalhes do seu treino atual
                   </CardDescription>
                 </CardHeader>
-              <CardContent>
-                <div className="flex justify-center">
-                  <Button 
-                    className={`w-full ${
-                      !hasStandardPlan 
-                        ? 'bg-red-600 hover:bg-red-700' 
-                        : 'bg-gray-600 cursor-not-allowed'
-                    }`}
-                    onClick={handleTrainingPeriodization}
-                    disabled={hasStandardPlan}
-                  >
-                    {!hasStandardPlan ? 'Ver Periodização' : 'Apenas no Plano Pro'}
-                  </Button>
-                </div>
-                {hasStandardPlan && (
-                  <p className="text-xs text-red-400 mt-2 text-center">
-                    Recurso disponível apenas no plano Pro
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <div className="flex justify-center">
+                    <Button 
+                      className={`w-full ${
+                        !hasStandardPlan 
+                          ? 'bg-red-600 hover:bg-red-700' 
+                          : 'bg-gray-600 cursor-not-allowed'
+                      }`}
+                      onClick={handleTrainingPeriodization}
+                      disabled={hasStandardPlan}
+                    >
+                      {!hasStandardPlan ? 'Ver Periodização' : 'Apenas no Plano Pro'}
+                    </Button>
+                  </div>
+                  {hasStandardPlan && (
+                    <p className="text-xs text-red-400 mt-2 text-center">
+                      Recurso disponível apenas no plano Pro
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             )}
 
             {/* Check-in de Treino */}
             {hasTrainingSubscription && (
-              <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
+              <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-3">
                     <Dumbbell className="w-6 h-6 text-cyan-500" />
@@ -700,17 +700,17 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     Registre seus treinos e acompanhe sua frequência
                   </CardDescription>
                 </CardHeader>
-              <CardContent>
-                <div className="flex justify-center">
-                  <Button 
-                    className="w-full bg-cyan-600 hover:bg-cyan-700"
-                    onClick={handleWorkoutCheckin}
-                  >
-                    Registrar Treino
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <div className="flex justify-center">
+                    <Button 
+                      className="w-full bg-cyan-600 hover:bg-cyan-700"
+                      onClick={handleWorkoutCheckin}
+                    >
+                      Registrar Treino
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
