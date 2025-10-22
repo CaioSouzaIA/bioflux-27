@@ -239,7 +239,7 @@ const ClientForms: React.FC = () => {
           {/* Lista de Formulários */}
           <div className="grid gap-6">
             {forms.length === 0 ? (
-              <Card className="bg-[#161616] border-gray-700 backdrop-blur-sm">
+              <Card className="bg-[#161616] border-black backdrop-blur-sm">
                 <CardContent className="text-center py-12">
                   <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-white mb-2">
@@ -252,7 +252,7 @@ const ClientForms: React.FC = () => {
               </Card>
             ) : (
               forms.map((form) => (
-                <Card key={form.id} className={`bg-[#161616] border-gray-700 backdrop-blur-sm transition-all ${formsCompleted ? 'opacity-60' : 'hover:bg-[#1c1c1c]'}`}>
+                <Card key={form.id} className={`bg-[#161616] border-black backdrop-blur-sm transition-all ${formsCompleted ? 'opacity-60' : 'hover:bg-[#1c1c1c]'}`}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
