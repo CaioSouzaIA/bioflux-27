@@ -370,7 +370,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   </div>
                   <Button 
                     onClick={handleMetabolicAssessment}
-                    className="bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
+                    className="bg-[#68fad9] hover:bg-[#5ce5c8] text-black"
                     size="sm"
                   >
                     Fazer Avaliação
@@ -481,7 +481,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </div>
                 <div className="flex justify-center">
                   <Button 
-                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
+                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-black"
                     onClick={handlePrescriptionsAccess}
                   >
                     Ver Prescrições
@@ -509,7 +509,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </div>
                 <div className="flex justify-center">
                   <Button 
-                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
+                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-black"
                     onClick={handleAchievementsAccess}
                   >
                     Ver Conquistas
@@ -548,8 +548,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <Button 
                     className={`w-full ${
                       hasMetabolicAssessment 
-                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-white' 
-                        : 'bg-gray-600 cursor-not-allowed'
+                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-black' 
+                        : 'bg-gray-600 cursor-not-allowed text-white'
                     }`}
                     onClick={handleFormsAccess}
                     disabled={!hasMetabolicAssessment}
@@ -587,7 +587,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </div>
                 <div className="flex justify-center">
                   <Button 
-                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
+                    className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-black"
                     onClick={handleMetabolicAssessment}
                   >
                     {hasMetabolicAssessment ? 'Ver/Atualizar TMB' : 'Calcular TMB'}
@@ -627,8 +627,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <Button 
                     className={`w-full ${
                       !hasStandardPlan 
-                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-white' 
-                        : 'bg-gray-600 cursor-not-allowed'
+                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-black' 
+                        : 'bg-gray-600 cursor-not-allowed text-white'
                     }`}
                     onClick={handleWhatsAppRedirect}
                     disabled={hasStandardPlan}
@@ -676,8 +676,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <Button 
                     className={`w-full ${
                       !hasStandardPlan 
-                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-white' 
-                        : 'bg-gray-600 cursor-not-allowed'
+                        ? 'bg-[#68fad9] hover:bg-[#5ce5c8] text-black' 
+                        : 'bg-gray-600 cursor-not-allowed text-white'
                     }`}
                     onClick={handleTrainingPeriodization}
                     disabled={hasStandardPlan}
@@ -715,7 +715,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   </div>
                   <div className="flex justify-center">
                     <Button 
-                      className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-white"
+                      className="w-full bg-[#68fad9] hover:bg-[#5ce5c8] text-black"
                       onClick={handleWorkoutCheckin}
                     >
                       Registrar Treino
