@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -216,13 +215,6 @@ const ClientForms: React.FC = () => {
                 className="h-10"
               />
             </div>
-          </div>
-
-          {/* Mensagem de aviso */}
-          <div className="bg-red-600 text-white p-3 rounded-lg mb-6 border border-red-500">
-            <p className="text-sm font-medium text-center">
-              ⚠️ Quando for preencher, não mude de aba ou app antes de finalizar, caso contrário terá que refazer atualizando a página.
-            </p>
           </div>
 
           {/* Título */}
