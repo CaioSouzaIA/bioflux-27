@@ -317,7 +317,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   onClick={() => setActiveView('dashboard')}
                   className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
                 >
-                  ← Voltar ao Dashboard
+                  ← Voltar
                 </Button>
                 <img 
                   src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
@@ -712,15 +712,15 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                       <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
                       <p className="text-gray-400 text-sm">Registre seus treinos</p>
                     </div>
-                </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className="w-full bg-cyan-600 hover:bg-cyan-700"
-                    onClick={handleWorkoutCheckin}
-                  >
-                    Registrar Treino
-                  </Button>
-                </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Button 
+                      className="w-full bg-cyan-600 hover:bg-cyan-700"
+                      onClick={handleWorkoutCheckin}
+                    >
+                      Registrar Treino
+                    </Button>
+                  </div>
                 </CardContent>
             </Card>
             )}
