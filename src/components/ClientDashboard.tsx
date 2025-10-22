@@ -457,8 +457,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
           </div>
 
           {/* Seções Principais */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <FileText className="w-6 h-6 text-white" />
@@ -496,7 +496,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-3">
                   <Trophy className="w-6 h-6 text-yellow-500" />
@@ -523,7 +523,9 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </div>
               </CardContent>
             </Card>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
               hasMetabolicAssessment 
                 ? 'hover:bg-gray-800/70 cursor-pointer' 
@@ -643,7 +645,9 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 )}
               </CardContent>
             </Card>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Periodização de Treino - Bloqueado para plano Standard */}
             {hasTrainingSubscription && (
               <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
@@ -689,28 +693,27 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             )}
 
             {/* Check-in de Treino */}
-            {hasTrainingSubscription && (
-              <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-3">
-                    <Dumbbell className="w-6 h-6 text-cyan-500" />
-                    Check-in de Treino
-                  </CardTitle>
-                  <CardDescription className="text-gray-300">
-                    Registre seus treinos e acompanhe sua frequência
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col justify-between">
-                  <div className="flex justify-center">
-                    <Button 
-                      className="w-full bg-cyan-600 hover:bg-cyan-700"
-                      onClick={handleWorkoutCheckin}
-                    >
-                      Registrar Treino
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-[#1c1c1c] transition-all flex flex-col">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-3">
+                  <Dumbbell className="w-6 h-6 text-cyan-500" />
+                  Check-in de Treino
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Registre seus treinos e acompanhe sua frequência
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-between">
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full bg-cyan-600 hover:bg-cyan-700"
+                    onClick={handleWorkoutCheckin}
+                  >
+                    Registrar Treino
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
             )}
           </div>
         </div>
