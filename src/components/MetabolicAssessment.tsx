@@ -353,7 +353,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
             </p>
           </div>
 
-          <Card className="bg-[#161616] border-gray-700">
+          <Card className="bg-[#161616] border-black">
             <CardHeader>
               <CardTitle className="text-white">Dados Antropométricos</CardTitle>
               <CardDescription className="text-gray-300">
@@ -459,7 +459,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
           </Card>
 
           {results && (
-            <Card className="bg-[#161616] border-gray-700">
+            <Card className="bg-[#161616] border-black">
               <CardHeader>
                 <CardTitle className="text-white">Resultados da Avaliação</CardTitle>
               </CardHeader>
