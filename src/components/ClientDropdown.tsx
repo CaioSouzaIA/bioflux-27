@@ -103,7 +103,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="bg-[#161616] border-gray-700 hover:bg-[#1c1c1c] hover:border-gray-600 text-white"
+            className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
           >
             <User className="w-5 h-5 mr-2" />
             Minha Conta
@@ -124,7 +124,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={() => setShowAvatarUpload(true)}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
           >
             <Camera className="mr-2 h-4 w-4" />
             Foto de perfil
@@ -132,7 +132,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem
             onClick={handlePasswordReset}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
           >
             <Key className="mr-2 h-4 w-4" />
             Trocar senha
@@ -140,7 +140,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handlePlanChange}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
           >
             <RefreshCcw className="mr-2 h-4 w-4" />
             Trocar plano
@@ -148,7 +148,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
 
           <DropdownMenuItem 
             onClick={handleCancelSubscription}
-            className="text-red-400 flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-red-300 focus:bg-[#1c1c1c] focus:text-red-300 cursor-pointer"
+            className="text-red-400 flex items-center bg-[#161616] hover:bg-gray-800 hover:text-red-300 focus:bg-gray-800 focus:text-red-300 cursor-pointer"
           >
             <X className="mr-2 h-4 w-4" />
             Cancelar assinatura
@@ -156,7 +156,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handleSupport}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
           >
             <LifeBuoy className="mr-2 h-4 w-4" />
             Suporte
@@ -166,7 +166,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={onLogout}
-            className="text-red-400 flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-red-300 focus:bg-[#1c1c1c] focus:text-red-300 cursor-pointer"
+            className="text-red-400 flex items-center bg-[#161616] hover:bg-gray-800 hover:text-red-300 focus:bg-gray-800 focus:text-red-300 cursor-pointer"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sair
