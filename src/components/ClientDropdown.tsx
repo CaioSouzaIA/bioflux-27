@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -125,7 +124,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={() => setShowAvatarUpload(true)}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
           >
             <Camera className="mr-2 h-4 w-4" />
             Foto de perfil
@@ -133,7 +132,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem
             onClick={handlePasswordReset}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
           >
             <Key className="mr-2 h-4 w-4" />
             Trocar senha
@@ -141,7 +140,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handlePlanChange}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
           >
             <RefreshCcw className="mr-2 h-4 w-4" />
             Trocar plano
@@ -157,7 +156,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handleSupport}
-            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] focus:bg-[#1c1c1c] cursor-pointer"
+            className="text-white flex items-center bg-[#161616] hover:bg-[#1c1c1c] hover:text-white focus:bg-[#1c1c1c] focus:text-white cursor-pointer"
           >
             <LifeBuoy className="mr-2 h-4 w-4" />
             Suporte
