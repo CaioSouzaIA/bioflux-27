@@ -129,7 +129,7 @@ const WorkoutCheckin: React.FC = () => {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="bg-[#161616] text-white shadow-xl border border-white/15 lg:col-span-2">
+            <Card className="bg-[#161616] text-white shadow-xl border border-black lg:col-span-2">
               <CardHeader className="space-y-2">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Dumbbell className="h-5 w-5 text-emerald-400" />
@@ -202,7 +202,7 @@ const WorkoutCheckin: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] text-white shadow-xl border border-white/15">
+            <Card className="bg-[#161616] text-white shadow-xl border border-black">
               <CardHeader className="space-y-2">
                 <CardTitle className="text-white">Frequência semanal</CardTitle>
                 <CardDescription className="text-white/60">
@@ -221,7 +221,7 @@ const WorkoutCheckin: React.FC = () => {
             </Card>
           </div>
 
-          <Card className="bg-[#161616] text-white shadow-xl border border-white/15">
+          <Card className="bg-[#161616] text-white shadow-xl border border-black">
             <CardHeader className="space-y-2">
               <CardTitle className="text-white">Histórico de treinos</CardTitle>
               <CardDescription className="text-white/60">
