@@ -81,7 +81,7 @@ const ClientPrescriptions: React.FC = () => {
 
           {/* Tabs para Dieta e Treino */}
           <Tabs defaultValue="dieta" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-800 border-gray-700">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-800 border-black">
               <TabsTrigger 
                 value="dieta" 
                 className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white text-gray-300"
