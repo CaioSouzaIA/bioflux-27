@@ -714,7 +714,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 </div>
               </CardContent>
             </Card>
-            )}
+          )}
           </div>
         </div>
       </div>
