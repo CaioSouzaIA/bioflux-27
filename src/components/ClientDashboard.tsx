@@ -296,12 +296,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       <div className="min-h-screen relative bg-black overflow-hidden">
         <BackgroundAnimation />
         <div className="relative z-10 min-h-screen p-4">
-          {/* Mensagem de aviso */}
-          <div className="bg-red-600 text-white p-3 rounded-lg mb-4 border border-red-500">
-            <p className="text-sm font-medium text-center">
-              ⚠️ Quando for preencher, não mude de aba ou app antes de finalizar, caso contrário terá que refazer atualizando a página.
-            </p>
-          </div>
           <MetabolicAssessment onBack={() => setActiveView('dashboard')} />
         </div>
       </div>
