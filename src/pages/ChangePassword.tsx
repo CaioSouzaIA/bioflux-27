@@ -110,7 +110,7 @@ const ChangePassword: React.FC = () => {
   const canSubmit = passwordsMatch && isPasswordValid && isEmailValid && newPassword && confirmPassword && email;
 
   return (
-    <div className="min-h-screen relative bg-[#161616] overflow-hidden">
+    <div className="min-h-screen relative bg-black overflow-hidden">
       <BackgroundAnimation />
       
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
