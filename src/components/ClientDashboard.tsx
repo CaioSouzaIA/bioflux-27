@@ -15,10 +15,12 @@ import { useNavigate } from 'react-router-dom';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
 import { useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
+import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
 import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
 import OnboardingModal from '@/components/OnboardingModal';
+import { useQuery } from '@tanstack/react-query';
 
 interface Subscription {
   id: string;
@@ -49,13 +51,63 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   // Buscar prescrições de dieta e treino do usuário atual
   const { data: dietPrescriptions = [], isLoading: dietLoading } = useDietPrescriptions(user?.id);
   const { data: trainingPrescriptions = [], isLoading: trainingLoading } = useTrainingPrescriptions(user?.id);
-  
+
   const prescriptionsLoading = dietLoading || trainingLoading;
   const totalPrescriptions = dietPrescriptions.length + trainingPrescriptions.length;
 
   // Verificar se o usuário tem avaliação metabólica
   const { data: metabolicAssessment, isLoading: metabolicLoading } = useMetabolicAssessment(user?.id);
   const hasMetabolicAssessment = !!metabolicAssessment;
+
+  // Buscar todas as badges disponíveis
+  const { data: allBadges = [] } = useQuery({
+    queryKey: ["all-badges"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("badges")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Buscar conquistas do usuário
+  const { data: userAchievements = [] } = useQuery({
+    queryKey: ["user-achievements", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from("user_achievements")
+        .select("badge_id, earned_at")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Calcular total de conquistas desbloqueadas
+  const achievementsMap = new Map(
+    userAchievements.map(a => [a.badge_id, a.earned_at])
+  );
+  const earnedAchievementsCount = allBadges.filter(badge => {
+    const earnedDate = achievementsMap.get(badge.id);
+    const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+    const isAccountAgeBadge = metadata?.type === 'account_age';
+    const daysRequired = metadata?.days_required || 0;
+    const accountAgeDays = userProfile?.created_at
+      ? Math.floor((new Date().getTime() - new Date(userProfile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+    const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
+    return !!earnedDate || isEarnedByTime;
+  }).length;
+
+  // Buscar check-ins de treino
+  const { weeklyCheckins } = useWorkoutCheckins(user?.id);
 
   // Verificar se o usuário tem assinatura de treino
   const hasTrainingSubscription = subscriptions.some(sub => 
@@ -452,279 +504,209 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
           {/* Seções Principais */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-white" />
-                  Prescrições
-                </CardTitle>
-                <CardDescription className="text-gray-300">
-                  Visualize suas prescrições de treino e dieta
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-white">{totalPrescriptions}</div>
-                    <p className="text-gray-400 text-sm">Prescrições disponíveis</p>
-                    <div className="flex gap-4 mt-2 text-xs justify-center">
-                      <span className="text-green-400">
-                        <UtensilsCrossed className="w-3 h-3 inline mr-1" />
+            {/* Prescrições Card */}
+            <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
+              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
+                <div className="flex flex-col items-center flex-1 w-full">
+                  <div className="mb-4 mt-2">
+                    <FileText className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-white font-semibold text-lg text-center mb-3">Prescrições</h3>
+                  <div className="text-center mb-6">
+                    <div className="text-3xl font-bold text-white mb-1">{totalPrescriptions}</div>
+                    <div className="flex gap-3 text-xs justify-center">
+                      <span className="text-green-400 flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
                         {dietPrescriptions.length} Dieta
                       </span>
-                      <span className="text-orange-400">
-                        <Dumbbell className="w-3 h-3 inline mr-1" />
+                      <span className="text-orange-400 flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
                         {trainingPrescriptions.length} Treino
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                    onClick={handlePrescriptionsAccess}
-                  >
-                    Ver Prescrições
-                  </Button>
-                </div>
+                <Button
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  onClick={handlePrescriptionsAccess}
+                >
+                  Ver Prescrições
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-3">
-                  <Trophy className="w-6 h-6 text-yellow-500" />
-                  Conquistas
-                </CardTitle>
-                <CardDescription className="text-gray-300">
-                  Veja suas conquistas e badges desbloqueados
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-2" />
-                    <p className="text-gray-400 text-sm">Desbloqueie conquistas</p>
+            {/* Conquistas Card */}
+            <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
+              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
+                <div className="flex flex-col items-center flex-1 w-full">
+                  <div className="mb-4 mt-2">
+                    <Trophy className="w-10 h-10 text-yellow-500" />
+                  </div>
+                  <h3 className="text-white font-semibold text-lg text-center mb-3">Conquistas</h3>
+                  <div className="text-center mb-6 flex-1 flex flex-col items-center justify-center">
+                    <div className="text-3xl font-bold text-yellow-500 mb-1">{earnedAchievementsCount}/{allBadges.length}</div>
+                    <p className="text-gray-400 text-sm">Conquistas desbloqueadas</p>
                   </div>
                 </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className="w-full bg-yellow-600 hover:bg-yellow-700"
-                    onClick={handleAchievementsAccess}
-                  >
-                    Ver Conquistas
-                  </Button>
-                </div>
+                <Button
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
+                  onClick={handleAchievementsAccess}
+                >
+                  Ver Conquistas
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
-              hasMetabolicAssessment 
-                ? 'hover:bg-gray-800 cursor-pointer' 
-                : 'opacity-60 cursor-not-allowed'
+            {/* Formulários Card */}
+            <Card className={`bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full transition-all ${
+              hasMetabolicAssessment
+                ? 'hover:bg-gray-900/50'
+                : 'opacity-60'
             }`}>
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-3">
-                  <div className="relative">
-                    <FileText className="w-6 h-6 text-purple-500" />
+              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
+                <div className="flex flex-col items-center flex-1 w-full">
+                  <div className="mb-4 mt-2 relative">
+                    <FileText className="w-10 h-10 text-purple-500" />
                     {!hasMetabolicAssessment && (
                       <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                     )}
                   </div>
-                  Formulários
-                </CardTitle>
-                <CardDescription className="text-gray-300">
-                  Preencha formulários de avaliação e feedback
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-purple-500">{formsCount}</div>
-                    <p className="text-gray-400 text-sm">Formulários disponíveis</p>
+                  <h3 className="text-white font-semibold text-lg text-center mb-3">Formulários</h3>
+                  <div className="text-center mb-6 flex-1 flex flex-col items-center justify-center">
+                    <div className="text-3xl font-bold text-purple-500 mb-1">{formsCount}</div>
+                    <p className="text-gray-400 text-sm">Formulários</p>
                   </div>
                 </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className={`w-full ${
-                      hasMetabolicAssessment 
-                        ? 'bg-purple-600 hover:bg-purple-700' 
-                        : 'bg-gray-600 cursor-not-allowed'
-                    }`}
-                    onClick={handleFormsAccess}
-                    disabled={!hasMetabolicAssessment}
-                  >
-                    {hasMetabolicAssessment ? 'Ver Formulários' : 'Bloqueado'}
-                  </Button>
-                </div>
-                {!hasMetabolicAssessment && (
-                  <p className="text-xs text-red-400 mt-2 text-center">
-                    Complete a avaliação metabólica primeiro
-                  </p>
-                )}
+                <Button
+                  className={`w-full font-medium ${
+                    hasMetabolicAssessment
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                      : 'bg-gray-600 cursor-not-allowed text-gray-400'
+                  }`}
+                  onClick={handleFormsAccess}
+                  disabled={!hasMetabolicAssessment}
+                >
+                  {hasMetabolicAssessment ? 'Ver Formulários' : 'Bloqueado'}
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-3">
-                  <Calculator className="w-6 h-6 text-orange-500" />
-                  Avaliação metabólica
-                </CardTitle>
-                <CardDescription className="text-gray-300">
-                  Calcule sua TMB e gasto energético total
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <Calculator className="w-12 h-12 text-orange-500 mx-auto mb-2" />
+            {/* Avaliação Metabólica Card */}
+            <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
+              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
+                <div className="flex flex-col items-center flex-1 w-full">
+                  <div className="mb-4 mt-2">
+                    <Calculator className="w-10 h-10 text-orange-500" />
                   </div>
-                </div>
-                <div className="flex justify-center mb-4">
+                  <h3 className="text-white font-semibold text-lg text-center mb-3">Avaliação<br />metabólica</h3>
                   {hasMetabolicAssessment && (
-                    <div className="flex items-center gap-2 mb-2 justify-center">
-                      <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10">
+                    <div className="mb-6 flex items-center gap-2 justify-center">
+                      <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10 text-xs">
                         Completa
                       </Badge>
                     </div>
                   )}
+                  {!hasMetabolicAssessment && <div className="mb-6 flex-1"></div>}
                 </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className="w-full bg-orange-600 hover:bg-orange-700"
-                    onClick={handleMetabolicAssessment}
-                  >
-                    {hasMetabolicAssessment ? 'Ver/Atualizar TMB' : 'Calcular TMB'}
-                  </Button>
-                </div>
+                <Button
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
+                  onClick={handleMetabolicAssessment}
+                >
+                  {hasMetabolicAssessment ? 'Ver/Atualizar TMB' : 'Calcular TMB'}
+                </Button>
               </CardContent>
             </Card>
 
             {/* AI Coach - Bloqueado para plano Standard */}
-            <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
-              !hasStandardPlan 
-                ? 'hover:bg-gray-800 cursor-pointer' 
-                : 'opacity-60 cursor-not-allowed'
+            <Card className={`bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full transition-all ${
+              !hasStandardPlan
+                ? 'hover:bg-gray-900/50'
+                : 'opacity-60'
             }`}>
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-3">
-                  <div className="relative">
-                    <MessageCircle className="w-6 h-6 text-green-500" />
+              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
+                <div className="flex flex-col items-center flex-1 w-full">
+                  <div className="mb-4 mt-2 relative">
+                    <MessageCircle className="w-10 h-10 text-green-500" />
                     {hasStandardPlan && (
                       <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                     )}
                   </div>
-                  AI Coach
-                </CardTitle>
-                <CardDescription className="text-gray-300">
-                  Tire dúvidas com seu AI coach
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <MessageCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                  <h3 className="text-white font-semibold text-lg text-center mb-6">AI Coach</h3>
+                  <div className="text-center mb-6 flex-1 flex items-center justify-center">
+                    <p className="text-gray-400 text-sm">Tire dúvidas com seu AI coach</p>
                   </div>
                 </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className={`w-full ${
-                      !hasStandardPlan 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : 'bg-gray-600 cursor-not-allowed'
-                    }`}
-                    onClick={handleWhatsAppRedirect}
-                    disabled={hasStandardPlan}
-                  >
-                    {!hasStandardPlan ? 'Chamar no WhatsApp' : 'Apenas no Plano Pro'}
-                  </Button>
-                </div>
-                {hasStandardPlan && (
-                  <p className="text-xs text-red-400 mt-2 text-center">
-                    Recurso disponível apenas no plano Pro
-                  </p>
-                )}
+                <Button
+                  className={`w-full font-medium ${
+                    !hasStandardPlan
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-gray-600 cursor-not-allowed text-gray-400'
+                  }`}
+                  onClick={handleWhatsAppRedirect}
+                  disabled={hasStandardPlan}
+                >
+                  {!hasStandardPlan ? 'Chamar no WhatsApp' : 'Apenas no Plano Pro'}
+                </Button>
               </CardContent>
             </Card>
 
             {/* Periodização de Treino - Bloqueado para plano Standard */}
             {hasTrainingSubscription && (
-              <Card className={`bg-[#161616] border-black backdrop-blur-sm transition-all flex flex-col ${
-                !hasStandardPlan 
-                  ? 'hover:bg-gray-800 cursor-pointer' 
-                  : 'opacity-60 cursor-not-allowed'
+              <Card className={`bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full transition-all ${
+                !hasStandardPlan
+                  ? 'hover:bg-gray-900/50'
+                  : 'opacity-60'
               }`}>
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-3">
-                    <div className="relative">
-                      <Activity className="w-6 h-6 text-red-500" />
+                <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
+                  <div className="flex flex-col items-center flex-1 w-full">
+                    <div className="mb-4 mt-2 relative">
+                      <Activity className="w-10 h-10 text-red-500" />
                       {hasStandardPlan && (
                         <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                       )}
                     </div>
-                    Periodização de Treino
-                  </CardTitle>
-                  <CardDescription className="text-gray-300">
-                    Veja os detalhes do seu treino atual
-                  </CardDescription>
-                </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <Activity className="w-12 h-12 text-red-500 mx-auto mb-2" />
+                    <h3 className="text-white font-semibold text-lg text-center mb-6">Periodização<br />de Treino</h3>
+                    <div className="text-center mb-6 flex-1 flex items-center justify-center">
+                      <p className="text-gray-400 text-sm">Veja os detalhes do seu treino</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className={`w-full ${
-                      !hasStandardPlan 
-                        ? 'bg-red-600 hover:bg-red-700' 
-                        : 'bg-gray-600 cursor-not-allowed'
+                  <Button
+                    className={`w-full font-medium ${
+                      !hasStandardPlan
+                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        : 'bg-gray-600 cursor-not-allowed text-gray-400'
                     }`}
                     onClick={handleTrainingPeriodization}
                     disabled={hasStandardPlan}
                   >
                     {!hasStandardPlan ? 'Ver Periodização' : 'Apenas no Plano Pro'}
                   </Button>
-                </div>
-                {hasStandardPlan && (
-                  <p className="text-xs text-red-400 mt-2 text-center">
-                    Recurso disponível apenas no plano Pro
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             )}
 
             {/* Check-in de Treino */}
             {hasTrainingSubscription && (
-              <Card className="bg-[#161616] border-black backdrop-blur-sm hover:bg-gray-800 transition-all flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-3">
-                    <Dumbbell className="w-6 h-6 text-cyan-500" />
-                    Check-in de Treino
-                  </CardTitle>
-                  <CardDescription className="text-gray-300">
-                    Registre seus treinos
-                  </CardDescription>
-                </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <Dumbbell className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
+              <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
+                <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
+                  <div className="flex flex-col items-center flex-1 w-full">
+                    <div className="mb-4 mt-2">
+                      <Dumbbell className="w-10 h-10 text-cyan-500" />
+                    </div>
+                    <h3 className="text-white font-semibold text-lg text-center mb-3">Check-in<br />de Treino</h3>
+                    <div className="text-center mb-6 flex-1 flex flex-col items-center justify-center">
+                      <div className="text-3xl font-bold text-cyan-500 mb-1">{weeklyCheckins.length}/7</div>
+                      <p className="text-gray-400 text-sm">Treinos nesta semana</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-center">
-                  <Button 
-                    className="w-full bg-cyan-600 hover:bg-cyan-700"
+                  <Button
+                    className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium"
                     onClick={handleWorkoutCheckin}
                   >
                     Registrar Treino
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
