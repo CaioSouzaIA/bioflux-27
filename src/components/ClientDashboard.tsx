@@ -106,6 +106,9 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     return !!earnedDate || isEarnedByTime;
   }).length;
 
+  // Buscar check-ins de treino
+  const { weeklyCheckins } = useWorkoutCheckins(user?.id);
+
   // Verificar se o usuário tem assinatura de treino
   const hasTrainingSubscription = subscriptions.some(sub => 
     sub.service_type === 'treino' || sub.service_type === 'treino-dieta'
