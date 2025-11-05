@@ -538,9 +538,10 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <div className="mb-4 mt-2">
                     <Trophy className="w-10 h-10 text-yellow-500" />
                   </div>
-                  <h3 className="text-white font-semibold text-lg text-center mb-6">Conquistas</h3>
-                  <div className="text-center mb-6 flex-1 flex items-center justify-center">
-                    <p className="text-gray-400 text-sm">Desbloqueie conquistas</p>
+                  <h3 className="text-white font-semibold text-lg text-center mb-3">Conquistas</h3>
+                  <div className="text-center mb-6 flex-1 flex flex-col items-center justify-center">
+                    <div className="text-3xl font-bold text-yellow-500 mb-1">{earnedAchievementsCount}/{allBadges.length}</div>
+                    <p className="text-gray-400 text-sm">Conquistas desbloqueadas</p>
                   </div>
                 </div>
                 <Button
