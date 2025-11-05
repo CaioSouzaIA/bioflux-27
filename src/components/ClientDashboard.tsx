@@ -50,13 +50,60 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   // Buscar prescrições de dieta e treino do usuário atual
   const { data: dietPrescriptions = [], isLoading: dietLoading } = useDietPrescriptions(user?.id);
   const { data: trainingPrescriptions = [], isLoading: trainingLoading } = useTrainingPrescriptions(user?.id);
-  
+
   const prescriptionsLoading = dietLoading || trainingLoading;
   const totalPrescriptions = dietPrescriptions.length + trainingPrescriptions.length;
 
   // Verificar se o usuário tem avaliação metabólica
   const { data: metabolicAssessment, isLoading: metabolicLoading } = useMetabolicAssessment(user?.id);
   const hasMetabolicAssessment = !!metabolicAssessment;
+
+  // Buscar todas as badges disponíveis
+  const { data: allBadges = [] } = useQuery({
+    queryKey: ["all-badges"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("badges")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Buscar conquistas do usuário
+  const { data: userAchievements = [] } = useQuery({
+    queryKey: ["user-achievements", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from("user_achievements")
+        .select("badge_id, earned_at")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Calcular total de conquistas desbloqueadas
+  const achievementsMap = new Map(
+    userAchievements.map(a => [a.badge_id, a.earned_at])
+  );
+  const earnedAchievementsCount = allBadges.filter(badge => {
+    const earnedDate = achievementsMap.get(badge.id);
+    const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+    const isAccountAgeBadge = metadata?.type === 'account_age';
+    const daysRequired = metadata?.days_required || 0;
+    const accountAgeDays = userProfile?.created_at
+      ? Math.floor((new Date().getTime() - new Date(userProfile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+    const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
+    return !!earnedDate || isEarnedByTime;
+  }).length;
 
   // Verificar se o usuário tem assinatura de treino
   const hasTrainingSubscription = subscriptions.some(sub => 
