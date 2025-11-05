@@ -19,6 +19,7 @@ import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
 import OnboardingModal from '@/components/OnboardingModal';
+import { useQuery } from '@tanstack/react-query';
 
 interface Subscription {
   id: string;
