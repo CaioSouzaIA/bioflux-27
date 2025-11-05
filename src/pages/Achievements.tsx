@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Calendar, ArrowLeft, Sparkles } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BackgroundAnimation } from "@/components/BackgroundAnimation";
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,32 @@ export default function Achievements() {
     },
   });
 
-  const isLoading = isBadgesLoading || isAchievementsLoading;
+  // Buscar check-ins de treino do mês atual
+  const { data: monthlyCheckins, isLoading: isCheckinsLoading } = useQuery({
+    queryKey: ["monthly-workout-checkins"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const monthStart = startOfMonth(new Date()).toISOString();
+      const monthEnd = endOfMonth(new Date()).toISOString();
+
+      const { data, error } = await (supabase as any)
+        .from("workout_checkins")
+        .select("id, workout_date")
+        .eq("user_id", user.id)
+        .gte("workout_date", monthStart)
+        .lte("workout_date", monthEnd);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const isLoading = isBadgesLoading || isAchievementsLoading || isCheckinsLoading;
+  
+  // Calcular total de check-ins do mês
+  const monthlyCheckinsCount = monthlyCheckins?.length || 0;
 
   // Criar mapa de conquistas do usuário
   const achievementsMap = new Map(
@@ -116,34 +141,49 @@ export default function Achievements() {
     },
   });
 
-  // Detectar novas conquistas baseadas em tempo
+  // Detectar novas conquistas baseadas em tempo e check-ins
   useEffect(() => {
-    if (!allBadges || !userAchievements || !profile) return;
+    if (!allBadges || !userAchievements || !profile || monthlyCheckins === undefined) return;
 
     const newlyEarned = allBadges.filter(badge => {
-      const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+      const metadata = badge.metadata as { type?: string; days_required?: number; monthly_checkins_required?: number } | null;
+      const alreadyRecorded = achievementsMap.has(badge.id);
+      
+      if (alreadyRecorded) return false;
+      
+      // Badge de idade da conta
       const isAccountAgeBadge = metadata?.type === 'account_age';
       const daysRequired = metadata?.days_required || 0;
       const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
-      const alreadyRecorded = achievementsMap.has(badge.id);
       
-      return isEarnedByTime && !alreadyRecorded;
+      // Badge de check-ins de treino
+      const isWorkoutCheckinBadge = metadata?.type === 'workout_checkins';
+      const checkinsRequired = metadata?.monthly_checkins_required || 0;
+      const isEarnedByCheckins = isWorkoutCheckinBadge && monthlyCheckinsCount >= checkinsRequired;
+      
+      return isEarnedByTime || isEarnedByCheckins;
     });
 
     if (newlyEarned.length > 0) {
       setNewAchievements(newlyEarned);
       setShowNewAchievementModal(true);
     }
-  }, [allBadges, userAchievements, accountAgeDays, profile]);
+  }, [allBadges, userAchievements, accountAgeDays, profile, monthlyCheckinsCount, monthlyCheckins]);
 
-  // Calcular total de conquistas (incluindo as baseadas em tempo)
+  // Calcular total de conquistas (incluindo as baseadas em tempo e check-ins)
   const earnedCount = allBadges?.filter(badge => {
     const earnedDate = achievementsMap.get(badge.id);
-    const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+    const metadata = badge.metadata as { type?: string; days_required?: number; monthly_checkins_required?: number } | null;
+    
     const isAccountAgeBadge = metadata?.type === 'account_age';
     const daysRequired = metadata?.days_required || 0;
     const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
-    return !!earnedDate || isEarnedByTime;
+    
+    const isWorkoutCheckinBadge = metadata?.type === 'workout_checkins';
+    const checkinsRequired = metadata?.monthly_checkins_required || 0;
+    const isEarnedByCheckins = isWorkoutCheckinBadge && monthlyCheckinsCount >= checkinsRequired;
+    
+    return !!earnedDate || isEarnedByTime || isEarnedByCheckins;
   }).length || 0;
 
   const handleCloseModal = async () => {
@@ -239,14 +279,21 @@ export default function Achievements() {
               {allBadges.map((badge) => {
                 const earnedDate = achievementsMap.get(badge.id);
                 
-                // Verificar se é conquista de Lealdade baseada em idade da conta
-                const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+                // Verificar metadados da badge
+                const metadata = badge.metadata as { type?: string; days_required?: number; monthly_checkins_required?: number } | null;
+                
+                // Conquista de Lealdade baseada em idade da conta
                 const isAccountAgeBadge = metadata?.type === 'account_age';
                 const daysRequired = metadata?.days_required || 0;
                 const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
                 
-                // Badge é considerado conquistado se já está em user_achievements OU se atingiu os dias necessários
-                const isEarned = !!earnedDate || isEarnedByTime;
+                // Conquista Mestre do Ferro baseada em check-ins mensais
+                const isWorkoutCheckinBadge = metadata?.type === 'workout_checkins';
+                const checkinsRequired = metadata?.monthly_checkins_required || 0;
+                const isEarnedByCheckins = isWorkoutCheckinBadge && monthlyCheckinsCount >= checkinsRequired;
+                
+                // Badge é considerada conquistada se: já está registrada, atingiu dias necessários, ou atingiu check-ins necessários
+                const isEarned = !!earnedDate || isEarnedByTime || isEarnedByCheckins;
                 
                 return (
                   <Card 
@@ -299,7 +346,9 @@ export default function Achievements() {
                         <div className="text-xs text-gray-500 italic">
                           {isAccountAgeBadge && daysRequired > 0 
                             ? `Faltam ${daysRequired - accountAgeDays} dias`
-                            : 'Conquista bloqueada'}
+                            : isWorkoutCheckinBadge && checkinsRequired > 0
+                              ? `${monthlyCheckinsCount}/${checkinsRequired} treinos este mês`
+                              : 'Conquista bloqueada'}
                         </div>
                       )}
                     </div>

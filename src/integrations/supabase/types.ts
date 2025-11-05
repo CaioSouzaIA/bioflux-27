@@ -361,6 +361,7 @@ export type Database = {
           training_volume: string
           updated_at: string
           user_id: string
+          workouts: Json | null
         }
         Insert: {
           created_at?: string
@@ -373,6 +374,7 @@ export type Database = {
           training_volume: string
           updated_at?: string
           user_id: string
+          workouts?: Json | null
         }
         Update: {
           created_at?: string
@@ -385,6 +387,7 @@ export type Database = {
           training_volume?: string
           updated_at?: string
           user_id?: string
+          workouts?: Json | null
         }
         Relationships: []
       }
@@ -511,22 +514,48 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_checkins: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          workout_date: string
+          workout_division: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          workout_date: string
+          workout_division: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          workout_date?: string
+          workout_division?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_checkins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      auto_maintain_unlimited_plans: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      auto_reset_monthly_forms: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
+      auto_maintain_unlimited_plans: { Args: never; Returns: undefined }
+      auto_reset_monthly_forms: { Args: never; Returns: undefined }
+      can_user_claim_badge: {
+        Args: { badge_uuid: string; user_uuid: string }
+        Returns: boolean
       }
       cancel_client_subscription: {
         Args: { subscription_id: string }
@@ -540,78 +569,14 @@ export type Database = {
         }
         Returns: boolean
       }
-      get_admin_ids: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      has_unlimited_plan: {
-        Args: { user_id_param: string }
-        Returns: boolean
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
+      get_admin_ids: { Args: never; Returns: string[] }
+      get_current_user_role: { Args: never; Returns: string }
+      has_unlimited_plan: { Args: { user_id_param: string }; Returns: boolean }
       is_user_activation_expired: {
         Args: { user_id_param: string }
         Returns: boolean
       }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
-      }
-      maintain_unlimited_plan_activation: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      maintain_unlimited_plan_activation: { Args: never; Returns: undefined }
       match_documents: {
         Args: { filter: Json; match_count: number; query_embedding: string }
         Returns: {
@@ -621,66 +586,18 @@ export type Database = {
           similarity: number
         }[]
       }
-      reset_client_forms: {
-        Args: { client_user_id: string }
-        Returns: boolean
-      }
-      reset_monthly_usage: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      reset_client_forms: { Args: { client_user_id: string }; Returns: boolean }
+      reset_monthly_usage: { Args: never; Returns: undefined }
       reset_user_activation: {
         Args: { user_id_param: string }
         Returns: boolean
       }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      sync_unlimited_plan_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      sync_unlimited_plan_data: { Args: never; Returns: undefined }
       toggle_unlimited_plan: {
         Args: { client_user_id: string; enable_unlimited: boolean }
         Returns: boolean
       }
-      update_expired_subscriptions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
+      update_expired_subscriptions: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
