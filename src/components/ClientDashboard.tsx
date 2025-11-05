@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
 import { useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
+import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
 import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
