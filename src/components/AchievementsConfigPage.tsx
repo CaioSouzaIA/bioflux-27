@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -64,8 +64,8 @@ export const AchievementsConfigPage: React.FC = () => {
   const { user } = useAuthContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const bulkInputRef = useRef<HTMLInputElement | null>(null);
   const [drafts, setDrafts] = useState<BadgeDraft[]>([createDraft()]);
+  const [existingBadgeColors, setExistingBadgeColors] = useState<Record<string, string>>({});
 
   const { data: badges = [], isLoading } = useQuery({
     queryKey: ['admin-badges'],
@@ -98,29 +98,6 @@ export const AchievementsConfigPage: React.FC = () => {
       }
 
       return current.filter((draft) => draft.id !== draftId);
-    });
-  };
-
-  const appendDraftsFromFiles = (files: FileList | null) => {
-    if (!files?.length) return;
-
-    const nextDrafts = Array.from(files).map((file) =>
-      createDraft({
-        title: formatFileNameToTitle(file.name),
-        imageFile: file,
-        previewUrl: URL.createObjectURL(file),
-      })
-    );
-
-    setDrafts((current) => {
-      const hasOnlyEmptyDraft =
-        current.length === 1 &&
-        !current[0].title &&
-        !current[0].subtitle &&
-        !current[0].imageFile &&
-        !current[0].previewUrl;
-
-      return hasOnlyEmptyDraft ? nextDrafts : [...current, ...nextDrafts];
     });
   };
 
@@ -200,6 +177,33 @@ export const AchievementsConfigPage: React.FC = () => {
     },
   });
 
+  const updateExistingBadgeColorMutation = useMutation({
+    mutationFn: async ({ badgeId, color }: { badgeId: string; color: string }) => {
+      const { error } = await supabase
+        .from('badges')
+        .update({ category_color: color })
+        .eq('id', badgeId);
+
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['admin-badges'] });
+      await queryClient.invalidateQueries({ queryKey: ['all-badges'] });
+      toast({
+        title: 'Cor atualizada',
+        description: 'A cor da categoria da insígnia foi atualizada.',
+      });
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar cor da insígnia:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar a cor da insígnia.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   return (
     <div className="space-y-8">
       <Card className="client-surface-panel rounded-3xl">
@@ -210,27 +214,11 @@ export const AchievementsConfigPage: React.FC = () => {
               Configurações de Conquistas
             </CardTitle>
             <p className="mt-2 text-sm text-white/60">
-              Cadastre várias insígnias de uma vez com imagem, título, subtítulo e cor da categoria.
+              Cadastre várias insígnias no mesmo lote com imagem, título, subtítulo e cor da categoria.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <input
-              ref={bulkInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(event) => appendDraftsFromFiles(event.target.files)}
-            />
-            <Button
-              type="button"
-              onClick={() => bulkInputRef.current?.click()}
-              className="client-back-button"
-            >
-              <UploadCloud className="mr-2 h-4 w-4" />
-              Adicionar em massa
-            </Button>
             <Button
               type="button"
               onClick={() => setDrafts((current) => [...current, createDraft()])}
@@ -307,7 +295,7 @@ export const AchievementsConfigPage: React.FC = () => {
                           value={draft.title}
                           onChange={(event) => updateDraft(draft.id, { title: event.target.value })}
                           placeholder="Ex: Mestre do Ferro VI"
-                          className="client-input-surface !text-black placeholder:text-black/45"
+                          className="client-input-surface !text-white placeholder:text-white/35"
                         />
                       </div>
 
@@ -317,7 +305,7 @@ export const AchievementsConfigPage: React.FC = () => {
                           value={draft.subtitle}
                           onChange={(event) => updateDraft(draft.id, { subtitle: event.target.value })}
                           placeholder="Ex: Complete 35 dias de treino em um mês"
-                          className="client-input-surface !text-black placeholder:text-black/45"
+                          className="client-input-surface !text-white placeholder:text-white/35"
                         />
                       </div>
 
@@ -331,12 +319,12 @@ export const AchievementsConfigPage: React.FC = () => {
                             type="color"
                             value={draft.categoryColor}
                             onChange={(event) => updateDraft(draft.id, { categoryColor: event.target.value })}
-                            className="h-11 w-14 cursor-pointer rounded-xl border border-white/10 bg-transparent p-1"
+                            className="h-11 w-14 cursor-pointer rounded-xl border border-white/10 bg-black/70 p-1"
                           />
                           <Input
                             value={draft.categoryColor}
                             onChange={(event) => updateDraft(draft.id, { categoryColor: event.target.value })}
-                            className="client-input-surface !text-black uppercase placeholder:text-black/45"
+                            className="client-input-surface !text-white uppercase placeholder:text-white/35"
                           />
                         </div>
                       </div>
@@ -391,7 +379,49 @@ export const AchievementsConfigPage: React.FC = () => {
                         <p className="mt-1 line-clamp-2 text-sm text-white/60">{badge.description}</p>
                       </div>
                     </div>
-                    <div className="mt-auto">
+                    <div className="mt-auto space-y-3">
+                      <div className="space-y-2">
+                        <Label className="text-white">Cor da categoria</Label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={existingBadgeColors[badge.id] ?? badge.category_color ?? DEFAULT_BADGE_COLOR}
+                            onChange={(event) =>
+                              setExistingBadgeColors((current) => ({
+                                ...current,
+                                [badge.id]: event.target.value,
+                              }))
+                            }
+                            className="h-11 w-14 cursor-pointer rounded-xl border border-white/10 bg-black/70 p-1"
+                          />
+                          <Input
+                            value={existingBadgeColors[badge.id] ?? badge.category_color ?? DEFAULT_BADGE_COLOR}
+                            onChange={(event) =>
+                              setExistingBadgeColors((current) => ({
+                                ...current,
+                                [badge.id]: event.target.value,
+                              }))
+                            }
+                            className="client-input-surface !text-white uppercase placeholder:text-white/35"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          updateExistingBadgeColorMutation.mutate({
+                            badgeId: badge.id,
+                            color: existingBadgeColors[badge.id] ?? badge.category_color ?? DEFAULT_BADGE_COLOR,
+                          })
+                        }
+                        disabled={updateExistingBadgeColorMutation.isPending}
+                        className="client-back-button w-full"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar cor
+                      </Button>
+
                       <Badge
                         variant="outline"
                         className="border-white/10 text-white"
