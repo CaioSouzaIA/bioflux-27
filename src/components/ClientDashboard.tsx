@@ -48,7 +48,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'dashboard' | 'metabolic' | 'periodization'>('dashboard');
   const [badgePickerOpen, setBadgePickerOpen] = useState(false);
-  const [badgeShineColor, setBadgeShineColor] = useState<string>('rgba(255,255,255,0.92)');
   const { user, userProfile, refreshUserType } = useAuthContext();
   const navigate = useNavigate();
   
@@ -187,85 +186,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       fetchFormsCount();
     }
   }, [subscriptions]);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    if (!selectedBadge?.image_url) {
-      setBadgeShineColor('rgba(255,255,255,0.92)');
-      return;
-    }
-
-    const image = new Image();
-    image.crossOrigin = 'anonymous';
-
-    image.onload = () => {
-      if (isCancelled) return;
-
-      try {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d', { willReadFrequently: true });
-
-        if (!context) {
-          setBadgeShineColor('rgba(255,255,255,0.92)');
-          return;
-        }
-
-        canvas.width = 24;
-        canvas.height = 24;
-        context.drawImage(image, 0, 0, 24, 24);
-
-        const { data } = context.getImageData(0, 0, 24, 24);
-        let red = 0;
-        let green = 0;
-        let blue = 0;
-        let weightTotal = 0;
-
-        for (let index = 0; index < data.length; index += 4) {
-          const alpha = data[index + 3] / 255;
-          if (alpha < 0.2) continue;
-
-          const pixelRed = data[index];
-          const pixelGreen = data[index + 1];
-          const pixelBlue = data[index + 2];
-          const brightness = (pixelRed + pixelGreen + pixelBlue) / 3;
-          const saturation = Math.max(pixelRed, pixelGreen, pixelBlue) - Math.min(pixelRed, pixelGreen, pixelBlue);
-          const weight = Math.max(0.35, (saturation / 255) * 1.4 + (brightness / 255) * 0.15) * alpha;
-
-          red += pixelRed * weight;
-          green += pixelGreen * weight;
-          blue += pixelBlue * weight;
-          weightTotal += weight;
-        }
-
-        if (!weightTotal) {
-          setBadgeShineColor('rgba(255,255,255,0.92)');
-          return;
-        }
-
-        const dominantRed = Math.min(255, Math.round((red / weightTotal) * 1.12));
-        const dominantGreen = Math.min(255, Math.round((green / weightTotal) * 1.12));
-        const dominantBlue = Math.min(255, Math.round((blue / weightTotal) * 1.12));
-
-        setBadgeShineColor(`rgba(${dominantRed}, ${dominantGreen}, ${dominantBlue}, 0.95)`);
-      } catch (error) {
-        console.error('Erro ao calcular cor da insígnia:', error);
-        setBadgeShineColor('rgba(255,255,255,0.92)');
-      }
-    };
-
-    image.onerror = () => {
-      if (!isCancelled) {
-        setBadgeShineColor('rgba(255,255,255,0.92)');
-      }
-    };
-
-    image.src = selectedBadge.image_url;
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [selectedBadge?.image_url]);
 
   const fetchSubscriptions = async () => {
     if (!user) return;
@@ -633,16 +553,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/[0.04] transition-colors hover:bg-white/[0.08]"
+                      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/[0.04] transition-colors hover:bg-white/[0.08]"
                       aria-label="Escolher insígnia exibida"
                     >
                       <ShineBorder
                         borderWidth={1}
                         duration={7}
-                        shineColor={[`${badgeShineColor}`, 'rgba(0,0,0,0)', `${badgeShineColor}`]}
+                        shineColor={['rgb(34, 211, 238)', 'rgba(0,0,0,0)', 'rgb(34, 211, 238)']}
                         className="rounded-full"
                       />
-                      <Avatar className="relative z-10 h-10 w-10">
+                      <Avatar className="relative z-10 h-12 w-12">
                         <AvatarImage
                           src={selectedBadge?.image_url || undefined}
                           alt={selectedBadge?.name || "Insígnia"}
