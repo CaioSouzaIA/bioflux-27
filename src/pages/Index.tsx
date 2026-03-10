@@ -97,14 +97,14 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-4 px-2 mb-12 mx-auto max-w-6xl md:gap-8 lg:grid-cols-2 xl:grid-cols-4">
-            <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-orange-500/30" style={{ ['--card-glow' as string]: 'rgba(249,115,22,0.30)' }} onClick={() => setCurrentView('ai-config')}>
+            <Card className="client-glass-card flex h-full cursor-pointer flex-col transition-all duration-500 hover:scale-[1.02] hover:border-orange-500/30" style={{ ['--card-glow' as string]: 'rgba(249,115,22,0.30)' }} onClick={() => setCurrentView('ai-config')}>
               <CardHeader className="p-3 pb-4 text-center md:p-6 md:pb-6">
                 <div className="flex items-center justify-center mx-auto mb-3 rounded-2xl w-12 h-12 bg-gradient-to-br from-orange-500/20 to-orange-600/30 md:w-20 md:h-20 md:mb-6">
                   <Bot className="w-6 h-6 text-orange-500 md:w-10 md:h-10" />
                 </div>
                 <CardTitle className="mb-2 text-lg text-white md:text-2xl md:mb-4">Configurações da IA</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 pt-0 text-center md:p-6">
+              <CardContent className="flex flex-1 flex-col justify-between p-3 pt-0 text-center md:p-6">
                 <p className="mb-4 text-sm leading-relaxed text-gray-300 md:text-lg md:mb-8">
                   Configure o bot de IA para prescrições personalizadas de dietas.
                 </p>
@@ -114,14 +114,14 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-green-500/30" style={{ ['--card-glow' as string]: 'rgba(34,197,94,0.30)' }} onClick={() => setCurrentView('forms-list')}>
+            <Card className="client-glass-card flex h-full cursor-pointer flex-col transition-all duration-500 hover:scale-[1.02] hover:border-green-500/30" style={{ ['--card-glow' as string]: 'rgba(34,197,94,0.30)' }} onClick={() => setCurrentView('forms-list')}>
               <CardHeader className="p-3 pb-4 text-center md:p-6 md:pb-6">
                 <div className="flex items-center justify-center mx-auto mb-3 rounded-2xl w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-600/30 md:w-20 md:h-20 md:mb-6">
                   <Settings className="w-6 h-6 text-green-500 md:w-10 md:h-10" />
                 </div>
                 <CardTitle className="mb-2 text-lg text-white md:text-2xl md:mb-4">Formulários</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 pt-0 text-center md:p-6">
+              <CardContent className="flex flex-1 flex-col justify-between p-3 pt-0 text-center md:p-6">
                 <p className="mb-4 text-sm leading-relaxed text-gray-300 md:text-lg md:mb-8">
                   Configure e personalize seus formulários com campos fixos obrigatórios.
                 </p>
@@ -131,14 +131,14 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-purple-500/30" style={{ ['--card-glow' as string]: 'rgba(168,85,247,0.30)' }} onClick={() => setCurrentView('leads')}>
+            <Card className="client-glass-card flex h-full cursor-pointer flex-col transition-all duration-500 hover:scale-[1.02] hover:border-purple-500/30" style={{ ['--card-glow' as string]: 'rgba(168,85,247,0.30)' }} onClick={() => setCurrentView('leads')}>
               <CardHeader className="p-3 pb-4 text-center md:p-6 md:pb-6">
                 <div className="flex items-center justify-center mx-auto mb-3 rounded-2xl w-12 h-12 bg-gradient-to-br from-purple-500/20 to-purple-600/30 md:w-20 md:h-20 md:mb-6">
                   <Users className="w-6 h-6 text-purple-500 md:w-10 md:h-10" />
                 </div>
                 <CardTitle className="mb-2 text-lg text-white md:text-2xl md:mb-4">Gerenciar Leads</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 pt-0 text-center md:p-6">
+              <CardContent className="flex flex-1 flex-col justify-between p-3 pt-0 text-center md:p-6">
                 <p className="mb-4 text-sm leading-relaxed text-gray-300 md:text-lg md:mb-8">
                   Visualize e gerencie todos os leads coletados pelos seus formulários.
                 </p>
@@ -148,14 +148,14 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-white/20" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }} onClick={() => setCurrentView('management')}>
+            <Card className="client-glass-card flex h-full cursor-pointer flex-col transition-all duration-500 hover:scale-[1.02] hover:border-white/20" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }} onClick={() => setCurrentView('management')}>
               <CardHeader className="p-3 pb-4 text-center md:p-6 md:pb-6">
                 <div className="flex items-center justify-center mx-auto mb-3 rounded-2xl w-12 h-12 bg-[#1f1f1f] md:w-20 md:h-20 md:mb-6">
                   <BarChart className="w-6 h-6 text-white md:w-10 md:h-10" />
                 </div>
                 <CardTitle className="mb-2 text-lg text-white md:text-2xl md:mb-4">Gestão</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 pt-0 text-center md:p-6">
+              <CardContent className="flex flex-1 flex-col justify-between p-3 pt-0 text-center md:p-6">
                 <p className="mb-4 text-sm leading-relaxed text-gray-300 md:text-lg md:mb-8">
                   Dashboard com gráficos e estatísticas dos planos assinados pelos leads.
                 </p>

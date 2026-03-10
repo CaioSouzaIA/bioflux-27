@@ -364,76 +364,105 @@ export const LeadsManager: React.FC = () => {
 
   if (loading) {
     return (
-      <Card className="bg-[#161616] border-gray-700">
-        <CardContent className="p-6">
-          <p className="text-center text-gray-400">Carregando clientes...</p>
+      <Card className="client-surface-panel rounded-3xl">
+        <CardContent className="p-8">
+          <p className="text-center text-white/60">Carregando clientes...</p>
         </CardContent>
       </Card>
     );
   }
 
+  const activeCount = clients.filter((client) => client.client_subscriptions?.some((sub) => sub.status === 'ativo')).length;
+  const inactiveCount = clients.length - activeCount;
+
   return (
     <div className="space-y-6">
-      <Card className="bg-[#161616] border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Users className="w-5 h-5 text-cyan-400" />
-            Gerenciar Clientes
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'ativos' | 'inativos')} className="w-full">
-            <TabsList className="grid w-full max-w-md grid-cols-2 bg-gray-800">
-              <TabsTrigger value="ativos" className="data-[state=active]:bg-green-600">
-                Ativos
-              </TabsTrigger>
-              <TabsTrigger value="inativos" className="data-[state=active]:bg-red-600">
-                Inativos
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(168,85,247,0.28)' }}>
+          <CardContent className="p-6">
+            <p className="text-sm text-white/60">Clientes filtrados</p>
+            <p className="mt-2 text-3xl font-semibold text-white">{filteredClients.length}</p>
+          </CardContent>
+        </Card>
+        <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(34,197,94,0.28)' }}>
+          <CardContent className="p-6">
+            <p className="text-sm text-white/60">Clientes ativos</p>
+            <p className="mt-2 text-3xl font-semibold text-white">{activeCount}</p>
+          </CardContent>
+        </Card>
+        <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(239,68,68,0.24)' }}>
+          <CardContent className="p-6">
+            <p className="text-sm text-white/60">Clientes inativos</p>
+            <p className="mt-2 text-3xl font-semibold text-white">{inactiveCount}</p>
+          </CardContent>
+        </Card>
+      </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <Card className="client-surface-panel rounded-3xl">
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Users className="w-5 h-5 text-purple-400" />
+                Gerenciar Clientes
+              </CardTitle>
+              <p className="mt-2 text-sm text-white/60">
+                Filtre, exporte e gerencie contas de clientes no mesmo padrão visual do painel.
+              </p>
+            </div>
+
+            <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'ativos' | 'inativos')} className="w-full lg:w-auto">
+              <TabsList className="client-surface-subtle grid h-auto w-full grid-cols-2 rounded-2xl border border-white/10 p-1 lg:w-[260px]">
+                <TabsTrigger value="ativos" className="rounded-xl text-white/60 data-[state=active]:bg-white/10 data-[state=active]:text-white">
+                  Ativos
+                </TabsTrigger>
+                <TabsTrigger value="inativos" className="rounded-xl text-white/60 data-[state=active]:bg-white/10 data-[state=active]:text-white">
+                  Inativos
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative w-full lg:max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
               <Input
                 placeholder="Buscar por nome ou WhatsApp..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+                className="client-input-surface pl-10 text-white placeholder:text-white/35"
               />
             </div>
             <Button
               onClick={exportToCSV}
-              variant="outline"
-              className="border-gray-600 text-white hover:bg-gray-700 bg-gray-800"
+              className="client-action-button w-full lg:w-auto"
               disabled={filteredClients.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
               Exportar CSV
             </Button>
           </div>
+        </CardHeader>
 
+        <CardContent>
           {filteredClients.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-400">
-                {searchTerm ? 'Nenhum cliente encontrado com o termo pesquisado.' : 'Nenhum cliente cadastrado ainda.'}
-              </p>
+            <div className="client-surface-subtle rounded-2xl px-6 py-12 text-center text-white/60">
+              {searchTerm ? 'Nenhum cliente encontrado com o termo pesquisado.' : 'Nenhum cliente cadastrado ainda.'}
             </div>
           ) : (
-            <div className="rounded-md border border-gray-700 overflow-hidden">
+            <div className="client-surface-subtle overflow-hidden rounded-2xl border border-white/8">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-700 bg-gray-800">
-                    <TableHead className="text-gray-300">Nome Completo</TableHead>
-                    <TableHead className="text-gray-300">WhatsApp</TableHead>
-                    <TableHead className="text-gray-300">Data de Cadastro</TableHead>
+                  <TableRow className="border-white/8 bg-white/[0.03] hover:bg-white/[0.03]">
+                    <TableHead className="text-white/70">Nome Completo</TableHead>
+                    <TableHead className="text-white/70">WhatsApp</TableHead>
+                    <TableHead className="text-white/70">Data de Cadastro</TableHead>
                     {statusFilter === 'inativos' && (
-                      <TableHead className="text-gray-300">Data Inativação</TableHead>
+                      <TableHead className="text-white/70">Data Inativação</TableHead>
                     )}
-                    <TableHead className="text-gray-300">Status Formulários</TableHead>
-                    <TableHead className="text-gray-300">Plano Ilimitado</TableHead>
-                    <TableHead className="text-gray-300">Ações</TableHead>
+                    <TableHead className="text-white/70">Status Formulários</TableHead>
+                    <TableHead className="text-white/70">Plano Ilimitado</TableHead>
+                    <TableHead className="text-white/70">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -442,37 +471,34 @@ export const LeadsManager: React.FC = () => {
                     const inactiveSub = client.client_subscriptions?.find(sub => sub.status !== 'ativo');
                     const formsCompleted = activeSub?.forms_completed || false;
                     const clientName = `${client.first_name || ''} ${client.last_name || ''}`.trim();
-                    
+
                     return (
-                      <TableRow key={client.id} className="border-gray-700 bg-gray-900 hover:bg-gray-800">
-                        <TableCell className="text-white font-medium">{clientName}</TableCell>
-                        <TableCell className="text-white">{formatWhatsApp(client.whatsapp)}</TableCell>
-                        <TableCell className="text-gray-300">
+                      <TableRow key={client.id} className="border-white/8 bg-transparent hover:bg-white/[0.03]">
+                        <TableCell className="font-medium text-white">{clientName}</TableCell>
+                        <TableCell className="text-white/80">{formatWhatsApp(client.whatsapp)}</TableCell>
+                        <TableCell className="text-white/60">
                           {new Date(client.created_at).toLocaleDateString('pt-BR')}
                         </TableCell>
                         {statusFilter === 'inativos' && (
-                          <TableCell className="text-gray-300">
-                            {inactiveSub?.updated_at 
-                              ? new Date(inactiveSub.updated_at).toLocaleDateString('pt-BR')
-                              : '-'
-                            }
+                          <TableCell className="text-white/60">
+                            {inactiveSub?.updated_at ? new Date(inactiveSub.updated_at).toLocaleDateString('pt-BR') : '-'}
                           </TableCell>
                         )}
                         <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            formsCompleted 
-                              ? 'bg-red-900/20 text-red-400 border border-red-800/30' 
-                              : 'bg-green-900/20 text-green-400 border border-green-800/30'
+                          <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${
+                            formsCompleted
+                              ? 'border-red-500/30 bg-red-500/10 text-red-300'
+                              : 'border-green-500/30 bg-green-500/10 text-green-300'
                           }`}>
                             {formsCompleted ? 'Completados' : 'Disponíveis'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              client.unlimited_plan_enabled 
-                                ? 'bg-yellow-900/20 text-yellow-400 border border-yellow-800/30' 
-                                : 'bg-gray-900/20 text-gray-400 border border-gray-800/30'
+                          <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
+                            <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${
+                              client.unlimited_plan_enabled
+                                ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300'
+                                : 'border-white/10 bg-white/5 text-white/60'
                             }`}>
                               {client.unlimited_plan_enabled ? 'Habilitado' : 'Desabilitado'}
                             </span>
@@ -481,12 +507,10 @@ export const LeadsManager: React.FC = () => {
                               variant="outline"
                               onClick={() => handleToggleUnlimitedPlan(client.id, clientName, client.unlimited_plan_enabled)}
                               disabled={toggleingUnlimited === client.id}
-                              className={`border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-white ${
-                                client.unlimited_plan_enabled ? 'bg-yellow-600/10' : ''
-                              }`}
+                              className="client-back-button h-9 px-3 text-xs"
                             >
                               {toggleingUnlimited === client.id ? (
-                                <>Alterando...</>
+                                'Alterando...'
                               ) : (
                                 <>
                                   <Crown className="w-4 h-4 mr-1" />
@@ -497,21 +521,18 @@ export const LeadsManager: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <WhatsAppPopup 
-                              leadWhatsApp={client.whatsapp || ''}
-                              leadName={clientName}
-                            />
+                          <div className="flex flex-wrap gap-2">
+                            <WhatsAppPopup leadWhatsApp={client.whatsapp || ''} leadName={clientName} />
                             {formsCompleted && (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleResetClientForms(client.id, clientName)}
                                 disabled={resettingClient === client.id}
-                                className="border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-white"
+                                className="client-back-button h-9 px-3 text-xs"
                               >
                                 {resettingClient === client.id ? (
-                                  <>Resetando...</>
+                                  'Resetando...'
                                 ) : (
                                   <>
                                     <RotateCcw className="w-4 h-4 mr-1" />
@@ -526,10 +547,10 @@ export const LeadsManager: React.FC = () => {
                                   size="sm"
                                   variant="outline"
                                   disabled={deletingClient === client.id}
-                                  className="border-red-700 text-red-400 hover:bg-red-700 hover:text-white"
+                                  className="h-9 border-red-500/30 bg-red-500/8 px-3 text-xs text-red-300 hover:bg-red-500/16 hover:text-red-200"
                                 >
                                   {deletingClient === client.id ? (
-                                    <>Excluindo...</>
+                                    'Excluindo...'
                                   ) : (
                                     <>
                                       <Trash2 className="w-4 h-4 mr-1" />
@@ -538,21 +559,19 @@ export const LeadsManager: React.FC = () => {
                                   )}
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
+                              <AlertDialogContent className="client-surface-panel rounded-3xl text-white">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Excluir cliente permanentemente?</AlertDialogTitle>
-                                  <AlertDialogDescription className="text-gray-300">
+                                  <AlertDialogDescription className="text-white/65">
                                     Esta ação remove {clientName || 'este cliente'}, a conta de acesso e todos os dados relacionados em cascata.
                                     Essa operação não pode ser desfeita.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel className="border-gray-600 bg-gray-800 text-white hover:bg-gray-700">
-                                    Cancelar
-                                  </AlertDialogCancel>
+                                  <AlertDialogCancel className="client-back-button">Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => handleDeleteClient(client.id, clientName)}
-                                    className="bg-red-700 text-white hover:bg-red-600"
+                                    className="border border-red-500/30 bg-red-500/12 text-red-200 hover:bg-red-500/22"
                                   >
                                     Excluir definitivamente
                                   </AlertDialogAction>
@@ -568,10 +587,6 @@ export const LeadsManager: React.FC = () => {
               </Table>
             </div>
           )}
-
-          <div className="text-sm text-gray-400">
-            Total de clientes: {filteredClients.length}
-          </div>
         </CardContent>
       </Card>
     </div>
