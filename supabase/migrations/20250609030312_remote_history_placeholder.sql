@@ -1,0 +1,3 @@
+-- Placeholder migration for remote history version 20250609030312.
+-- This project was linked to a Supabase instance with older migration history that is not present in this repository lineage.
+-- The file exists only to keep Supabase CLI migration history consistent.
