@@ -552,11 +552,15 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-[3.7rem] w-[3.7rem] shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:bg-white/[0.08]"
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:bg-white/[0.08]"
                       aria-label="Escolher insígnia exibida"
                     >
-                      <Avatar className="h-[3.25rem] w-[3.25rem]">
-                        <AvatarImage src={selectedBadge?.image_url || undefined} alt={selectedBadge?.name || "Insígnia"} />
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage
+                          src={selectedBadge?.image_url || undefined}
+                          alt={selectedBadge?.name || "Insígnia"}
+                          className="scale-[1.3] object-cover"
+                        />
                         <AvatarFallback className="bg-white/[0.06] text-xs font-semibold text-white">
                           {selectedBadge ? getBadgeFallback(selectedBadge.name) : <Trophy className="h-4 w-4 text-yellow-400" />}
                         </AvatarFallback>
