@@ -372,7 +372,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
           <AccordionItem
             key={`${prescription.id}-${workout.label}`}
             value={`${prescription.id}-workout-${workout.label}`}
-            className="client-surface-subtle overflow-hidden rounded-2xl border border-white/8 px-5"
+            className="group client-surface-subtle overflow-hidden rounded-2xl border border-white/8 px-5"
           >
             <div className="flex items-center gap-3 py-5">
               <div className="flex-1 space-y-1 text-left">
@@ -450,7 +450,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                             <Weight className="h-3.5 w-3.5" />
                             Carga
                           </div>
-                          <div className="space-y-2">
+                          <div className="space-y-2 md:grid md:grid-cols-[minmax(0,1fr)_140px_auto] md:items-center md:gap-2 md:space-y-0">
                             <Input
                               type="text"
                               inputMode="decimal"
@@ -459,12 +459,12 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                               placeholder="Digite a carga"
                               className="rounded-xl border-white/10 bg-black/70 text-white placeholder:text-white/35 focus-visible:ring-white/15"
                             />
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 md:contents">
                               <Select
                                 value={draft.unit}
                                 onValueChange={(value) => updateLoadDraft(exerciseKey, { unit: value as ExerciseLoadUnit })}
                               >
-                                <SelectTrigger className="flex-1 rounded-xl border-white/10 bg-black/70 text-white">
+                                <SelectTrigger className="flex-1 rounded-xl border-white/10 bg-black/70 text-white md:w-full">
                                   <SelectValue placeholder="Unidade" />
                                 </SelectTrigger>
                                 <SelectContent>
