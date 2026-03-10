@@ -1,16 +1,93 @@
-import React from 'react';
-import { Activity, AlertCircle, Eye, FileText, Flame, Loader2, Timer } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Activity, AlertCircle, CalendarIcon, Check, Eye, FileText, Flame, Loader2, Target, Timer } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useToast } from '@/hooks/use-toast';
+import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
+import { cn } from '@/lib/utils';
 import type { TrainingPrescription } from '@/hooks/useTrainingPrescriptions';
 
 interface TrainingPlanContentProps {
   prescription: TrainingPrescription;
+  enableCheckins?: boolean;
 }
 
-export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({ prescription }) => {
+const extractSplitLabel = (value: string) => {
+  const normalizedValue = value?.replace(/\(.*?\)/g, '').trim() || '';
+  const tokenMatch = normalizedValue.match(/\b[A-F]{1,6}\b/i);
+  return tokenMatch ? tokenMatch[0].toUpperCase() : normalizedValue || '—';
+};
+
+export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
+  prescription,
+  enableCheckins = false,
+}) => {
   const structuredPlan = prescription.structured_plan;
+  const { toast } = useToast();
+  const [selectedWorkoutKey, setSelectedWorkoutKey] = useState<string | null>(null);
+  const [selectedWorkoutName, setSelectedWorkoutName] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
+
+  const recentCheckins = useMemo(
+    () => allCheckins.slice(0, 8),
+    [allCheckins],
+  );
+
+  const splitLabel = useMemo(
+    () => extractSplitLabel(structuredPlan?.header.split || ''),
+    [structuredPlan?.header.split],
+  );
+
+  const openCheckinModal = (workoutLabel: string, workoutTitle: string) => {
+    setSelectedWorkoutKey(workoutLabel);
+    setSelectedWorkoutName(`Treino ${workoutLabel} - ${workoutTitle}`);
+    setSelectedDate(new Date());
+    setIsCalendarOpen(false);
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveCheckin = async () => {
+    if (!selectedWorkoutName.trim()) {
+      return;
+    }
+
+    try {
+      await addCheckin.mutateAsync({
+        workout_division: selectedWorkoutName,
+        workout_date: format(selectedDate, 'yyyy-MM-dd'),
+      });
+
+      toast({
+        title: 'Check-in registrado!',
+        description: `${selectedWorkoutName} foi salvo com sucesso.`,
+      });
+
+      setIsDialogOpen(false);
+      setSelectedWorkoutKey(null);
+      setSelectedWorkoutName('');
+      setSelectedDate(new Date());
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível registrar o check-in.';
+
+      toast({
+        title: 'Erro ao registrar treino',
+        description: message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (prescription.generation_status === 'pending' || prescription.generation_status === 'processing') {
     return (
@@ -97,7 +174,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({ prescr
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-4">
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <p className="text-xs uppercase tracking-[0.18em] text-white/45">Idade</p>
           <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.age || '—'}</p>
@@ -115,6 +192,14 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({ prescr
           </div>
           <p className="text-3xl font-semibold text-white">{structuredPlan.header.stimulus || '—'}</p>
         </div>
+
+        <div className="client-surface-subtle rounded-2xl p-4 text-white">
+          <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
+            <Target className="h-4 w-4" />
+            Divisão do treino
+          </div>
+          <p className="text-3xl font-semibold text-white">{splitLabel}</p>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -126,42 +211,33 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({ prescr
         </div>
 
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
-          <p className="text-xs uppercase tracking-[0.18em] text-white/45">Divisão do treino</p>
-          <p className="mt-3 text-xl font-semibold leading-relaxed text-white">
-            {structuredPlan.header.split || 'Não informada'}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <p className="text-xs uppercase tracking-[0.18em] text-white/45">Ênfase</p>
           <p className="mt-3 text-lg font-semibold leading-relaxed text-white">
             {structuredPlan.header.emphasis || 'Não informada'}
           </p>
         </div>
+      </div>
 
-        <div className="client-surface-subtle rounded-2xl p-4 text-white">
-          <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
-            <Activity className="h-4 w-4" />
-            Cardio semanal
-          </div>
-          {structuredPlan.cardio ? (
-            <div className="space-y-2">
-              <p className="text-lg font-semibold text-white">{structuredPlan.cardio.method || 'Não informado'}</p>
-              <p className="text-sm text-white/70">{structuredPlan.cardio.frequency || 'Frequência não informada'}</p>
-              <p className="text-sm text-white/70">{structuredPlan.cardio.duration || 'Duração não informada'}</p>
-              {structuredPlan.cardio.details && (
-                <p className="text-sm text-white/60">Detalhes: {structuredPlan.cardio.details}</p>
-              )}
-              {structuredPlan.cardio.equipment && (
-                <p className="text-sm text-white/60">Equipamento: {structuredPlan.cardio.equipment}</p>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-white/65">Cardio não informado neste plano.</p>
-          )}
+      <div className="client-surface-subtle rounded-2xl p-4 text-white">
+        <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
+          <Activity className="h-4 w-4" />
+          Cardio semanal
         </div>
+        {structuredPlan.cardio ? (
+          <div className="space-y-2">
+            <p className="text-lg font-semibold text-white">{structuredPlan.cardio.method || 'Não informado'}</p>
+            <p className="text-sm text-white/70">{structuredPlan.cardio.frequency || 'Frequência não informada'}</p>
+            <p className="text-sm text-white/70">{structuredPlan.cardio.duration || 'Duração não informada'}</p>
+            {structuredPlan.cardio.details && (
+              <p className="text-sm text-white/60">Detalhes: {structuredPlan.cardio.details}</p>
+            )}
+            {structuredPlan.cardio.equipment && (
+              <p className="text-sm text-white/60">Equipamento: {structuredPlan.cardio.equipment}</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-white/65">Cardio não informado neste plano.</p>
+        )}
       </div>
 
       <Accordion type="single" collapsible className="space-y-4">
@@ -171,12 +247,30 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({ prescr
             value={`${prescription.id}-workout-${workout.label}`}
             className="client-surface-subtle overflow-hidden rounded-2xl border border-white/8 px-5"
           >
-            <AccordionTrigger className="py-5 text-left text-white hover:no-underline">
-              <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
-                <p className="text-lg font-semibold text-white">{workout.title}</p>
-              </div>
-            </AccordionTrigger>
+            <div className="flex items-center gap-3">
+              <AccordionTrigger className="flex-1 py-5 text-left text-white hover:no-underline">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
+                  <p className="text-lg font-semibold text-white">{workout.title}</p>
+                </div>
+              </AccordionTrigger>
+              {enableCheckins && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="client-back-button h-10 w-10 shrink-0 rounded-xl"
+                  onClick={() => openCheckinModal(workout.label, workout.title)}
+                  disabled={addCheckin.isPending}
+                >
+                  {addCheckin.isPending && selectedWorkoutKey === workout.label ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+            </div>
             <AccordionContent className="space-y-4 pb-5">
               {workout.exercises.map((exercise, index) => (
                 <div key={`${workout.label}-${index}`} className="client-surface-subtle rounded-2xl p-4 text-white">
@@ -202,6 +296,32 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({ prescr
         ))}
       </Accordion>
 
+      {enableCheckins && (
+        <div className="client-surface-subtle rounded-2xl p-4 text-white">
+          <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
+            <Check className="h-4 w-4" />
+            Check-ins registrados
+          </div>
+          {recentCheckins.length > 0 ? (
+            <div className="space-y-3">
+              {recentCheckins.map((checkin) => (
+                <div
+                  key={checkin.id}
+                  className="client-surface-subtle flex flex-col gap-1 rounded-2xl px-4 py-3 text-sm text-white/80 md:flex-row md:items-center md:justify-between"
+                >
+                  <span className="font-medium text-white">{checkin.workout_division}</span>
+                  <span className="text-white/60">
+                    {format(new Date(checkin.workout_date), "dd/MM/yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-white/55">Nenhum treino registrado ainda nesta aba.</p>
+          )}
+        </div>
+      )}
+
       <Accordion type="single" collapsible className="space-y-4">
         <AccordionItem
           value={`${prescription.id}-observations`}
@@ -226,6 +346,87 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({ prescr
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Registrar check-in</DialogTitle>
+            <DialogDescription>
+              Salve a data do treino diretamente nesta aba.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="workout-name" className="text-white">
+                Treino
+              </Label>
+              <Input
+                id="workout-name"
+                value={selectedWorkoutName}
+                readOnly
+                className="client-input-surface text-white"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Data do treino</Label>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      'client-input-surface w-full justify-start gap-2 rounded-xl text-white transition-colors hover:bg-white/[0.06] hover:text-white',
+                      !selectedDate && 'text-white/50'
+                    )}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                    {selectedDate
+                      ? format(selectedDate, 'PPP', { locale: ptBR })
+                      : 'Selecione a data'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-0 text-white"
+                  align="start"
+                >
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      setSelectedDate(date || new Date());
+                      setIsCalendarOpen(false);
+                    }}
+                    initialFocus
+                    locale={ptBR}
+                    className="rounded-xl"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-3 sm:gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="client-back-button"
+              onClick={() => setIsDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              className="client-action-button"
+              onClick={handleSaveCheckin}
+              disabled={addCheckin.isPending}
+            >
+              {addCheckin.isPending ? 'Salvando...' : 'Salvar check-in'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

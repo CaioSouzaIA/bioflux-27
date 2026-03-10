@@ -330,7 +330,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   };
 
   const handleWorkoutCheckin = () => {
-    navigate('/client/workout-checkin');
+    navigate('/client/prescriptions?tab=treino');
   };
 
   if (loading || prescriptionsLoading || metabolicLoading) {

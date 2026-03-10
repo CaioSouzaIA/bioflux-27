@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek } from 'date-fns';
 
-interface WorkoutCheckin {
+export interface WorkoutCheckin {
   id: string;
   user_id: string;
   workout_date: string;
@@ -60,6 +60,7 @@ export const useWorkoutCheckins = (userId: string | undefined) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workout-checkins', userId] });
+      queryClient.invalidateQueries({ queryKey: ['monthly-workout-checkins'] });
     },
   });
 
@@ -78,6 +79,7 @@ export const useWorkoutCheckins = (userId: string | undefined) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workout-checkins', userId] });
+      queryClient.invalidateQueries({ queryKey: ['monthly-workout-checkins'] });
     },
   });
 

@@ -10,6 +10,7 @@ import { TrainingPlanContent } from './TrainingPlanContent';
 interface TrainingPrescriptionViewerProps {
   prescriptions: TrainingPrescription[];
   isLoading: boolean;
+  enableCheckins?: boolean;
 }
 
 const statusMap: Record<TrainingPrescription['generation_status'], { label: string; className: string }> = {
@@ -36,17 +37,16 @@ const statusMap: Record<TrainingPrescription['generation_status'], { label: stri
 };
 
 const formatDate = (value: string) =>
-  new Date(value).toLocaleString('pt-BR', {
+  new Date(value).toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   });
 
 export const TrainingPrescriptionViewer: React.FC<TrainingPrescriptionViewerProps> = ({
   prescriptions,
   isLoading,
+  enableCheckins = false,
 }) => {
   if (isLoading) {
     return (
@@ -133,7 +133,7 @@ export const TrainingPrescriptionViewer: React.FC<TrainingPrescriptionViewerProp
               </div>
             </AccordionTrigger>
             <AccordionContent className="pb-6">
-              <TrainingPlanContent prescription={prescription} />
+              <TrainingPlanContent prescription={prescription} enableCheckins={enableCheckins} />
             </AccordionContent>
           </AccordionItem>
         );

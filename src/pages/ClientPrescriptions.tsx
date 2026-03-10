@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, UtensilsCrossed, Dumbbell } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DietPrescriptionViewer } from '@/components/diet/DietPrescriptionViewer';
 import { TrainingPrescriptionViewer } from '@/components/training/TrainingPrescriptionViewer';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
@@ -14,7 +14,10 @@ import { useQueryClient } from '@tanstack/react-query';
 const ClientPrescriptions: React.FC = () => {
   const { user, signOut } = useAuthContext();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const initialTab = searchParams.get('tab') === 'treino' ? 'treino' : 'dieta';
+  const [activeTab, setActiveTab] = useState<'dieta' | 'treino'>(initialTab);
   
   // Buscar prescrições de dieta e treino do usuário atual
   const { data: dietPrescriptions = [], isLoading: isDietLoading } = useDietPrescriptions(user?.id);
@@ -29,6 +32,11 @@ const ClientPrescriptions: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['training-prescriptions'] });
     };
   }, [queryClient]);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab') === 'treino' ? 'treino' : 'dieta';
+    setActiveTab(tab);
+  }, [searchParams]);
 
   const handleLogout = async () => {
     await signOut();
@@ -80,7 +88,15 @@ const ClientPrescriptions: React.FC = () => {
           </div>
 
           {/* Tabs para Dieta e Treino */}
-          <Tabs defaultValue="dieta" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              const nextTab = value === 'treino' ? 'treino' : 'dieta';
+              setActiveTab(nextTab);
+              setSearchParams(nextTab === 'treino' ? { tab: 'treino' } : {});
+            }}
+            className="w-full"
+          >
             <TabsList className="client-surface-panel grid h-auto w-full grid-cols-2 rounded-2xl border border-white/10 p-1">
               <TabsTrigger 
                 value="dieta" 
@@ -109,6 +125,7 @@ const ClientPrescriptions: React.FC = () => {
               <TrainingPrescriptionViewer
                 prescriptions={trainingPrescriptions} 
                 isLoading={isTrainingLoading}
+                enableCheckins
               />
             </TabsContent>
           </Tabs>
