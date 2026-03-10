@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, Lock, Eye, EyeClosed, ArrowRight } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 
 function CustomInput({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -70,33 +71,10 @@ export const SignInCard: React.FC<SignInCardProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-screen bg-black relative overflow-hidden flex flex-col items-center justify-center">
-      {/* Background gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/40 via-cyan-700/50 to-black" />
-      
-      {/* Subtle noise texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-soft-light" 
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          backgroundSize: '200px 200px'
-        }}
-      />
+    <div className="min-h-screen relative bg-black overflow-hidden">
+      <BackgroundAnimation />
 
-      {/* Animated background effects */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[120vh] h-[60vh] rounded-b-[50%] bg-cyan-400/20 blur-[80px]" />
-      <motion.div 
-        className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[100vh] h-[60vh] rounded-b-full bg-cyan-300/20 blur-[60px]"
-        animate={{ 
-          opacity: [0.15, 0.3, 0.15],
-          scale: [0.98, 1.02, 0.98]
-        }}
-        transition={{ 
-          duration: 8, 
-          repeat: Infinity,
-          repeatType: "mirror"
-        }}
-      />
-
+      <div className="relative z-10 flex min-h-screen w-screen flex-col items-center justify-center px-4">
       {/* Logo acima da caixa de login */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
@@ -107,7 +85,7 @@ export const SignInCard: React.FC<SignInCardProps> = ({
         <img 
           src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
           alt="BIOFLUX.AI" 
-          className="h-16 mx-auto"
+          className="h-24 mx-auto"
         />
       </motion.div>
 
@@ -127,7 +105,7 @@ export const SignInCard: React.FC<SignInCardProps> = ({
         >
           <div className="relative group">
             {/* Glass card background */}
-            <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl overflow-hidden">
+            <div className="client-glass-card relative overflow-hidden rounded-3xl p-6" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }}>
               {/* Logo and header */}
               <div className="text-center space-y-1 mb-5">
                 <motion.h1
@@ -249,6 +227,7 @@ export const SignInCard: React.FC<SignInCardProps> = ({
           </div>
         </motion.div>
       </motion.div>
+      </div>
     </div>
   );
 };

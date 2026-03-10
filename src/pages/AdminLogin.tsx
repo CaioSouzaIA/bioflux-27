@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { SignInCard } from "@/components/ui/sign-in-card-2";
+import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 
 const AdminLogin = () => {
   const { user, userType, signIn, loading } = useAuthContext();
@@ -53,8 +54,9 @@ const AdminLogin = () => {
   if (loading) {
     console.log('⏳ AdminLogin - Ainda carregando...');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-800 to-cyan-900 flex items-center justify-center">
-        <div className="text-white text-xl">Carregando...</div>
+      <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
+        <BackgroundAnimation />
+        <div className="relative z-10 text-white text-xl">Carregando...</div>
       </div>
     );
   }
