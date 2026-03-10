@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -61,23 +61,31 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
       console.error('Erro ao buscar perfil do usuário:', error);
     }
   };
-  
+
   const handlePasswordReset = () => {
     navigate('/change-password');
   };
 
   const handlePlanChange = () => {
-    // Redirecionar para a página do seletor de planos
     window.location.href = '/client?showPlanSelector=true';
   };
 
   const handleCancelSubscription = () => {
-    // Redirecionar para o link de cancelamento do Ticto
     window.open('https://help.ticto.com.br/pt-br/article/como-cancelar-minha-assinatura-szxtux/', '_blank');
   };
 
   const handleSupport = () => {
     window.open('mailto:suporte@bioflux.ai', '_blank');
+  };
+
+  const handleProfileUpdated = (profile: { first_name: string | null; last_name: string | null; whatsapp: string | null; avatar_url?: string | null }) => {
+    setUserProfile((current) => ({
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      email: current?.email || userProfile?.email || null,
+      whatsapp: profile.whatsapp,
+      avatar_url: profile.avatar_url ?? current?.avatar_url ?? userProfile?.avatar_url ?? null,
+    }));
   };
 
   const getDisplayName = () => {
@@ -122,21 +130,19 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
         >
           <DropdownMenuLabel className="client-surface-subtle rounded-2xl px-3 py-3 text-gray-300">
             <div className="flex flex-col">
-              <span className="text-white font-medium text-sm">
-                {getDisplayName()}
-              </span>
+              <span className="text-sm font-medium text-white">{getDisplayName()}</span>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="my-2 bg-white/8" />
-          
-          <DropdownMenuItem 
+
+          <DropdownMenuItem
             onClick={() => setShowAvatarUpload(true)}
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
             <Camera className="mr-2 h-4 w-4" />
             Meu perfil
           </DropdownMenuItem>
-          
+
           <DropdownMenuItem
             onClick={handlePasswordReset}
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
@@ -144,8 +150,8 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
             <Key className="mr-2 h-4 w-4" />
             Trocar senha
           </DropdownMenuItem>
-          
-          <DropdownMenuItem 
+
+          <DropdownMenuItem
             onClick={handlePlanChange}
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
@@ -153,25 +159,25 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
             Trocar plano
           </DropdownMenuItem>
 
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleCancelSubscription}
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
           >
             <X className="mr-2 h-4 w-4" />
             Cancelar assinatura
           </DropdownMenuItem>
-          
-          <DropdownMenuItem 
+
+          <DropdownMenuItem
             onClick={handleSupport}
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
             <LifeBuoy className="mr-2 h-4 w-4" />
             Suporte
           </DropdownMenuItem>
-          
+
           <DropdownMenuSeparator className="my-2 bg-white/8" />
-          
-          <DropdownMenuItem 
+
+          <DropdownMenuItem
             onClick={onLogout}
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
           >
@@ -185,8 +191,10 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
         open={showAvatarUpload}
         onOpenChange={setShowAvatarUpload}
         currentAvatarUrl={userProfile?.avatar_url}
-        userName={getDisplayName()}
-        userWhatsapp={getDisplayWhatsApp()}
+        firstName={userProfile?.first_name}
+        lastName={userProfile?.last_name}
+        userWhatsapp={userProfile?.whatsapp}
+        onProfileUpdated={handleProfileUpdated}
       />
     </>
   );
