@@ -14,8 +14,31 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_categories: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
+          achievement_title: string
+          category_id: string
           category_color: string
           created_at: string
           description: string
@@ -25,6 +48,8 @@ export type Database = {
           name: string
         }
         Insert: {
+          achievement_title?: string
+          category_id?: string
           category_color?: string
           created_at?: string
           description: string
@@ -34,6 +59,8 @@ export type Database = {
           name: string
         }
         Update: {
+          achievement_title?: string
+          category_id?: string
           category_color?: string
           created_at?: string
           description?: string
@@ -42,7 +69,15 @@ export type Database = {
           metadata?: Json | null
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "badges_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "achievement_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_subscriptions: {
         Row: {
