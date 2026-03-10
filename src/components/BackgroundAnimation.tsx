@@ -1,78 +1,90 @@
-
 import React from 'react';
+
+const verticalLines = [
+  { left: '6%', color: 'rgba(34, 211, 238, 0.8)', duration: '2.8s', pulse: '0.8s', delay: '0s' },
+  { left: '12%', color: 'rgba(16, 185, 129, 0.78)', duration: '3.4s', pulse: '1s', delay: '-0.6s' },
+  { left: '19%', color: 'rgba(255, 255, 255, 0.32)', duration: '2.6s', pulse: '0.9s', delay: '-1.1s' },
+  { left: '27%', color: 'rgba(168, 85, 247, 0.7)', duration: '3.8s', pulse: '1.2s', delay: '-0.4s' },
+  { left: '35%', color: 'rgba(34, 211, 238, 0.72)', duration: '3.1s', pulse: '0.9s', delay: '-1.8s' },
+  { left: '44%', color: 'rgba(16, 185, 129, 0.68)', duration: '2.9s', pulse: '0.85s', delay: '-0.9s' },
+  { left: '53%', color: 'rgba(255, 255, 255, 0.26)', duration: '3.6s', pulse: '1.1s', delay: '-1.4s' },
+  { left: '61%', color: 'rgba(168, 85, 247, 0.72)', duration: '2.7s', pulse: '0.95s', delay: '-0.3s' },
+  { left: '70%', color: 'rgba(34, 211, 238, 0.75)', duration: '3.2s', pulse: '1.05s', delay: '-1.6s' },
+  { left: '79%', color: 'rgba(16, 185, 129, 0.74)', duration: '2.85s', pulse: '0.9s', delay: '-0.7s' },
+  { left: '88%', color: 'rgba(255, 255, 255, 0.28)', duration: '3.5s', pulse: '1.15s', delay: '-1.2s' },
+  { left: '94%', color: 'rgba(168, 85, 247, 0.68)', duration: '3s', pulse: '0.85s', delay: '-0.5s' },
+];
+
+const horizontalLines = [
+  { top: '10%', color: 'rgba(34, 211, 238, 0.7)', duration: '4.8s', pulse: '1s', delay: '-0.4s' },
+  { top: '22%', color: 'rgba(16, 185, 129, 0.65)', duration: '5.4s', pulse: '1.1s', delay: '-1.2s' },
+  { top: '34%', color: 'rgba(255, 255, 255, 0.2)', duration: '4.6s', pulse: '0.95s', delay: '-0.8s' },
+  { top: '46%', color: 'rgba(168, 85, 247, 0.62)', duration: '5.8s', pulse: '1.2s', delay: '-1.7s' },
+  { top: '58%', color: 'rgba(34, 211, 238, 0.68)', duration: '4.9s', pulse: '1s', delay: '-0.5s' },
+  { top: '70%', color: 'rgba(16, 185, 129, 0.62)', duration: '5.3s', pulse: '1.05s', delay: '-1.4s' },
+  { top: '82%', color: 'rgba(255, 255, 255, 0.18)', duration: '4.7s', pulse: '0.9s', delay: '-0.9s' },
+  { top: '92%', color: 'rgba(168, 85, 247, 0.58)', duration: '5.6s', pulse: '1.15s', delay: '-1.1s' },
+];
 
 export const BackgroundAnimation: React.FC = () => {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 opacity-30">
-        {/* Linhas verticais animadas mais rápidas */}
-        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent" 
-             style={{ 
-               left: '10%', 
-               animation: 'moveVertical 4s linear infinite, pulse 1s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-green-500 to-transparent" 
-             style={{ 
-               left: '25%', 
-               animation: 'moveVertical 6s linear infinite reverse, pulse 1.5s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-[#1f1f1f] to-transparent" 
-             style={{ 
-               left: '40%', 
-               animation: 'moveVertical 5s linear infinite, pulse 1.2s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent" 
-             style={{ 
-               left: '55%', 
-               animation: 'moveVertical 7s linear infinite reverse, pulse 2s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent" 
-             style={{ 
-               left: '70%', 
-               animation: 'moveVertical 4.5s linear infinite, pulse 1.8s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-green-500 to-transparent" 
-             style={{ 
-               left: '85%', 
-               animation: 'moveVertical 5.5s linear infinite reverse, pulse 1.4s ease-in-out infinite alternate'
-             }}></div>
-        
-        {/* Linhas horizontais mais rápidas */}
-        <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent" 
-             style={{ 
-               top: '20%', 
-               animation: 'moveHorizontal 7s linear infinite, pulse 1.5s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-green-500 to-transparent" 
-             style={{ 
-               top: '40%', 
-               animation: 'moveHorizontal 9s linear infinite reverse, pulse 2s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-[#1f1f1f] to-transparent" 
-             style={{ 
-               top: '60%', 
-               animation: 'moveHorizontal 8s linear infinite, pulse 1.2s ease-in-out infinite alternate'
-             }}></div>
-        <div className="absolute h-px w-full bg-gradient-to-r from-transparent via-purple-500 to-transparent" 
-             style={{ 
-               top: '80%', 
-               animation: 'moveHorizontal 10s linear infinite reverse, pulse 1.9s ease-in-out infinite alternate'
-             }}></div>
+      <div className="absolute inset-0 opacity-50">
+        {verticalLines.map((line, index) => (
+          <div
+            key={`vertical-${index}`}
+            className="absolute h-full w-px"
+            style={{
+              left: line.left,
+              background: `linear-gradient(to bottom, transparent 0%, ${line.color} 50%, transparent 100%)`,
+              animation: `${index % 2 === 0 ? 'moveVertical' : 'moveVerticalReverse'} ${line.duration} linear infinite ${line.delay}, pulse ${line.pulse} ease-in-out infinite alternate`,
+            }}
+          />
+        ))}
+
+        {horizontalLines.map((line, index) => (
+          <div
+            key={`horizontal-${index}`}
+            className="absolute h-px w-full"
+            style={{
+              top: line.top,
+              background: `linear-gradient(to right, transparent 0%, ${line.color} 50%, transparent 100%)`,
+              animation: `${index % 2 === 0 ? 'moveHorizontal' : 'moveHorizontalReverse'} ${line.duration} linear infinite ${line.delay}, pulse ${line.pulse} ease-in-out infinite alternate`,
+            }}
+          />
+        ))}
       </div>
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes moveVertical {
-            0% { transform: translateY(-100vh); }
-            100% { transform: translateY(100vh); }
-          }
-          
-          @keyframes moveHorizontal {
-            0% { transform: translateX(-100vw); }
-            100% { transform: translateX(100vw); }
-          }
-        `
-      }} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes moveVertical {
+              0% { transform: translateY(-100vh); }
+              100% { transform: translateY(100vh); }
+            }
+
+            @keyframes moveVerticalReverse {
+              0% { transform: translateY(100vh); }
+              100% { transform: translateY(-100vh); }
+            }
+
+            @keyframes moveHorizontal {
+              0% { transform: translateX(-100vw); }
+              100% { transform: translateX(100vw); }
+            }
+
+            @keyframes moveHorizontalReverse {
+              0% { transform: translateX(100vw); }
+              100% { transform: translateX(-100vw); }
+            }
+
+            @keyframes pulse {
+              0% { opacity: 0.32; }
+              100% { opacity: 0.92; }
+            }
+          `,
+        }}
+      />
     </div>
   );
 };
