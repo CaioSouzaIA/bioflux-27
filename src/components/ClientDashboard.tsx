@@ -637,9 +637,9 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                       aria-label="Escolher insígnia exibida"
                     >
                       <ShineBorder
-                        borderWidth={2}
+                        borderWidth={1}
                         duration={7}
-                        shineColor={[badgeShineColor, 'rgba(255,255,255,0.10)', badgeShineColor]}
+                        shineColor={[`${badgeShineColor}`, 'rgba(0,0,0,0)', `${badgeShineColor}`]}
                         className="rounded-full"
                       />
                       <Avatar className="relative z-10 h-10 w-10">
