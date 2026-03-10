@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertCircle, Calendar, UtensilsCrossed } from 'lucide-react';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -48,6 +48,8 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
   prescriptions,
   isLoading,
 }) => {
+  const [openItem, setOpenItem] = useState<string | undefined>();
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -75,11 +77,18 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
   }
 
   return (
-    <Accordion type="single" collapsible className="space-y-4">
+    <Accordion
+      type="single"
+      collapsible
+      value={openItem}
+      onValueChange={(value) => setOpenItem(value || undefined)}
+      className="space-y-4"
+    >
       {prescriptions.map((prescription) => {
         const status = statusMap[prescription.generation_status];
         const shouldShowStatusBadge = prescription.generation_status !== 'completed';
         const previewPlan = prescription.structured_plan;
+        const isOpen = openItem === prescription.id;
 
         return (
           <AccordionItem
@@ -109,7 +118,7 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
                       Data do plano: {formatDate(prescription.created_at)}
                     </span>
                   </div>
-                  {previewPlan && (
+                  {previewPlan && !isOpen && (
                     <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
                         {previewPlan.header.estimated_calories_kcal ?? '—'} Kcal
