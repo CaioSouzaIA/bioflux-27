@@ -162,9 +162,10 @@ const ClientLogin = () => {
 
   if (showForgotPassword) {
     return (
-      <div className="relative flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden bg-black">
+      <div className="min-h-screen relative bg-black overflow-hidden">
         <BackgroundAnimation />
 
+        <div className="relative z-10 flex min-h-screen w-screen flex-col items-center justify-center px-4">
         {/* Logo */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
@@ -175,7 +176,7 @@ const ClientLogin = () => {
           <img 
             src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
             alt="BIOFLUX.AI" 
-            className="h-16 mx-auto"
+            className="h-24 mx-auto"
           />
         </motion.div>
 
@@ -256,14 +257,16 @@ const ClientLogin = () => {
             </form>
           </div>
         </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="relative flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden bg-black">
+    <div className="min-h-screen relative bg-black overflow-hidden">
       <BackgroundAnimation />
 
+      <div className="relative z-10 flex min-h-screen w-screen flex-col items-center justify-center px-4">
       {/* Logo acima da caixa de login */}
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
@@ -274,7 +277,7 @@ const ClientLogin = () => {
         <img 
           src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
           alt="BIOFLUX.AI" 
-          className="h-16 mx-auto"
+          className="h-24 mx-auto"
         />
       </motion.div>
 
@@ -529,6 +532,7 @@ const ClientLogin = () => {
           </div>
         </motion.div>
       </motion.div>
+      </div>
     </div>
   );
 };
