@@ -430,7 +430,7 @@ export const LeadsManager: React.FC = () => {
                 placeholder="Buscar por nome ou WhatsApp..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="client-input-surface pl-10 text-white placeholder:text-white/35"
+                className="client-input-surface pl-10 !text-black placeholder:text-black/45"
               />
             </div>
             <Button
