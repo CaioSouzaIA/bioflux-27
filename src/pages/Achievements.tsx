@@ -29,6 +29,21 @@ interface Achievement {
   };
 }
 
+const DEFAULT_BADGE_COLOR = '#22D3EE';
+
+const hexToRgba = (hex: string, alpha: number) => {
+  const normalized = hex.replace('#', '');
+  const safeHex = normalized.length === 3
+    ? normalized.split('').map((char) => `${char}${char}`).join('')
+    : normalized.padEnd(6, '0').slice(0, 6);
+
+  const red = parseInt(safeHex.slice(0, 2), 16);
+  const green = parseInt(safeHex.slice(2, 4), 16);
+  const blue = parseInt(safeHex.slice(4, 6), 16);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+};
+
 export default function Achievements() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -278,6 +293,7 @@ export default function Achievements() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {allBadges.map((badge) => {
                 const earnedDate = achievementsMap.get(badge.id);
+                const badgeColor = badge.category_color || DEFAULT_BADGE_COLOR;
                 
                 // Verificar metadados da badge
                 const metadata = badge.metadata as { type?: string; days_required?: number; monthly_checkins_required?: number } | null;
@@ -300,16 +316,25 @@ export default function Achievements() {
                     key={badge.id} 
                     className={`p-6 backdrop-blur-sm transition-all ${
                       isEarned 
-                        ? 'client-surface-panel border-yellow-500/30 hover:border-yellow-500/40' 
+                        ? 'client-surface-panel hover:opacity-100' 
                         : 'client-surface-panel border-white/6 opacity-60'
                     }`}
+                    style={isEarned ? { borderColor: hexToRgba(badgeColor, 0.42) } : undefined}
                   >
                     <div className="flex flex-col items-center text-center">
-                      <div className={`mb-4 rounded-full p-1 border-2 ${
-                        isEarned 
-                          ? 'bg-yellow-500/10 border-yellow-500/30' 
-                          : 'bg-gray-800/20 border-black/30'
-                      }`}>
+                      <div
+                        className={`mb-4 rounded-full p-1 border-2 ${
+                          isEarned ? '' : 'bg-gray-800/20 border-black/30'
+                        }`}
+                        style={
+                          isEarned
+                            ? {
+                                background: hexToRgba(badgeColor, 0.12),
+                                borderColor: hexToRgba(badgeColor, 0.72),
+                              }
+                            : undefined
+                        }
+                      >
                         <img
                           src={badge.image_url}
                           alt={badge.name}
@@ -323,7 +348,7 @@ export default function Achievements() {
                         {badge.description}
                       </p>
                       {isEarned ? (
-                        <div className="flex items-center gap-2 text-xs text-yellow-400">
+                        <div className="flex items-center gap-2 text-xs" style={{ color: badgeColor }}>
                           <Calendar className="h-3 w-3" />
                           <span>
                             Conquistado em{" "}

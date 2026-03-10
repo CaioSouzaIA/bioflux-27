@@ -4,16 +4,17 @@ import { FormsList } from '@/components/FormsList';
 import { LeadsManager } from '@/components/LeadsManager';
 import { AIConfigPage } from '@/components/AIConfigPage';
 import { ManagementDashboard } from '@/components/ManagementDashboard';
+import { AchievementsConfigPage } from '@/components/AchievementsConfigPage';
 import { FormConfig } from '@/types/form';
 import { useFormManager } from '@/hooks/useFormManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Users, Bot, BarChart, ArrowLeft } from 'lucide-react';
+import { Settings, Users, Bot, BarChart, ArrowLeft, Trophy } from 'lucide-react';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import ProfileDropdown from '@/components/ProfileDropdown';
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'home' | 'forms-list' | 'edit-form' | 'leads' | 'ai-config' | 'management'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'forms-list' | 'edit-form' | 'leads' | 'ai-config' | 'management' | 'achievements-config'>('home');
   const { forms, setCurrentFormId, createForm, updateForm, deleteForm, getCurrentForm } = useFormManager();
 
   const currentForm = getCurrentForm();
@@ -96,7 +97,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 px-2 mb-12 mx-auto max-w-6xl md:gap-8 lg:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 px-2 mb-12 mx-auto max-w-6xl md:gap-8 lg:grid-cols-2 xl:grid-cols-5">
             <Card className="client-glass-card flex h-full cursor-pointer flex-col transition-all duration-500 hover:scale-[1.02] hover:border-orange-500/30" style={{ ['--card-glow' as string]: 'rgba(249,115,22,0.30)' }} onClick={() => setCurrentView('ai-config')}>
               <CardHeader className="p-3 pb-4 text-center md:p-6 md:pb-6">
                 <div className="flex items-center justify-center mx-auto mb-3 rounded-2xl w-12 h-12 bg-gradient-to-br from-orange-500/20 to-orange-600/30 md:w-20 md:h-20 md:mb-6">
@@ -164,6 +165,23 @@ const Index = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            <Card className="client-glass-card flex h-full cursor-pointer flex-col transition-all duration-500 hover:scale-[1.02] hover:border-cyan-500/30" style={{ ['--card-glow' as string]: 'rgba(34,211,238,0.30)' }} onClick={() => setCurrentView('achievements-config')}>
+              <CardHeader className="p-3 pb-4 text-center md:p-6 md:pb-6">
+                <div className="flex items-center justify-center mx-auto mb-3 rounded-2xl w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-cyan-600/30 md:w-20 md:h-20 md:mb-6">
+                  <Trophy className="w-6 h-6 text-cyan-400 md:w-10 md:h-10" />
+                </div>
+                <CardTitle className="mb-2 text-lg text-white md:text-2xl md:mb-4">Config. de Conquistas</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col justify-between p-3 pt-0 text-center md:p-6">
+                <p className="mb-4 text-sm leading-relaxed text-gray-300 md:text-lg md:mb-8">
+                  Cadastre em massa as insígnias, imagens, subtítulos e a cor de categoria usada na tela do cliente.
+                </p>
+                <Button className="w-full rounded-xl client-action-button text-sm md:text-lg py-3 md:py-6 transition-all duration-300">
+                  Configurar Conquistas
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -177,6 +195,9 @@ const Index = () => {
 
       case 'management':
         return renderAdminShell(<ManagementDashboard />, { maxWidthClassName: 'max-w-6xl', backTarget: 'home' });
+
+      case 'achievements-config':
+        return renderAdminShell(<AchievementsConfigPage />, { maxWidthClassName: 'max-w-6xl', backTarget: 'home' });
 
       case 'forms-list':
         return renderAdminShell(

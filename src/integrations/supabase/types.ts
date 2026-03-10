@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       badges: {
         Row: {
+          category_color: string
           created_at: string
           description: string
           id: string
@@ -24,6 +25,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          category_color?: string
           created_at?: string
           description: string
           id?: string
@@ -32,6 +34,7 @@ export type Database = {
           name: string
         }
         Update: {
+          category_color?: string
           created_at?: string
           description?: string
           id?: string
