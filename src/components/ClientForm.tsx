@@ -238,8 +238,24 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
   };
 
   const sendDietIntakeToSupabase = async (webhookPayload: any) => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error('❌ Erro ao obter sessão antes de chamar a Edge Function:', sessionError);
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('Sessão inválida para iniciar a geração da dieta.');
+    }
+
     const { data, error } = await supabase.functions.invoke('diet-intake-webhook', {
       body: webhookPayload,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
 
     if (error) {
