@@ -368,7 +368,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                     {addCheckin.isPending && selectedWorkoutKey === workout.label ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Check className="h-4 w-4" />
+                      <FileCheck2 className="h-4 w-4" />
                     )}
                   </Button>
                 )}
@@ -443,7 +443,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                               }
                               disabled={saveLoad.isPending}
                             >
-                              <FileCheck2 className="h-4 w-4" />
+                              <Check className="h-4 w-4" />
                             </Button>
                           </div>
                           {latestLoad && (
