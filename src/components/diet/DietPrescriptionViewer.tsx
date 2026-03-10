@@ -115,13 +115,13 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
                         {previewPlan.header.estimated_calories_kcal ?? '—'} Kcal
                       </span>
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        P {previewPlan.header.macros.proteins_g ?? '—'}g
+                        Prot {previewPlan.header.macros.proteins_g ?? '—'}g
                       </span>
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        C {previewPlan.header.macros.carbs_g ?? '—'}g
+                        Carbo {previewPlan.header.macros.carbs_g ?? '—'}g
                       </span>
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        G {previewPlan.header.macros.fats_g ?? '—'}g
+                        Gord {previewPlan.header.macros.fats_g ?? '—'}g
                       </span>
                       <span className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
                         {previewPlan.header.objective || 'Objetivo não informado'}
