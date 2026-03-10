@@ -450,44 +450,45 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                             <Weight className="h-3.5 w-3.5" />
                             Carga
                           </div>
-                          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_44px]">
+                          <div className="space-y-2">
                             <Input
-                              type="number"
-                              step="0.01"
+                              type="text"
+                              inputMode="decimal"
                               value={draft.value}
                               onChange={(event) => updateLoadDraft(exerciseKey, { value: event.target.value })}
                               placeholder="Digite a carga"
                               className="rounded-xl border-white/10 bg-black/70 text-white placeholder:text-white/35 focus-visible:ring-white/15"
                             />
-                            <Select
-                              value={draft.unit}
-                              onValueChange={(value) => updateLoadDraft(exerciseKey, { unit: value as ExerciseLoadUnit })}
-                            >
-                              <SelectTrigger className="rounded-xl border-white/10 bg-black/70 text-white">
-                                <SelectValue placeholder="Unidade" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="kg">kg</SelectItem>
-                                <SelectItem value="lb">lb</SelectItem>
-                                <SelectItem value="placas">placas</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="client-back-button h-10 w-10 rounded-xl"
-                              onClick={() =>
-                                handleSaveLoad({
-                                  workoutLabel: workout.label,
-                                  workoutTitle: workout.title,
-                                  exerciseName: exercise.name,
-                                })
-                              }
-                              disabled={saveLoad.isPending}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={draft.unit}
+                                onValueChange={(value) => updateLoadDraft(exerciseKey, { unit: value as ExerciseLoadUnit })}
+                              >
+                                <SelectTrigger className="flex-1 rounded-xl border-white/10 bg-black/70 text-white">
+                                  <SelectValue placeholder="Unidade" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="kg">kg</SelectItem>
+                                  <SelectItem value="lb">lb</SelectItem>
+                                  <SelectItem value="placas">placas</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="client-back-button rounded-xl px-4"
+                                onClick={() =>
+                                  handleSaveLoad({
+                                    workoutLabel: workout.label,
+                                    workoutTitle: workout.title,
+                                    exerciseName: exercise.name,
+                                  })
+                                }
+                                disabled={saveLoad.isPending}
+                              >
+                                Salvar
+                              </Button>
+                            </div>
                           </div>
                           {latestLoad && (
                             <p className="text-xs text-white/45">
