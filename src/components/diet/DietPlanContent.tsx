@@ -125,18 +125,22 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
             <UserRound className="h-4 w-4" />
             Perfil do cliente
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <p className="text-xs text-white/45">Idade</p>
-              <p className="text-sm font-medium text-white">{structuredPlan.header.age || 'Não informada'}</p>
+          <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="client-surface-panel rounded-2xl p-4 text-white">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Idade</p>
+                <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.age || '—'}</p>
+              </div>
+              <div className="client-surface-panel rounded-2xl p-4 text-white">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Peso</p>
+                <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.weight || '—'}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-white/45">Peso</p>
-              <p className="text-sm font-medium text-white">{structuredPlan.header.weight || 'Não informado'}</p>
-            </div>
-            <div className="sm:col-span-2">
-              <p className="text-xs text-white/45">Objetivo</p>
-              <p className="text-sm font-medium leading-relaxed text-white">{structuredPlan.header.objective || 'Não informado'}</p>
+            <div className="client-surface-panel rounded-2xl p-4 text-white">
+              <p className="text-xs uppercase tracking-[0.18em] text-white/45">Objetivo</p>
+              <p className="mt-3 text-base font-medium leading-relaxed text-white">
+                {structuredPlan.header.objective || 'Não informado'}
+              </p>
             </div>
           </div>
         </div>
