@@ -36,12 +36,10 @@ const statusMap: Record<DietPrescription['generation_status'], { label: string; 
 };
 
 const formatDate = (value: string) =>
-  new Date(value).toLocaleString('pt-BR', {
+  new Date(value).toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   });
 
 export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
