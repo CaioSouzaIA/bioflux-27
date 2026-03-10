@@ -68,6 +68,30 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
     [structuredPlan?.header.split],
   );
 
+  const workoutCheckinSummary = useMemo(() => {
+    const summary = new Map<string, { total: number; lastDate: string | null }>();
+
+    for (const checkin of allCheckins) {
+      const workoutLabelMatch = checkin.workout_division.match(/Treino\s+([A-Z])/i);
+      const workoutLabel = workoutLabelMatch?.[1]?.toUpperCase();
+
+      if (!workoutLabel) {
+        continue;
+      }
+
+      const current = summary.get(workoutLabel) ?? { total: 0, lastDate: null };
+      const currentTime = current.lastDate ? new Date(current.lastDate).getTime() : 0;
+      const nextTime = new Date(checkin.workout_date).getTime();
+
+      summary.set(workoutLabel, {
+        total: current.total + 1,
+        lastDate: nextTime > currentTime ? checkin.workout_date : current.lastDate,
+      });
+    }
+
+    return summary;
+  }, [allCheckins]);
+
   useEffect(() => {
     if (!structuredPlan) {
       return;
@@ -354,6 +378,25 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
               <div className="flex-1 space-y-1 text-left">
                 <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
                 <p className="text-lg font-semibold text-white">{workout.title}</p>
+                {(() => {
+                  const summary = workoutCheckinSummary.get(workout.label);
+                  if (!summary) {
+                    return null;
+                  }
+
+                  return (
+                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-white/60 group-data-[state=open]:hidden">
+                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                        {summary.total}x executado
+                      </span>
+                      {summary.lastDate && (
+                        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                          Última execução: {format(new Date(summary.lastDate), 'dd/MM/yyyy', { locale: ptBR })}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="ml-auto flex items-center gap-2">
                 {enableCheckins && (
