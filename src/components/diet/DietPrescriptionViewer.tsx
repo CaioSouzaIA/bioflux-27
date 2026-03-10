@@ -74,10 +74,8 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
     );
   }
 
-  const currentCompletedId = prescriptions.find((item) => item.generation_status === 'completed')?.id;
-
   return (
-    <Accordion type="single" collapsible defaultValue={prescriptions[0]?.id} className="space-y-4">
+    <Accordion type="single" collapsible className="space-y-4">
       {prescriptions.map((prescription) => {
         const status = statusMap[prescription.generation_status];
         const shouldShowStatusBadge = prescription.generation_status !== 'completed';
@@ -93,11 +91,6 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-lg font-semibold text-white">{prescription.plan_name}</p>
-                    {currentCompletedId === prescription.id && (
-                      <Badge variant="outline" className="border-emerald-400/40 bg-emerald-400/10 text-emerald-200">
-                        Atual
-                      </Badge>
-                    )}
                     {shouldShowStatusBadge && (
                       <Badge variant="outline" className={status.className}>
                         {status.label}

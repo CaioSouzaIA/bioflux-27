@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Beef, Droplets, Eye, FileText, Flame, Loader2, Sandwich, UserRound } from 'lucide-react';
+import { AlertCircle, Beef, Droplets, Eye, FileText, Flame, Loader2, Sandwich } from 'lucide-react';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -119,52 +119,48 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-4">
-        <div className="client-surface-subtle rounded-2xl p-4 text-white lg:col-span-2">
-          <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
-            <UserRound className="h-4 w-4" />
-            Perfil do cliente
+      <div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="client-surface-subtle rounded-2xl p-4 text-white">
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Idade</p>
+            <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.age || '—'}</p>
           </div>
-          <div className="grid gap-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="client-surface-panel rounded-2xl p-4 text-white">
-                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Idade</p>
-                <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.age || '—'}</p>
-              </div>
-              <div className="client-surface-panel rounded-2xl p-4 text-white">
-                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Peso</p>
-                <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.weight || '—'}</p>
-              </div>
+
+          <div className="client-surface-subtle rounded-2xl p-4 text-white">
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Peso</p>
+            <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.weight || '—'}</p>
+          </div>
+
+          <div className="client-surface-subtle rounded-2xl p-4 text-white">
+            <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
+              <Flame className="h-4 w-4" />
+              Calorias
             </div>
-            <div className="client-surface-panel rounded-2xl p-4 text-white">
-              <p className="text-xs uppercase tracking-[0.18em] text-white/45">Objetivo</p>
-              <p className="mt-3 text-base font-medium leading-relaxed text-white">
-                {structuredPlan.header.objective || 'Não informado'}
-              </p>
-            </div>
+            <p className="text-3xl font-semibold text-white">
+              {structuredPlan.header.estimated_calories_kcal ?? '—'}
+            </p>
+            <p className="mt-2 text-sm text-white/60">Kcal estimadas por dia</p>
           </div>
         </div>
 
-        <div className="client-surface-subtle rounded-2xl p-4 text-white">
-          <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
-            <Flame className="h-4 w-4" />
-            Calorias
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="client-surface-subtle rounded-2xl p-4 text-white">
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Objetivo</p>
+            <p className="mt-3 text-base font-medium leading-relaxed text-white">
+              {structuredPlan.header.objective || 'Não informado'}
+            </p>
           </div>
-          <p className="text-3xl font-semibold text-white">
-            {structuredPlan.header.estimated_calories_kcal ?? '—'}
-          </p>
-          <p className="mt-2 text-sm text-white/60">Kcal estimadas por dia</p>
-        </div>
 
-        <div className="client-surface-subtle rounded-2xl p-4 text-white">
-          <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
-            <Droplets className="h-4 w-4" />
-            Hidratação
+          <div className="client-surface-subtle rounded-2xl p-4 text-white">
+            <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
+              <Droplets className="h-4 w-4" />
+              Hidratação
+            </div>
+            <p className="text-3xl font-semibold text-white">
+              {hydrationSummary}
+            </p>
+            <p className="mt-2 text-sm text-white/60">Recomendação diária de água</p>
           </div>
-          <p className="text-3xl font-semibold text-white">
-            {hydrationSummary}
-          </p>
-          <p className="mt-2 text-sm text-white/60">Recomendação diária de água</p>
         </div>
       </div>
 
