@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -88,16 +87,6 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
     }));
   };
 
-  const getDisplayName = () => {
-    if (userProfile?.first_name && userProfile?.last_name) {
-      return `${userProfile.first_name} ${userProfile.last_name}`;
-    }
-    if (userProfile?.first_name) {
-      return userProfile.first_name;
-    }
-    return 'Usuário';
-  };
-
   if (showPasswordReset) {
     return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
   }
@@ -121,13 +110,6 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           sideOffset={0}
           className="min-w-[var(--radix-dropdown-menu-trigger-width)] w-auto max-w-[320px] translate-y-[-1px] rounded-b-2xl rounded-t-md border border-white/10 border-t-0 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-2 text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
         >
-          <DropdownMenuLabel className="client-surface-subtle rounded-2xl px-3 py-3 text-gray-300">
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-white">{getDisplayName()}</span>
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator className="my-2 bg-white/8" />
-
           <DropdownMenuItem
             onClick={() => setShowAvatarUpload(true)}
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"

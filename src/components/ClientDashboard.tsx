@@ -433,16 +433,31 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     if (badgeProfile?.first_name) {
       return badgeProfile.first_name;
     }
+    const metadataFirstName = user?.user_metadata?.first_name as string | undefined;
+    const metadataLastName = user?.user_metadata?.last_name as string | undefined;
+    if (metadataFirstName && metadataLastName) {
+      return `${metadataFirstName} ${metadataLastName}`;
+    }
+    if (metadataFirstName) {
+      return metadataFirstName;
+    }
+    if (user?.email) {
+      return user.email.split("@")[0];
+    }
     return "Usuário";
   };
 
   const getUserInitials = () => {
-    const first = badgeProfile?.first_name?.trim()?.[0] || "";
-    const last = badgeProfile?.last_name?.trim()?.[0] || "";
+    const first = badgeProfile?.first_name?.trim()?.[0] || (user?.user_metadata?.first_name as string | undefined)?.trim()?.[0] || "";
+    const last = badgeProfile?.last_name?.trim()?.[0] || (user?.user_metadata?.last_name as string | undefined)?.trim()?.[0] || "";
     const initials = `${first}${last}`.trim();
 
     if (initials) {
       return initials.toUpperCase();
+    }
+
+    if (user?.email?.[0]) {
+      return user.email[0].toUpperCase();
     }
 
     return "U";
