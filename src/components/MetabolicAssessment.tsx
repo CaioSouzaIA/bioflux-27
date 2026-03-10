@@ -373,7 +373,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 30"
                     value={formData.age}
                     onChange={(e) => handleInputChange('age', e.target.value)}
-                    className="client-input-surface text-white"
+                    className="client-input-surface !text-black"
                   />
                 </div>
 
@@ -386,7 +386,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 70.5"
                     value={formData.weight}
                     onChange={(e) => handleInputChange('weight', e.target.value)}
-                    className="client-input-surface text-white"
+                    className="client-input-surface !text-black"
                   />
                 </div>
 
@@ -398,7 +398,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 175"
                     value={formData.height}
                     onChange={(e) => handleInputChange('height', e.target.value)}
-                    className="client-input-surface text-white"
+                    className="client-input-surface !text-black"
                   />
                 </div>
 
@@ -426,7 +426,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 85.0"
                     value={formData.waistCircumference}
                     onChange={(e) => handleInputChange('waistCircumference', e.target.value)}
-                    className={`client-input-surface text-white ${getWaistCircumferenceStatus()}`}
+                    className={`client-input-surface !text-black ${getWaistCircumferenceStatus()}`}
                   />
                   <p className="text-sm text-white/45">
                     Risco: ≥102 cm (homens) / ≥88 cm (mulheres)
