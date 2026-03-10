@@ -34,11 +34,10 @@ echo "Sincronizando secrets no projeto $PROJECT_REF..."
 supabase secrets set \
   --project-ref "$PROJECT_REF" \
   --env-file "$ENV_FILE" \
-  OPENROUTER_API_KEY="$OPENROUTER_API_KEY" \
-  SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY"
+  OPENROUTER_API_KEY="$OPENROUTER_API_KEY"
 
 echo "Fazendo deploy das Edge Functions de dieta..."
-supabase functions deploy diet-intake-webhook --project-ref "$PROJECT_REF"
-supabase functions deploy diet-generate-worker --project-ref "$PROJECT_REF"
+supabase functions deploy diet-intake-webhook --project-ref "$PROJECT_REF" --use-api
+supabase functions deploy diet-generate-worker --project-ref "$PROJECT_REF" --use-api
 
 echo "Deploy concluído."
