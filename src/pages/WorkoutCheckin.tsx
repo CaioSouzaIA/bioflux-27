@@ -109,7 +109,7 @@ const WorkoutCheckin: React.FC = () => {
                 type="button"
                 variant="ghost"
                 onClick={handleBack}
-                className="gap-2 rounded-md border border-white bg-[#161616] px-4 text-white transition-colors hover:bg-gray-800 hover:text-white"
+                className="client-back-button gap-2 rounded-2xl px-4"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
@@ -129,7 +129,7 @@ const WorkoutCheckin: React.FC = () => {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="bg-[#161616] text-white shadow-xl border border-black lg:col-span-2">
+            <Card className="client-surface-panel text-white rounded-3xl lg:col-span-2">
               <CardHeader className="space-y-2">
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Dumbbell className="h-5 w-5 text-emerald-400" />
@@ -150,7 +150,7 @@ const WorkoutCheckin: React.FC = () => {
                       value={workoutDivision}
                       onChange={(e) => setWorkoutDivision(e.target.value)}
                       placeholder="Ex: Treino A - Peito e Tríceps"
-                      className="border-white/15 bg-[#1c1c1c] text-white placeholder:text-white/40 focus-visible:border-emerald-400/60 focus-visible:ring-emerald-400/40"
+                      className="client-input-surface"
                     />
                   </div>
 
@@ -162,7 +162,7 @@ const WorkoutCheckin: React.FC = () => {
                           type="button"
                           variant="outline"
                           className={cn(
-                            'w-full justify-start gap-2 rounded-lg border border-white/15 bg-[#1c1c1c] text-white transition-colors hover:bg-gray-800 hover:text-white',
+                            'client-input-surface w-full justify-start gap-2 rounded-xl text-white transition-colors hover:bg-white/[0.06] hover:text-white',
                             !selectedDate && 'text-white/50'
                           )}
                         >
@@ -173,7 +173,7 @@ const WorkoutCheckin: React.FC = () => {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent
-                        className="w-auto rounded-xl border border-white/15 bg-[#181818] p-0 text-white"
+                        className="w-auto rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-0 text-white"
                         align="start"
                       >
                         <Calendar
@@ -193,7 +193,7 @@ const WorkoutCheckin: React.FC = () => {
 
                   <Button
                     type="submit"
-                    className="w-full rounded-lg bg-emerald-500 text-black transition-colors hover:bg-emerald-400"
+                    className="client-action-button w-full rounded-xl"
                     disabled={addCheckin.isPending}
                   >
                     {addCheckin.isPending ? 'Registrando...' : 'Registrar treino'}
@@ -202,7 +202,7 @@ const WorkoutCheckin: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#161616] text-white shadow-xl border border-black">
+            <Card className="client-surface-panel text-white rounded-3xl">
               <CardHeader className="space-y-2">
                 <CardTitle className="text-white">Frequência semanal</CardTitle>
                 <CardDescription className="text-white/60">
@@ -211,7 +211,7 @@ const WorkoutCheckin: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-6 text-center">
+                <div className="client-surface-subtle flex flex-col items-center gap-2 rounded-2xl border-emerald-400/20 bg-emerald-500/10 p-6 text-center">
                   <span className="text-5xl font-bold text-emerald-400">
                     {weeklyCheckins.length}/7
                   </span>
@@ -221,7 +221,7 @@ const WorkoutCheckin: React.FC = () => {
             </Card>
           </div>
 
-          <Card className="bg-[#161616] text-white shadow-xl border border-black">
+          <Card className="client-surface-panel text-white rounded-3xl">
             <CardHeader className="space-y-2">
               <CardTitle className="text-white">Histórico de treinos</CardTitle>
               <CardDescription className="text-white/60">
@@ -242,7 +242,7 @@ const WorkoutCheckin: React.FC = () => {
                     return (
                       <div
                         key={checkin.id}
-                        className="flex flex-col gap-3 rounded-xl border border-white/10 bg-[#1c1c1c] p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+                        className="client-surface-subtle flex flex-col gap-3 rounded-2xl p-4 md:flex-row md:items-center md:justify-between"
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-300">

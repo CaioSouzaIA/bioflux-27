@@ -120,7 +120,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           sideOffset={0}
           className="w-[var(--radix-dropdown-menu-trigger-width)] translate-y-[-1px] rounded-b-2xl rounded-t-md border border-white/10 border-t-0 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-2 text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
         >
-          <DropdownMenuLabel className="rounded-xl border border-white/6 bg-white/[0.03] px-3 py-3 text-gray-300">
+          <DropdownMenuLabel className="client-surface-subtle rounded-2xl px-3 py-3 text-gray-300">
             <div className="flex flex-col">
               <span className="text-white font-medium text-sm">
                 {getDisplayName()}

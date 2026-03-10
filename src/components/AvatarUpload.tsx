@@ -132,11 +132,11 @@ export function AvatarUpload({ open, onOpenChange, currentAvatarUrl, userName, u
           </Avatar>
 
           <div className="w-full space-y-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+            <div className="client-surface-subtle rounded-2xl px-4 py-3 text-center">
               <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Nome</p>
               <p className="mt-1 text-sm font-medium text-white">{userName}</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+            <div className="client-surface-subtle rounded-2xl px-4 py-3 text-center">
               <p className="text-xs uppercase tracking-[0.18em] text-gray-500">WhatsApp</p>
               <p className="mt-1 text-sm font-medium text-white">{userWhatsapp || "Nao informado"}</p>
             </div>

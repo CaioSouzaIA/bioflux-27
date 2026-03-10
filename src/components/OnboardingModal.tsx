@@ -79,27 +79,27 @@ const OnboardingModal = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md border-white/10 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] text-white">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl mb-2">
+          <DialogTitle className="mb-2 text-center text-2xl text-white">
             Bem-vindo! 🎉
           </DialogTitle>
-          <DialogDescription className="text-center text-base">
+          <DialogDescription className="text-center text-base text-white/70">
             Para começar a usar nossa plataforma, siga estes 3 passos simples:
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
           {steps.map((step, index) => (
-            <div key={index} className="flex gap-4">
+            <div key={index} className="client-surface-subtle flex gap-4 rounded-2xl p-4">
               <div className="flex-shrink-0">
                 {step.icon}
               </div>
               <div className="space-y-1">
-                <h3 className="font-semibold text-foreground">
+                <h3 className="font-semibold text-white">
                   {step.title}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-white/60">
                   {step.description}
                 </p>
               </div>
@@ -111,7 +111,7 @@ const OnboardingModal = () => {
           <Button 
             onClick={handleComplete} 
             disabled={loading}
-            className="w-full"
+            className="client-action-button w-full"
           >
             {loading ? (
               "Carregando..."

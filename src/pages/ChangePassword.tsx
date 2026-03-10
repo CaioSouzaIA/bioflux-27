@@ -120,7 +120,7 @@ const ChangePassword: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => navigate('/client')}
-              className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
+              className="client-back-button"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
               Voltar
@@ -128,7 +128,7 @@ const ChangePassword: React.FC = () => {
           </div>
 
           {/* Form card */}
-          <div className="bg-[#161616] border-white rounded-lg p-8">
+          <div className="client-surface-panel rounded-3xl p-8">
             <h1 className="text-2xl font-bold text-white mb-6 text-center">
               Trocar Senha
             </h1>
@@ -142,7 +142,7 @@ const ChangePassword: React.FC = () => {
                   placeholder="Digite seu email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-gray-800 border-gray-600 text-white placeholder:text-white/30"
+                  className="client-input-surface pl-10"
                   required
                 />
               </div>
@@ -155,7 +155,7 @@ const ChangePassword: React.FC = () => {
                   placeholder="Nova senha"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder:text-white/30"
+                  className="client-input-surface pl-10 pr-10"
                   required
                 />
                 <div 
@@ -178,7 +178,7 @@ const ChangePassword: React.FC = () => {
                   placeholder="Confirmar nova senha"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder:text-white/30 ${
+                  className={`client-input-surface pl-10 pr-10 ${
                     confirmPassword && !passwordsMatch ? 'border-red-500/50' : ''
                   }`}
                   required
@@ -225,7 +225,7 @@ const ChangePassword: React.FC = () => {
                 type="submit"
                 disabled={!canSubmit || loading}
                 className={`w-full ${
-                  !canSubmit ? 'opacity-50 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white'
+                  !canSubmit ? 'opacity-50 cursor-not-allowed' : 'client-action-button'
                 }`}
               >
                 {loading ? "Atualizando..." : "Atualizar Senha"}

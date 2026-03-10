@@ -62,7 +62,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="bg-[#161616] border-black animate-pulse">
+          <Card key={i} className="client-surface-panel rounded-3xl animate-pulse">
             <CardContent className="p-6">
               <div className="animate-pulse">
                 <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
@@ -77,7 +77,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
 
   if (!prescriptions || prescriptions.length === 0) {
     return (
-      <Card className="bg-[#161616] border-black">
+      <Card className="client-surface-panel rounded-3xl">
         <CardContent className="text-center py-12">
           <Dumbbell className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
@@ -97,7 +97,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
         const isMostRecent = index === 0; // As prescrições vêm ordenadas por created_at desc
         
         return (
-          <Card key={prescription.id} className="bg-[#161616] border-black hover:bg-[#1c1c1c] transition-all">
+          <Card key={prescription.id} className="client-surface-panel rounded-3xl transition-all hover:border-white/15">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
               <div className="flex items-center justify-end">
                 <Button 
                   variant="outline"
-                  className="border-gray-600 bg-white text-gray-900 hover:bg-gray-100 hover:text-gray-800"
+                  className="client-action-button"
                   onClick={() => handleViewPdf(prescription)}
                   size="sm"
                 >

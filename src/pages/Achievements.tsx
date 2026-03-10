@@ -220,7 +220,7 @@ export default function Achievements() {
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/client')}
-                className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
+                className="client-back-button"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar
@@ -234,7 +234,7 @@ export default function Achievements() {
           </div>
 
           {/* Header com perfil do usuário */}
-          <Card className="mb-8 bg-[#161616] border-black backdrop-blur-sm">
+          <Card className="client-surface-panel mb-8 rounded-3xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 border-2 border-gray-700">
@@ -267,7 +267,7 @@ export default function Achievements() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="p-6 animate-pulse bg-[#161616] border-black">
+                <Card key={i} className="client-surface-panel rounded-3xl p-6 animate-pulse">
                   <div className="h-24 bg-gray-800 rounded mb-4" />
                   <div className="h-4 bg-gray-800 rounded mb-2" />
                   <div className="h-3 bg-gray-800 rounded" />
@@ -300,8 +300,8 @@ export default function Achievements() {
                     key={badge.id} 
                     className={`p-6 backdrop-blur-sm transition-all ${
                       isEarned 
-                        ? 'bg-[#161616] border-yellow-500/50 hover:bg-[#1c1c1c]' 
-                        : 'bg-gray-900/50 border-black opacity-60'
+                        ? 'client-surface-panel border-yellow-500/30 hover:border-yellow-500/40' 
+                        : 'client-surface-panel border-white/6 opacity-60'
                     }`}
                   >
                     <div className="flex flex-col items-center text-center">
@@ -357,7 +357,7 @@ export default function Achievements() {
               })}
             </div>
           ) : (
-            <Card className="p-12 text-center bg-[#161616] border-black backdrop-blur-sm">
+            <Card className="client-surface-panel rounded-3xl p-12 text-center">
               <Trophy className="h-12 w-12 text-yellow-500/50 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2 text-white">
                 Nenhuma conquista disponível
@@ -373,7 +373,7 @@ export default function Achievements() {
 
       {/* Modal de Nova Conquista */}
       <AlertDialog open={showNewAchievementModal} onOpenChange={setShowNewAchievementModal}>
-        <AlertDialogContent className="bg-gray-900 border-yellow-500/50">
+        <AlertDialogContent className="border-yellow-500/30 bg-[linear-gradient(180deg,rgba(22,18,8,0.98)_0%,rgba(10,8,4,0.98)_100%)] text-white">
           <AlertDialogHeader>
             <div className="flex justify-center mb-4">
               <div className="relative">
@@ -410,7 +410,7 @@ export default function Achievements() {
           <AlertDialogFooter>
             <Button
               onClick={handleCloseModal}
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold"
+              className="client-action-button w-full border-yellow-500/20 bg-[linear-gradient(135deg,#362600_0%,#6f4b00_48%,#dca400_100%)] text-black hover:bg-[linear-gradient(135deg,#4a3300_0%,#8a5f00_48%,#efbc1d_100%)]"
             >
               Continuar
             </Button>

@@ -183,7 +183,7 @@ const ClientForms: React.FC = () => {
           <div className="text-red-400 text-xl mb-4">Erro ao carregar formulários</div>
           <Button 
             onClick={() => window.location.reload()} 
-            className="bg-cyan-600 hover:bg-cyan-700"
+            className="client-action-button"
           >
             Tentar Novamente
           </Button>
@@ -204,7 +204,7 @@ const ClientForms: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/client')}
-                className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
+                className="client-back-button"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar
@@ -224,7 +224,7 @@ const ClientForms: React.FC = () => {
               Preencha os formulários para nos ajudar a criar a melhor prescrição para você
             </p>
             {formsCompleted && (
-              <div className="mt-4 p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+              <div className="client-surface-subtle mt-4 rounded-2xl border-yellow-500/20 bg-yellow-500/8 p-4">
                 <div className="flex items-center gap-2 text-yellow-400">
                   <Lock className="w-5 h-5" />
                   <span className="font-medium">Formulários já preenchidos neste período</span>
@@ -239,7 +239,7 @@ const ClientForms: React.FC = () => {
           {/* Lista de Formulários */}
           <div className="grid gap-6">
             {forms.length === 0 ? (
-              <Card className="bg-[#161616] border-black backdrop-blur-sm">
+              <Card className="client-surface-panel rounded-3xl">
                 <CardContent className="text-center py-12">
                   <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-white mb-2">
@@ -252,7 +252,7 @@ const ClientForms: React.FC = () => {
               </Card>
             ) : (
               forms.map((form) => (
-                <Card key={form.id} className={`bg-[#161616] border-black backdrop-blur-sm transition-all ${formsCompleted ? 'opacity-60' : 'hover:bg-[#1c1c1c]'}`}>
+                <Card key={form.id} className={`client-surface-panel rounded-3xl transition-all ${formsCompleted ? 'opacity-60' : 'hover:border-white/15'}`}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
@@ -273,7 +273,7 @@ const ClientForms: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <Button 
-                      className={`w-full ${formsCompleted ? 'bg-gray-600 hover:bg-gray-600 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}
+                      className="client-action-button w-full"
                       onClick={() => handleFormAccess(form.id)}
                       disabled={formsCompleted}
                     >

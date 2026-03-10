@@ -58,7 +58,7 @@ const ClientPrescriptions: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={handleBackToClient}
-                className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
+                className="client-back-button"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar
@@ -81,17 +81,17 @@ const ClientPrescriptions: React.FC = () => {
 
           {/* Tabs para Dieta e Treino */}
           <Tabs defaultValue="dieta" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-800 border-black">
+            <TabsList className="client-surface-panel grid h-auto w-full grid-cols-2 rounded-2xl border border-white/10 p-1">
               <TabsTrigger 
                 value="dieta" 
-                className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white text-gray-300"
+                className="flex items-center gap-2 rounded-xl text-gray-300 data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 <UtensilsCrossed className="w-4 h-4" />
                 Dieta ({dietPrescriptions.length})
               </TabsTrigger>
               <TabsTrigger 
                 value="treino" 
-                className="flex items-center gap-2 data-[state=active]:bg-orange-600 data-[state=active]:text-white text-gray-300"
+                className="flex items-center gap-2 rounded-xl text-gray-300 data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 <Dumbbell className="w-4 h-4" />
                 Treino ({trainingPrescriptions.length})
