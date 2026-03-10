@@ -12,6 +12,19 @@ interface DietPlanContentProps {
 
 export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }) => {
   const structuredPlan = prescription.structured_plan;
+  const hydrationSummary = (() => {
+    const hydration = structuredPlan?.observations.hydration?.trim();
+    if (!hydration) {
+      return 'Não informado';
+    }
+
+    const match = hydration.match(/(\d+(?:[.,]\d+)?)\s*(?:litros?|l)\b/i);
+    if (!match) {
+      return hydration;
+    }
+
+    return `Mínimo ${match[1].replace(',', '.')}L /dia`;
+  })();
 
   if (prescription.generation_status === 'pending' || prescription.generation_status === 'processing') {
     return (
@@ -153,7 +166,7 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
             Hidratação
           </div>
           <p className="text-3xl font-semibold text-white">
-            {structuredPlan.observations.hydration || 'Não informado'}
+            {hydrationSummary}
           </p>
           <p className="mt-2 text-sm text-white/60">Recomendação diária de água</p>
         </div>
