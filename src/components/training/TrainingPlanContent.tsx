@@ -391,6 +391,10 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                     lastDate: null,
                   };
 
+                  if (summary.total === 0 && !summary.lastDate) {
+                    return null;
+                  }
+
                   return (
                     <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-white/60">
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
