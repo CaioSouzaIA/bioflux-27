@@ -80,6 +80,7 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
     <Accordion type="single" collapsible defaultValue={prescriptions[0]?.id} className="space-y-4">
       {prescriptions.map((prescription) => {
         const status = statusMap[prescription.generation_status];
+        const shouldShowStatusBadge = prescription.generation_status !== 'completed';
 
         return (
           <AccordionItem
@@ -97,9 +98,11 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
                         Atual
                       </Badge>
                     )}
-                    <Badge variant="outline" className={status.className}>
-                      {status.label}
-                    </Badge>
+                    {shouldShowStatusBadge && (
+                      <Badge variant="outline" className={status.className}>
+                        {status.label}
+                      </Badge>
+                    )}
                     {prescription.file_path && !prescription.structured_plan && (
                       <Badge variant="outline" className="border-white/15 bg-white/5 text-white/70">
                         Legado PDF

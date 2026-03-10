@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Calendar, Droplets, Eye, FileText, Flame, Loader2, Target, UserRound, Weight } from 'lucide-react';
+import { AlertCircle, Beef, Droplets, Eye, FileText, Flame, Loader2, Sandwich, UserRound } from 'lucide-react';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -9,17 +9,6 @@ import type { DietPrescription } from '@/hooks/useDietPrescriptions';
 interface DietPlanContentProps {
   prescription: DietPrescription;
 }
-
-const formatDate = (value?: string | null) =>
-  value
-    ? new Date(value).toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : 'Data não disponível';
 
 export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }) => {
   const structuredPlan = prescription.structured_plan;
@@ -160,27 +149,27 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
 
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
-            <Calendar className="h-4 w-4" />
-            Histórico
+            <Droplets className="h-4 w-4" />
+            Hidratação
           </div>
-          <p className="text-sm font-medium text-white">Criado em {formatDate(prescription.created_at)}</p>
-          <p className="mt-2 text-sm text-white/60">
-            {prescription.completed_at ? `Finalizado em ${formatDate(prescription.completed_at)}` : 'Ainda em processamento'}
+          <p className="text-3xl font-semibold text-white">
+            {structuredPlan.observations.hydration || 'Não informado'}
           </p>
+          <p className="mt-2 text-sm text-white/60">Recomendação diária de água</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-white/45">
-            <Weight className="h-4 w-4" />
+            <Beef className="h-4 w-4" />
             Proteínas
           </div>
           <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.macros.proteins_g ?? '—'}g</p>
         </div>
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-white/45">
-            <Target className="h-4 w-4" />
+            <Sandwich className="h-4 w-4" />
             Carboidratos
           </div>
           <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.macros.carbs_g ?? '—'}g</p>
@@ -213,7 +202,7 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-5">
               {meal.items.map((item, index) => (
-                <div key={`${meal.meal_number}-${index}`} className="rounded-2xl border border-white/8 bg-black/25 p-4">
+                <div key={`${meal.meal_number}-${index}`} className="client-surface-subtle rounded-2xl p-4">
                   <div className="flex flex-col gap-1">
                     <p className="text-base font-semibold text-white">
                       {item.name}
@@ -233,7 +222,7 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
                         {item.substitutions.map((substitution, substitutionIndex) => (
                           <div
                             key={`${meal.meal_number}-${index}-sub-${substitutionIndex}`}
-                            className="rounded-xl border border-white/6 bg-white/[0.02] px-3 py-2 text-sm text-white/80"
+                            className="client-surface-subtle rounded-xl px-3 py-2 text-sm text-white/80"
                           >
                             <span className="font-medium text-white">{substitution.name}</span>
                             {substitution.quantity ? ` - ${substitution.quantity}` : ''}
@@ -249,31 +238,32 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
         ))}
       </Accordion>
 
-      <div className="client-surface-subtle rounded-2xl p-5 text-white">
-        <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
-          <FileText className="h-4 w-4" />
-          Observações e recomendações
-        </div>
-
-        <div className="space-y-3 text-sm leading-relaxed text-white/80">
-          {structuredPlan.observations.hydration && (
-            <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-              <span className="font-semibold text-white">Hidratação:</span> {structuredPlan.observations.hydration}
+      <Accordion type="single" collapsible className="space-y-4">
+        <AccordionItem
+          value={`${prescription.id}-observations`}
+          className="client-surface-subtle overflow-hidden rounded-2xl border border-white/8 px-5"
+        >
+          <AccordionTrigger className="py-5 text-left text-white hover:no-underline">
+            <div className="flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
+              <FileText className="h-4 w-4" />
+              Observações e recomendações
             </div>
-          )}
-          {structuredPlan.observations.extra_notes.length > 0 ? (
-            structuredPlan.observations.extra_notes.map((note, index) => (
-              <div key={`note-${index}`} className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-                {note}
-              </div>
-            ))
-          ) : (
-            <p className="text-white/55">
-              Nenhuma observação adicional registrada para este plano.
-            </p>
-          )}
-        </div>
-      </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-3 pb-5 text-sm leading-relaxed text-white/80">
+            {structuredPlan.observations.extra_notes.length > 0 ? (
+              structuredPlan.observations.extra_notes.map((note, index) => (
+                <div key={`note-${index}`} className="client-surface-subtle rounded-2xl px-4 py-3">
+                  {note}
+                </div>
+              ))
+            ) : (
+              <p className="text-white/55">
+                Nenhuma observação adicional registrada para este plano.
+              </p>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };
