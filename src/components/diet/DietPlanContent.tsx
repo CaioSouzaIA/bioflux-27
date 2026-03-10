@@ -127,14 +127,6 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <p className="text-xs text-white/45">Nome</p>
-              <p className="text-sm font-medium text-white">{structuredPlan.header.user_name || 'Não informado'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-white/45">Contato</p>
-              <p className="text-sm font-medium text-white">{structuredPlan.header.contact || 'Não informado'}</p>
-            </div>
-            <div>
               <p className="text-xs text-white/45">Idade</p>
               <p className="text-sm font-medium text-white">{structuredPlan.header.age || 'Não informada'}</p>
             </div>
