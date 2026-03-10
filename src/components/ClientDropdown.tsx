@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,7 @@ interface UserProfile {
 const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
@@ -78,13 +80,34 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
   };
 
   const handleProfileUpdated = (profile: { first_name: string | null; last_name: string | null; whatsapp: string | null; avatar_url?: string | null }) => {
-    setUserProfile((current) => ({
+    const nextProfile = {
       first_name: profile.first_name,
       last_name: profile.last_name,
-      email: current?.email || userProfile?.email || null,
+      email: userProfile?.email || null,
       whatsapp: profile.whatsapp,
-      avatar_url: profile.avatar_url ?? current?.avatar_url ?? userProfile?.avatar_url ?? null,
-    }));
+      avatar_url: profile.avatar_url ?? userProfile?.avatar_url ?? null,
+    };
+
+    setUserProfile(nextProfile);
+
+    if (user?.id) {
+      queryClient.setQueryData(
+        ['client-badge-profile', user.id],
+        (current: {
+          created_at?: string;
+          selected_badge_id?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          avatar_url?: string | null;
+        } | null) => ({
+          created_at: current?.created_at || new Date().toISOString(),
+          selected_badge_id: current?.selected_badge_id ?? null,
+          first_name: nextProfile.first_name,
+          last_name: nextProfile.last_name,
+          avatar_url: nextProfile.avatar_url,
+        })
+      );
+    }
   };
 
   if (showPasswordReset) {
@@ -115,7 +138,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
             className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
             <Camera className="mr-2 h-4 w-4" />
-            Meu perfil
+            Editar perfil
           </DropdownMenuItem>
 
           <DropdownMenuItem
