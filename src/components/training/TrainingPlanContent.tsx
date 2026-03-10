@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
-import { Activity, AlertCircle, CalendarIcon, Check, Eye, FileText, Flame, Loader2, Target, Timer } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import * as AccordionPrimitive from '@radix-ui/react-accordion';
+import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, FileText, Flame, Loader2, Target, Timer, Weight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -10,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useExerciseLoadLogs, type ExerciseLoadDraft, type ExerciseLoadUnit, buildExerciseLoadKey } from '@/hooks/useExerciseLoadLogs';
 import { useToast } from '@/hooks/use-toast';
 import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
 import { cn } from '@/lib/utils';
@@ -37,7 +40,9 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loadDrafts, setLoadDrafts] = useState<Record<string, ExerciseLoadDraft>>({});
   const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
+  const { latestLoadsMap, saveLoad } = useExerciseLoadLogs(prescription.user_id, prescription.id);
 
   const recentCheckins = useMemo(
     () => allCheckins.slice(0, 8),
@@ -48,6 +53,90 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
     () => extractSplitLabel(structuredPlan?.header.split || ''),
     [structuredPlan?.header.split],
   );
+
+  useEffect(() => {
+    if (!structuredPlan) {
+      return;
+    }
+
+    setLoadDrafts((current) => {
+      const next = { ...current };
+
+      for (const workout of structuredPlan.workouts) {
+        for (const exercise of workout.exercises) {
+          const key = buildExerciseLoadKey(workout.label, exercise.name);
+          const latestLoad = latestLoadsMap.get(key);
+
+          if (!next[key] && latestLoad) {
+            next[key] = {
+              value: String(latestLoad.load_value),
+              unit: latestLoad.load_unit,
+            };
+          }
+        }
+      }
+
+      return next;
+    });
+  }, [latestLoadsMap, structuredPlan]);
+
+  const updateLoadDraft = (key: string, patch: Partial<ExerciseLoadDraft>) => {
+    setLoadDrafts((current) => ({
+      ...current,
+      [key]: {
+        value: current[key]?.value ?? '',
+        unit: current[key]?.unit ?? 'kg',
+        ...patch,
+      },
+    }));
+  };
+
+  const handleSaveLoad = async ({
+    workoutLabel,
+    workoutTitle,
+    exerciseName,
+  }: {
+    workoutLabel: string;
+    workoutTitle: string;
+    exerciseName: string;
+  }) => {
+    const key = buildExerciseLoadKey(workoutLabel, exerciseName);
+    const draft = loadDrafts[key] ?? { value: '', unit: 'kg' as ExerciseLoadUnit };
+    const parsedValue = Number(draft.value.replace(',', '.'));
+
+    if (!draft.value.trim() || Number.isNaN(parsedValue)) {
+      toast({
+        title: 'Carga inválida',
+        description: 'Informe um valor numérico válido para a carga.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await saveLoad.mutateAsync({
+        workoutLabel,
+        workoutTitle,
+        exerciseName,
+        loadValue: parsedValue,
+        loadUnit: draft.unit,
+      });
+
+      toast({
+        title: 'Carga registrada',
+        description: `${exerciseName}: ${parsedValue} ${draft.unit}`,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Não foi possível salvar a carga.';
+
+      toast({
+        title: 'Erro ao salvar carga',
+        description: message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   const openCheckinModal = (workoutLabel: string, workoutTitle: string) => {
     setSelectedWorkoutKey(workoutLabel);
@@ -196,7 +285,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
             <Target className="h-4 w-4" />
-            Divisão do treino
+            Divisão
           </div>
           <p className="text-3xl font-semibold text-white">{splitLabel}</p>
         </div>
@@ -247,29 +336,34 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
             value={`${prescription.id}-workout-${workout.label}`}
             className="client-surface-subtle overflow-hidden rounded-2xl border border-white/8 px-5"
           >
-            <div className="flex items-center gap-3">
-              <AccordionTrigger className="flex-1 py-5 text-left text-white hover:no-underline">
-                <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
-                  <p className="text-lg font-semibold text-white">{workout.title}</p>
-                </div>
-              </AccordionTrigger>
-              {enableCheckins && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="client-back-button h-10 w-10 shrink-0 rounded-xl"
-                  onClick={() => openCheckinModal(workout.label, workout.title)}
-                  disabled={addCheckin.isPending}
-                >
-                  {addCheckin.isPending && selectedWorkoutKey === workout.label ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Check className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
+            <div className="flex items-center gap-3 py-5">
+              <div className="flex-1 space-y-1 text-left">
+                <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
+                <p className="text-lg font-semibold text-white">{workout.title}</p>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                {enableCheckins && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="client-back-button h-10 w-10 shrink-0 rounded-xl"
+                    onClick={() => openCheckinModal(workout.label, workout.title)}
+                    disabled={addCheckin.isPending}
+                  >
+                    {addCheckin.isPending && selectedWorkoutKey === workout.label ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+                <AccordionPrimitive.Header className="flex">
+                  <AccordionPrimitive.Trigger className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)] [&[data-state=open]>svg]:rotate-180">
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                  </AccordionPrimitive.Trigger>
+                </AccordionPrimitive.Header>
+              </div>
             </div>
             <AccordionContent className="space-y-4 pb-5">
               {workout.exercises.map((exercise, index) => (
@@ -288,6 +382,64 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                         Método: {exercise.method}
                       </div>
                     )}
+                    {(() => {
+                      const exerciseKey = buildExerciseLoadKey(workout.label, exercise.name);
+                      const draft = loadDrafts[exerciseKey] ?? { value: '', unit: 'kg' as ExerciseLoadUnit };
+                      const latestLoad = latestLoadsMap.get(exerciseKey);
+
+                      return (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/45">
+                            <Weight className="h-3.5 w-3.5" />
+                            Carga
+                          </div>
+                          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_44px]">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={draft.value}
+                              onChange={(event) => updateLoadDraft(exerciseKey, { value: event.target.value })}
+                              placeholder="Digite a carga"
+                              className="rounded-xl border-white/10 bg-black/70 text-white placeholder:text-white/35 focus-visible:ring-white/15"
+                            />
+                            <Select
+                              value={draft.unit}
+                              onValueChange={(value) => updateLoadDraft(exerciseKey, { unit: value as ExerciseLoadUnit })}
+                            >
+                              <SelectTrigger className="rounded-xl border-white/10 bg-black/70 text-white">
+                                <SelectValue placeholder="Unidade" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="kg">kg</SelectItem>
+                                <SelectItem value="lb">lb</SelectItem>
+                                <SelectItem value="placas">placas</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="client-back-button h-10 w-10 rounded-xl"
+                              onClick={() =>
+                                handleSaveLoad({
+                                  workoutLabel: workout.label,
+                                  workoutTitle: workout.title,
+                                  exerciseName: exercise.name,
+                                })
+                              }
+                              disabled={saveLoad.isPending}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {latestLoad && (
+                            <p className="text-xs text-white/45">
+                              Último registro: {latestLoad.load_value} {latestLoad.load_unit}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
@@ -365,7 +517,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                 id="workout-name"
                 value={selectedWorkoutName}
                 readOnly
-                className="client-input-surface text-white"
+                className="rounded-xl border-white/10 bg-black/70 text-white placeholder:text-white/35 focus-visible:ring-white/15"
               />
             </div>
 
@@ -377,7 +529,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                     type="button"
                     variant="outline"
                     className={cn(
-                      'client-input-surface w-full justify-start gap-2 rounded-xl text-white transition-colors hover:bg-white/[0.06] hover:text-white',
+                      'w-full justify-start gap-2 rounded-xl border border-white/10 bg-black/70 text-white transition-colors hover:bg-black/85 hover:text-white',
                       !selectedDate && 'text-white/50'
                     )}
                   >

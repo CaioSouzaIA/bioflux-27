@@ -169,6 +169,57 @@ export type Database = {
           },
         ]
       }
+      exercise_load_logs: {
+        Row: {
+          created_at: string
+          exercise_name: string
+          id: string
+          load_unit: string
+          load_value: number
+          training_prescription_id: string
+          user_id: string
+          workout_label: string
+          workout_title: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_name: string
+          id?: string
+          load_unit: string
+          load_value: number
+          training_prescription_id: string
+          user_id: string
+          workout_label: string
+          workout_title: string
+        }
+        Update: {
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          load_unit?: string
+          load_value?: number
+          training_prescription_id?: string
+          user_id?: string
+          workout_label?: string
+          workout_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_load_logs_training_prescription_id_fkey"
+            columns: ["training_prescription_id"]
+            isOneToOne: false
+            referencedRelation: "training_prescriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_load_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content: string | null

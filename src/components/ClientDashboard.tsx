@@ -15,7 +15,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
 import { useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
-import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
 import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
@@ -105,9 +104,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
     return !!earnedDate || isEarnedByTime;
   }).length;
-
-  // Buscar check-ins de treino
-  const { weeklyCheckins } = useWorkoutCheckins(user?.id);
 
   // Verificar se o usuário tem assinatura de treino
   const hasTrainingSubscription = subscriptions.some(sub => 
@@ -327,10 +323,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       return;
     }
     setActiveView('periodization');
-  };
-
-  const handleWorkoutCheckin = () => {
-    navigate('/client/prescriptions?tab=treino');
   };
 
   if (loading || prescriptionsLoading || metabolicLoading) {
@@ -674,29 +666,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </Card>
             )}
 
-            {/* Check-in de Treino */}
-            {hasTrainingSubscription && (
-              <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(6,182,212,0.30)' }}>
-                <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
-                  <div className="client-card-top flex flex-col items-center flex-1 w-full">
-                    <div className="mb-4 mt-2">
-                      <Dumbbell className="w-10 h-10 text-cyan-500" />
-                    </div>
-                    <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Check-in<br />de Treino</h3>
-                    <div className="client-card-copy text-center mb-6 flex-1 flex flex-col items-center justify-center">
-                      <div className="client-card-metric text-3xl font-bold text-cyan-500 mb-1">{weeklyCheckins.length}/7</div>
-                      <p className="text-gray-400 text-sm">Treinos nesta semana</p>
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
-                    onClick={handleWorkoutCheckin}
-                  >
-                    Registrar Treino
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
       </div>
