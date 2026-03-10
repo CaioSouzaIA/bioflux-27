@@ -413,10 +413,10 @@ export const LeadsManager: React.FC = () => {
 
             <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'ativos' | 'inativos')} className="w-full lg:w-auto">
               <TabsList className="client-surface-subtle grid h-auto w-full grid-cols-2 rounded-2xl border border-white/10 p-1 lg:w-[260px]">
-                <TabsTrigger value="ativos" className="rounded-xl text-white/60 data-[state=active]:bg-white/10 data-[state=active]:text-white">
+                <TabsTrigger value="ativos" className="rounded-xl bg-transparent text-white/60 data-[state=active]:bg-black data-[state=active]:text-white">
                   Ativos
                 </TabsTrigger>
-                <TabsTrigger value="inativos" className="rounded-xl text-white/60 data-[state=active]:bg-white/10 data-[state=active]:text-white">
+                <TabsTrigger value="inativos" className="rounded-xl bg-transparent text-white/60 data-[state=active]:bg-black data-[state=active]:text-white">
                   Inativos
                 </TabsTrigger>
               </TabsList>

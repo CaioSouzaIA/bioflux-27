@@ -204,7 +204,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="professionalName"
                     {...register('professionalName', { required: 'Nome é obrigatório' })}
-                    className="client-input-surface"
+                    className="client-input-surface !text-black placeholder:text-black/45"
                     placeholder="Digite o nome do nutricionista"
                   />
                   {errors.professionalName && (
@@ -219,7 +219,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="personalName"
                     {...register('personalName', { required: 'Nome do personal é obrigatório' })}
-                    className="client-input-surface"
+                    className="client-input-surface !text-black placeholder:text-black/45"
                     placeholder="Digite o nome do personal trainer"
                   />
                   {errors.personalName && (
@@ -234,7 +234,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="crn"
                     {...register('crn', { required: 'CRN é obrigatório' })}
-                    className="client-input-surface"
+                    className="client-input-surface !text-black placeholder:text-black/45"
                     placeholder="Digite o CRN do nutricionista"
                   />
                   {errors.crn && (
@@ -249,7 +249,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="cref"
                     {...register('cref', { required: 'CREF é obrigatório' })}
-                    className="client-input-surface"
+                    className="client-input-surface !text-black placeholder:text-black/45"
                     placeholder="Digite o CREF do personal trainer"
                   />
                   {errors.cref && (
