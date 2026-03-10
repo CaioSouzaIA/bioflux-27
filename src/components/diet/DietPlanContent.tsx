@@ -134,12 +134,11 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
           <div className="client-surface-subtle rounded-2xl p-4 text-white">
             <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
               <Flame className="h-4 w-4" />
-              Calorias
+              Calorias por dia
             </div>
             <p className="text-3xl font-semibold text-white">
               {structuredPlan.header.estimated_calories_kcal ?? '—'}
             </p>
-            <p className="mt-2 text-sm text-white/60">Kcal estimadas por dia</p>
           </div>
         </div>
 
@@ -154,12 +153,11 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
           <div className="client-surface-subtle rounded-2xl p-4 text-white">
             <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
               <Droplets className="h-4 w-4" />
-              Hidratação
+              Hidratação por dia
             </div>
             <p className="text-3xl font-semibold text-white">
               {hydrationSummary}
             </p>
-            <p className="mt-2 text-sm text-white/60">Recomendação diária de água</p>
           </div>
         </div>
       </div>
