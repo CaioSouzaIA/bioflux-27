@@ -54,6 +54,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [expandedWorkout, setExpandedWorkout] = useState<string>('');
   const [loadDrafts, setLoadDrafts] = useState<Record<string, ExerciseLoadDraft>>({});
   const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
   const { latestLoadsMap, saveLoad } = useExerciseLoadLogs(prescription.user_id, prescription.id);
@@ -367,7 +368,13 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
         )}
       </div>
 
-      <Accordion type="single" collapsible className="space-y-4">
+      <Accordion
+        type="single"
+        collapsible
+        value={expandedWorkout}
+        onValueChange={(value) => setExpandedWorkout(value)}
+        className="space-y-4"
+      >
         {structuredPlan.workouts.map((workout) => (
           <AccordionItem
             key={`${prescription.id}-${workout.label}`}
@@ -378,14 +385,14 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
               <div className="flex-1 space-y-1 text-left">
                 <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
                 <p className="text-lg font-semibold text-white">{workout.title}</p>
-                {(() => {
+                {expandedWorkout !== `${prescription.id}-workout-${workout.label}` && (() => {
                   const summary = workoutCheckinSummary.get(workout.label) ?? {
                     total: 0,
                     lastDate: null,
                   };
 
                   return (
-                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-white/60 group-data-[state=open]:hidden">
+                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-white/60">
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
                         {summary.total}x executado
                       </span>
