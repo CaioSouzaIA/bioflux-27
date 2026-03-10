@@ -642,7 +642,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                         shineColor={[badgeShineColor, 'rgba(255,255,255,0.10)', badgeShineColor]}
                         className="rounded-full"
                       />
-                      <Avatar className="h-12 w-12">
+                      <Avatar className="relative z-10 h-10 w-10">
                         <AvatarImage
                           src={selectedBadge?.image_url || undefined}
                           alt={selectedBadge?.name || "Insígnia"}
