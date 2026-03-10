@@ -162,8 +162,8 @@ const WorkoutCheckin: React.FC = () => {
                           type="button"
                           variant="outline"
                           className={cn(
-                            'client-input-surface w-full justify-start gap-2 rounded-xl text-white transition-colors hover:bg-white/[0.06] hover:text-white',
-                            !selectedDate && 'text-white/50'
+                            'client-input-surface w-full justify-start gap-2 rounded-xl !text-black transition-colors hover:bg-white/[0.06] hover:!text-black',
+                            !selectedDate && '!text-black/50'
                           )}
                         >
                           <CalendarIcon className="h-4 w-4" />
