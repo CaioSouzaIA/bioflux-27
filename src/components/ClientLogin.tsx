@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SignInCard } from '@/components/ui/sign-in-card-2';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, Lock, Eye, EyeClosed, ArrowRight, Phone, ArrowLeft } from 'lucide-react';
@@ -8,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { toast } from '@/hooks/use-toast';
 import PasswordReset from './PasswordReset';
 import { supabase } from '@/integrations/supabase/client';
+import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 
 function CustomInput({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -105,11 +105,6 @@ const ClientLogin = () => {
     }
   };
 
-
-  const handleSignUpClick = () => {
-    setActiveTab('signup');
-  };
-
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -161,33 +156,15 @@ const ClientLogin = () => {
       setForgotLoading(false);
     }
   };
-
-  if (activeTab === 'login' && !showResetPassword) {
-    return (
-      <SignInCard
-        title="Bem-vindo Cliente"
-        subtitle="Faça login na área do cliente"
-        showGoogleSignIn={false}
-        showSignUpLink={true}
-        onSubmit={handleLogin}
-        onSignUpClick={handleSignUpClick}
-        isLoading={loading}
-        showForgotPassword={true}
-        onForgotPasswordClick={() => setShowResetPassword(true)}
-      />
-    );
-  }
-
   if (showResetPassword) {
     return <PasswordReset onBack={() => setShowResetPassword(false)} />;
   }
 
   if (showForgotPassword) {
     return (
-      <div className="min-h-screen w-screen bg-black relative overflow-hidden flex flex-col items-center justify-center">
-        {/* Background gradient effect */}
-        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/40 via-cyan-700/50 to-black" />
-        
+      <div className="relative flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden bg-black">
+        <BackgroundAnimation />
+
         {/* Logo */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
@@ -284,32 +261,8 @@ const ClientLogin = () => {
   }
 
   return (
-    <div className="min-h-screen w-screen bg-black relative overflow-hidden flex flex-col items-center justify-center">
-      {/* Background gradient effect - mudado para ciano */}
-      <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/40 via-cyan-700/50 to-black" />
-      
-      {/* Subtle noise texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-soft-light" 
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          backgroundSize: '200px 200px'
-        }}
-      />
-
-      {/* Animated background effects - mudado para ciano */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[120vh] h-[60vh] rounded-b-[50%] bg-cyan-400/20 blur-[80px]" />
-      <motion.div 
-        className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[100vh] h-[60vh] rounded-b-full bg-cyan-300/20 blur-[60px]"
-        animate={{ 
-          opacity: [0.15, 0.3, 0.15],
-          scale: [0.98, 1.02, 0.98]
-        }}
-        transition={{ 
-          duration: 8, 
-          repeat: Infinity,
-          repeatType: "mirror"
-        }}
-      />
+    <div className="relative flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden bg-black">
+      <BackgroundAnimation />
 
       {/* Logo acima da caixa de login */}
       <motion.div
@@ -350,7 +303,7 @@ const ClientLogin = () => {
                   transition={{ delay: 0.2 }}
                   className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80"
                 >
-                  Bem-vindo Cliente
+                  {activeTab === 'signup' ? 'Crie sua conta' : 'Bem-vindo'}
                 </motion.h1>
                 
                 <motion.p
@@ -359,7 +312,7 @@ const ClientLogin = () => {
                   transition={{ delay: 0.3 }}
                   className="text-white/60 text-xs"
                 >
-                  Faça login em BIOFLUX.AI
+                  {activeTab === 'signup' ? 'Preencha seus dados para criar sua conta' : 'Faça login com seu email'}
                 </motion.p>
               </div>
 
