@@ -37,7 +37,7 @@ supabase secrets set \
   OPENROUTER_API_KEY="$OPENROUTER_API_KEY"
 
 echo "Fazendo deploy das Edge Functions de dieta..."
-supabase functions deploy diet-intake-webhook --project-ref "$PROJECT_REF" --use-api
-supabase functions deploy diet-generate-worker --project-ref "$PROJECT_REF" --use-api
+supabase functions deploy diet-intake-webhook --project-ref "$PROJECT_REF" --use-api --no-verify-jwt
+supabase functions deploy diet-generate-worker --project-ref "$PROJECT_REF" --use-api --no-verify-jwt
 
 echo "Deploy concluído."
