@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -100,7 +100,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("created_at, selected_badge_id")
+        .select("created_at, selected_badge_id, first_name, last_name, avatar_url")
         .eq("id", user.id)
         .single();
 
@@ -143,10 +143,22 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       return badgeId;
     },
     onSuccess: (badgeId) => {
-      queryClient.setQueryData(["client-badge-profile", user?.id], (current: { created_at?: string; selected_badge_id?: string | null } | null) => ({
-        created_at: current?.created_at || badgeProfile?.created_at || new Date().toISOString(),
-        selected_badge_id: badgeId,
-      }));
+      queryClient.setQueryData(
+        ["client-badge-profile", user?.id],
+        (current: {
+          created_at?: string;
+          selected_badge_id?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          avatar_url?: string | null;
+        } | null) => ({
+          created_at: current?.created_at || badgeProfile?.created_at || new Date().toISOString(),
+          selected_badge_id: badgeId,
+          first_name: current?.first_name ?? badgeProfile?.first_name ?? null,
+          last_name: current?.last_name ?? badgeProfile?.last_name ?? null,
+          avatar_url: current?.avatar_url ?? badgeProfile?.avatar_url ?? null,
+        })
+      );
       toast({
         title: "Insígnia atualizada",
         description: badgeId ? "Sua insígnia exibida foi alterada." : "A insígnia exibida foi removida.",
@@ -414,6 +426,28 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       .toUpperCase();
   };
 
+  const getDisplayName = () => {
+    if (badgeProfile?.first_name && badgeProfile?.last_name) {
+      return `${badgeProfile.first_name} ${badgeProfile.last_name}`;
+    }
+    if (badgeProfile?.first_name) {
+      return badgeProfile.first_name;
+    }
+    return "Usuário";
+  };
+
+  const getUserInitials = () => {
+    const first = badgeProfile?.first_name?.trim()?.[0] || "";
+    const last = badgeProfile?.last_name?.trim()?.[0] || "";
+    const initials = `${first}${last}`.trim();
+
+    if (initials) {
+      return initials.toUpperCase();
+    }
+
+    return "U";
+  };
+
   if (loading || prescriptionsLoading || metabolicLoading) {
     return (
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
@@ -519,11 +553,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
           <div className="grid gap-6 mb-8">
             <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.14)' }}>
               <CardHeader className="flex flex-row items-start justify-between gap-4">
-                <div className="space-y-1.5">
-                  <CardTitle className="text-white">Suas Assinaturas</CardTitle>
-                  <CardDescription className="text-gray-300">
-                    Planos ativos e serviços disponíveis
-                  </CardDescription>
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar className="h-12 w-12 border border-white/10">
+                    <AvatarImage src={badgeProfile?.avatar_url || undefined} alt={getDisplayName()} />
+                    <AvatarFallback className="bg-white/[0.06] text-white">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <CardTitle className="truncate text-white">{getDisplayName()}</CardTitle>
+                  </div>
                 </div>
                 <Popover>
                   <PopoverTrigger asChild>

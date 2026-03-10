@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, LogOut, Key, LifeBuoy, RefreshCcw, X, Camera } from 'lucide-react';
 import PasswordReset from './PasswordReset';
@@ -99,18 +98,6 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
     return 'Usuário';
   };
 
-  const getUserInitials = () => {
-    const first = userProfile?.first_name?.trim()?.[0] || '';
-    const last = userProfile?.last_name?.trim()?.[0] || '';
-    const initials = `${first}${last}`.trim();
-
-    if (initials) {
-      return initials.toUpperCase();
-    }
-
-    return 'U';
-  };
-
   if (showPasswordReset) {
     return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
   }
@@ -121,19 +108,11 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className={`group inline-flex h-auto w-auto max-w-[280px] justify-between gap-3 border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] px-3 py-2 text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)] hover:text-white ${
+            className={`group inline-flex h-auto w-auto justify-between gap-2 border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] px-3 py-2 text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)] hover:text-white ${
               open ? 'rounded-b-md rounded-t-2xl border-b-transparent shadow-[0_0_0_1px_rgba(255,255,255,0.04)]' : 'rounded-2xl'
             }`}
           >
-            <span className="flex min-w-0 items-center gap-2">
-              <Avatar className="h-8 w-8 border border-white/10">
-                <AvatarImage src={userProfile?.avatar_url || undefined} alt={getDisplayName()} />
-                <AvatarFallback className="bg-white/[0.06] text-white">
-                  {getUserInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="truncate">{getDisplayName()}</span>
-            </span>
+            <span className="truncate">Meu perfil</span>
             <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
           </Button>
         </DropdownMenuTrigger>
