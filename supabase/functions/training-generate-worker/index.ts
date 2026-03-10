@@ -4,10 +4,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import {
   buildTrainingAnalysisPrompt,
+  buildTrainingDocumentQuery,
+  buildTrainingInstructionsContext,
   buildTrainingUserPrompt,
   OPENROUTER_MODEL,
   parseStructuredTrainingPlan,
   parseTrainingPeriodizationAnalysis,
+  selectRelevantTrainingInstructions,
   TREINOAI_SYSTEM_PROMPT,
   TRAINING_PERIODIZATION_ANALYSIS_PROMPT,
 } from "../_shared/training-plan.ts";
@@ -101,6 +104,28 @@ serve(async (req) => {
       .eq("id", prescriptionId);
 
     const payload = (prescription.generation_payload ?? {}) as Record<string, unknown>;
+    const instructionQuery = buildTrainingDocumentQuery(payload);
+
+    const { data: instructionDocuments, error: documentsError } = await supabaseClient
+      .from("documents")
+      .select("id, content, metadata")
+      .not("content", "is", null)
+      .limit(100);
+
+    if (documentsError) {
+      throw documentsError;
+    }
+
+    const relevantDocuments = selectRelevantTrainingInstructions(
+      (instructionDocuments ?? []) as Array<{ id: string; content: string | null; metadata: Record<string, unknown> | null }>,
+      instructionQuery,
+    );
+
+    if (!relevantDocuments.length) {
+      throw new Error("Nenhum documento de instrução de treino foi encontrado em documents.");
+    }
+
+    const instructionsContext = buildTrainingInstructionsContext(relevantDocuments);
 
     const generationResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -120,7 +145,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: buildTrainingUserPrompt(payload),
+            content: buildTrainingUserPrompt(payload, instructionsContext),
           },
         ],
       }),

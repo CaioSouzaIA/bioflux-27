@@ -44,59 +44,13 @@ export interface TrainingPeriodizationAnalysis {
   metodo_utilizado: string;
 }
 
+export interface TrainingInstructionDocument {
+  id: string;
+  content: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
 export const OPENROUTER_MODEL = "google/gemini-3-flash-preview";
-
-const TRAINING_REFERENCE = `# instrucoes_de_treino
-
-Use esta referência como fonte da verdade para prescrever o treino.
-
-## 1. Faixas de repetições por objetivo
-- Hipertrofia muscular: 8-12 repetições predominantes, estímulo misto ou tensional conforme o nível.
-- Força máxima: 3-6 repetições predominantes, descansos mais longos.
-- Resistência muscular: 12-20 repetições predominantes, descansos mais curtos.
-- Emagrecimento: 10-15 repetições predominantes, estímulo misto/metabólico.
-- Qualidade de vida: 8-15 repetições predominantes, foco técnico e segurança.
-
-## 2. Volume total semanal por grupo muscular
-- Iniciante: 8-12 séries semanais por grupo muscular principal.
-- Intermediário: 10-16 séries semanais por grupo muscular principal.
-- Avançado / Super avançado / Veterano: 12-20 séries semanais por grupo muscular principal.
-
-## 3. Descanso entre séries
-- Hipertrofia: 60-90s.
-- Força: 90-180s.
-- Resistência / emagrecimento / qualidade de vida: 45-75s.
-
-## 4. Métodos de intensificação permitidos
-- Drop-set
-- Rest-Pause
-- Bi-set / exercícios conjugados
-- Super-série
-- FST-7
-- Cluster Set
-
-Use no máximo 1 a 2 métodos por prescrição e somente para níveis avançado, super avançado ou veterano.
-
-## 5. Cardio por objetivo
-- Hipertrofia: 2-4 sessões leves a moderadas, 15-30 min, preferencialmente pós-treino ou em dias separados.
-- Emagrecimento: 3-6 sessões, podendo usar HIIT ou moderado contínuo, 20-40 min.
-- Qualidade de vida: 3-5 sessões moderadas, 20-35 min.
-- Resistência muscular: 2-4 sessões moderadas, 20-30 min.
-- Força máxima: 2-3 sessões leves, 10-20 min, sem interferir nos treinos pesados.
-
-## 6. Lógica de divisão
-- 2 dias: AB
-- 3 dias: ABC
-- 4 dias: ABCD ou superior/inferior
-- 5 dias: ABCDE
-- 6 dias: ABCDEF
-
-## 7. Diretrizes finais
-- Use nomes de exercícios conhecidos.
-- Faça a divisão respeitando dias por semana e tempo disponível.
-- Mantenha a faixa de repetições predominante consistente.
-- Especifique séries, repetições e descanso claramente.
-- Oriente o encaixe do cardio na semana nas observações.`;
 
 export const TREINOAI_SYSTEM_PROMPT = `<prompt>
     <persona>
@@ -257,8 +211,95 @@ const extractJsonBlock = (value: string) => {
   return match ? match[0] : value;
 };
 
-export const buildTrainingUserPrompt = (context: Record<string, unknown>) =>
-  `${TRAINING_REFERENCE}\n\nPerfil do usuário em JSON:\n${JSON.stringify(context, null, 2)}`;
+const normalizeForSearch = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^\p{L}\p{N}\s]+/gu, " ");
+
+const tokenize = (value: string) =>
+  normalizeForSearch(value)
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+
+export const buildTrainingDocumentQuery = (context: Record<string, unknown>) => {
+  const queryParts: string[] = [
+    "instruções de prescrição de treino musculação cardio periodização séries repetições descanso métodos",
+  ];
+
+  const responses = context.responses;
+  if (responses && typeof responses === "object") {
+    queryParts.push(JSON.stringify(responses));
+  }
+
+  const metabolicAssessment = context.metabolicAssessment;
+  if (metabolicAssessment && typeof metabolicAssessment === "object") {
+    queryParts.push(JSON.stringify(metabolicAssessment));
+  }
+
+  const aiConfig = context.aiConfig;
+  if (aiConfig && typeof aiConfig === "object") {
+    queryParts.push(JSON.stringify(aiConfig));
+  }
+
+  return queryParts.join(" ");
+};
+
+export const selectRelevantTrainingInstructions = (
+  documents: TrainingInstructionDocument[],
+  query: string,
+  maxItems = 8,
+) => {
+  const queryTokens = new Set(tokenize(query));
+
+  return documents
+    .filter((document) => document.content && document.content.trim().length > 0)
+    .map((document) => {
+      const content = document.content ?? "";
+      const contentTokens = tokenize(content);
+      const uniqueMatches = new Set(contentTokens.filter((token) => queryTokens.has(token)));
+      const hasTrainingSignal =
+        /treino|muscula|cardio|series|s[eé]ries|repeti|descanso|hipertrof|for[cç]a|emagrec|resist[eê]ncia/i.test(
+          content,
+        );
+
+      const score = uniqueMatches.size + (hasTrainingSignal ? 2 : 0);
+
+      return {
+        document,
+        score,
+      };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxItems)
+    .map((item) => item.document);
+};
+
+export const buildTrainingInstructionsContext = (documents: TrainingInstructionDocument[]) =>
+  documents
+    .map((document, index) => {
+      const content = document.content?.trim();
+      if (!content) {
+        return null;
+      }
+
+      return `[Documento ${index + 1}]\n${content}`;
+    })
+    .filter(Boolean)
+    .join("\n\n");
+
+export const buildTrainingUserPrompt = (
+  context: Record<string, unknown>,
+  instructionsContext: string,
+) =>
+  `Use a base abaixo como a tool "instrucoes_de_treino". Ela foi recuperada da tabela documents.\n\n${instructionsContext}\n\nPerfil do usuário em JSON:\n${JSON.stringify(
+    context,
+    null,
+    2,
+  )}`;
 
 export const buildTrainingAnalysisPrompt = (rawPlanText: string) =>
   `<input_data>\n${rawPlanText}\n</input_data>`;
