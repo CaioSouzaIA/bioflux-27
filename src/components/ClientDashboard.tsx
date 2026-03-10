@@ -536,7 +536,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
           {/* Assinaturas Ativas */}
           <div className="grid gap-6 mb-8">
             <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.14)' }}>
-              <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <CardHeader className="flex flex-row items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar className="h-12 w-12 border border-white/10">
                     <AvatarImage src={userProfile?.avatar_url || undefined} alt={getDisplayName()} />
@@ -555,7 +555,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                       className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:bg-white/[0.08]"
                       aria-label="Escolher insígnia exibida"
                     >
-                      <Avatar className="h-10 w-10">
+                      <Avatar className="h-12 w-12">
                         <AvatarImage
                           src={selectedBadge?.image_url || undefined}
                           alt={selectedBadge?.name || "Insígnia"}
