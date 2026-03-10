@@ -103,32 +103,59 @@ export type Database = {
       }
       diet_prescriptions: {
         Row: {
+          completed_at: string | null
           created_at: string | null
-          file_name: string
-          file_path: string
+          error_message: string | null
+          file_name: string | null
+          file_path: string | null
           form_response_id: string | null
+          generation_payload: Json | null
+          generation_status: string
           id: string
+          model_slug: string | null
+          plan_name: string
+          plan_sequence: number
+          raw_plan_text: string | null
           status: string | null
+          structured_plan: Json | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string | null
-          file_name: string
-          file_path: string
+          error_message?: string | null
+          file_name?: string | null
+          file_path?: string | null
           form_response_id?: string | null
+          generation_payload?: Json | null
+          generation_status?: string
           id?: string
+          model_slug?: string | null
+          plan_name: string
+          plan_sequence: number
+          raw_plan_text?: string | null
           status?: string | null
+          structured_plan?: Json | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          completed_at?: string | null
           created_at?: string | null
-          file_name?: string
-          file_path?: string
+          error_message?: string | null
+          file_name?: string | null
+          file_path?: string | null
           form_response_id?: string | null
+          generation_payload?: Json | null
+          generation_status?: string
           id?: string
+          model_slug?: string | null
+          plan_name?: string
+          plan_sequence?: number
+          raw_plan_text?: string | null
           status?: string | null
+          structured_plan?: Json | null
           updated_at?: string | null
           user_id?: string
         }

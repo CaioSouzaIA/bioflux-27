@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Calendar, UtensilsCrossed } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { DietPrescription } from '@/hooks/useDietPrescriptions';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,6 +19,10 @@ export const DietPdfViewer: React.FC<DietPdfViewerProps> = ({
 
   const handleViewPdf = (prescription: DietPrescription) => {
     try {
+      if (!prescription.file_path) {
+        throw new Error('Arquivo PDF não encontrado para esta prescrição.');
+      }
+
       console.log('👁️ [PDF VIEWER] Abrindo PDF:', {
         fileName: prescription.file_name,
         filePath: prescription.file_path,
@@ -107,7 +109,7 @@ export const DietPdfViewer: React.FC<DietPdfViewerProps> = ({
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <CardTitle className="text-white text-lg">
-                        {prescription.file_name}
+                        {prescription.file_name || prescription.plan_name}
                       </CardTitle>
                       {isMostRecent && (
                         <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10">

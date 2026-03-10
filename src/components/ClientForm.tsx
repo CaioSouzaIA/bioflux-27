@@ -237,6 +237,20 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     }
   };
 
+  const sendDietIntakeToSupabase = async (webhookPayload: any) => {
+    const { data, error } = await supabase.functions.invoke('diet-intake-webhook', {
+      body: webhookPayload,
+    });
+
+    if (error) {
+      console.error('❌ Erro ao iniciar geração da dieta:', error);
+      throw error;
+    }
+
+    console.log('✅ Fluxo de dieta iniciado:', data);
+    return data;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -303,12 +317,17 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       console.log('👤 User ID do cliente no payload:', user.id);
       console.log('💾 Form Response ID:', savedResponse?.id);
 
-      // Enviar para webhook
-      await sendToWebhook(webhookPayload, webhookUrl);
+      if (formConfig.category === 'anamnese-dieta') {
+        await sendDietIntakeToSupabase(webhookPayload);
+      } else {
+        await sendToWebhook(webhookPayload, webhookUrl);
+      }
 
       toast({
         title: "Formulário Enviado!",
-        description: "Suas respostas foram enviadas com sucesso. Obrigado!",
+        description: formConfig.category === 'anamnese-dieta'
+          ? "Suas respostas foram enviadas. O plano alimentar já entrou em geração."
+          : "Suas respostas foram enviadas com sucesso. Obrigado!",
       });
 
       // Usar callback onBack em vez de redirecionamento direto

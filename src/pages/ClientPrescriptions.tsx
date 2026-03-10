@@ -5,7 +5,7 @@ import { ArrowLeft, UtensilsCrossed, Dumbbell } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { useNavigate } from 'react-router-dom';
-import { DietPdfViewer } from '@/components/DietPdfViewer';
+import { DietPrescriptionViewer } from '@/components/diet/DietPrescriptionViewer';
 import { TrainingPdfViewer } from '@/components/TrainingPdfViewer';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
@@ -75,7 +75,7 @@ const ClientPrescriptions: React.FC = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Suas Prescrições</h1>
             <p className="text-gray-300">
-              Visualize e baixe suas prescrições personalizadas em PDF
+              Acompanhe seus planos alimentares estruturados e suas prescrições de treino
             </p>
           </div>
 
@@ -99,7 +99,7 @@ const ClientPrescriptions: React.FC = () => {
             </TabsList>
             
             <TabsContent value="dieta" className="mt-6">
-              <DietPdfViewer 
+              <DietPrescriptionViewer
                 prescriptions={dietPrescriptions} 
                 isLoading={isDietLoading}
               />

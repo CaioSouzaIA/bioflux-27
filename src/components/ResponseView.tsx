@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, ArrowLeft, Calendar, User, Upload } from 'lucide-react';
+import { Trash2, ArrowLeft, Calendar, User } from 'lucide-react';
 import { FormConfig, FormResponse } from '@/types/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DietView } from './DietView';
 import { WhatsAppPopup } from './WhatsAppPopup';
-import { DietPdfUploader } from './DietPdfUploader';
-import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import type { DietPrescription } from '@/hooks/useDietPrescriptions';
 
 interface ResponseViewProps {
   formConfig: FormConfig;
@@ -27,12 +26,9 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
   const navigate = useNavigate();
   const [responses, setResponses] = useState<FormResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDietResponse, setSelectedDietResponse] = useState<FormResponse | null>(null);
+  const [selectedDietPrescription, setSelectedDietPrescription] = useState<DietPrescription | null>(null);
   const [selectedDietName, setSelectedDietName] = useState<string>('');
-  const [dietPlan, setDietPlan] = useState<string | null>(null);
-  const [showUploader, setShowUploader] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
-  const { userType } = useAuthContext();
 
   useEffect(() => {
     // If we have a single response, use it; otherwise load all responses
@@ -161,26 +157,65 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
 
   const handleViewDiet = async (response: FormResponse) => {
     try {
-      // Buscar o plano alimentar no Supabase usando o ID da resposta
-      const { data: dietData, error } = await supabase
-        .from('form_responses')
-        .select('plano_alimentar')
-        .eq('id', response.id)
-        .single();
+      const respondent = getRespondentName(response);
+
+      const { data: structuredPrescription, error } = await supabase
+        .from('diet_prescriptions')
+        .select('*')
+        .eq('form_response_id', response.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
-        console.error('Erro ao buscar plano alimentar:', error);
+        console.error('Erro ao buscar prescrição estruturada:', error);
+      }
+
+      if (structuredPrescription) {
+        setSelectedDietName(respondent);
+        setSelectedDietPrescription(structuredPrescription as DietPrescription);
+        return;
+      }
+
+      const { data: legacyDietData, error: legacyError } = await supabase
+        .from('form_responses')
+        .select('plano_alimentar, submitted_at, user_id')
+        .eq('id', response.id)
+        .maybeSingle();
+
+      if (legacyError) {
+        throw legacyError;
+      }
+
+      if (!legacyDietData?.plano_alimentar) {
         toast({
-          title: "Erro",
-          description: "Não foi possível carregar o plano alimentar.",
+          title: "Plano não encontrado",
+          description: "Ainda não existe um plano alimentar associado a esta resposta.",
           variant: "destructive",
         });
         return;
       }
 
-      setSelectedDietResponse(response);
-      setSelectedDietName(getRespondentName(response));
-      setDietPlan(dietData?.plano_alimentar || null);
+      setSelectedDietName(respondent);
+      setSelectedDietPrescription({
+        id: response.id || crypto.randomUUID(),
+        user_id: legacyDietData.user_id || '',
+        form_response_id: response.id || null,
+        file_path: null,
+        file_name: null,
+        plan_name: `Plano alimentar legado - ${respondent}`,
+        plan_sequence: 0,
+        generation_status: 'completed',
+        structured_plan: null,
+        raw_plan_text: legacyDietData.plano_alimentar,
+        generation_payload: null,
+        model_slug: null,
+        error_message: null,
+        created_at: legacyDietData.submitted_at || response.submittedAt || new Date().toISOString(),
+        updated_at: legacyDietData.submitted_at || response.submittedAt || null,
+        completed_at: legacyDietData.submitted_at || response.submittedAt || null,
+        status: 'active',
+      });
     } catch (error) {
       console.error('Erro ao carregar plano alimentar:', error);
       toast({
@@ -208,23 +243,8 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
   };
 
   const handleBackFromDiet = () => {
-    setSelectedDietResponse(null);
+    setSelectedDietPrescription(null);
     setSelectedDietName('');
-    setDietPlan(null);
-  };
-
-  const toggleUploader = (responseId: string) => {
-    setShowUploader(prev => ({
-      ...prev,
-      [responseId]: !prev[responseId]
-    }));
-  };
-
-  const handleUploadSuccess = () => {
-    toast({
-      title: "Prescrição Enviada",
-      description: "A prescrição de dieta foi enviada com sucesso para o cliente.",
-    });
   };
 
   const getRespondentName = (response: FormResponse) => {
@@ -298,12 +318,11 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
   };
 
   // If está visualizando o plano alimentar
-  if (selectedDietResponse) {
+  if (selectedDietPrescription) {
     return (
       <DietView
-        response={selectedDietResponse}
         respondentName={selectedDietName}
-        dietPlan={dietPlan}
+        prescription={selectedDietPrescription}
         onBack={handleBackFromDiet}
       />
     );
@@ -387,27 +406,14 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
                         </div>
                         <div className="flex gap-1 sm:gap-2">
                           {formConfig.category === 'anamnese-dieta' && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewDiet(response)}
-                                className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white text-xs sm:text-sm px-2 sm:px-3"
-                              >
-                                <span className="sm:mr-1">Ver Dieta</span>
-                              </Button>
-                              {userType === 'admin' && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => toggleUploader(response.id || '')}
-                                  className="border-white/15 text-white hover:bg-[#292929] hover:text-white text-xs sm:text-sm px-2 sm:px-3"
-                                >
-                                  <Upload className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
-                                  <span className="hidden sm:inline">PDF</span>
-                                </Button>
-                              )}
-                            </>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewDiet(response)}
+                              className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white text-xs sm:text-sm px-2 sm:px-3"
+                            >
+                              <span className="sm:mr-1">Ver Dieta</span>
+                            </Button>
                           )}
                           {formConfig.category === 'anamnese-treino' && (
                             <Button
@@ -463,15 +469,6 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* PDF Uploader for diet responses */}
-                  {showUploader[response.id || ''] && formConfig.category === 'anamnese-dieta' && userType === 'admin' && (
-                    <DietPdfUploader
-                      userId={response.user_id || ''}
-                      formResponseId={response.id}
-                      onUploadSuccess={handleUploadSuccess}
-                    />
-                  )}
                 </div>
               ))}
             </div>
