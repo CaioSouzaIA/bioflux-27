@@ -379,21 +379,21 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                 <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
                 <p className="text-lg font-semibold text-white">{workout.title}</p>
                 {(() => {
-                  const summary = workoutCheckinSummary.get(workout.label);
-                  if (!summary) {
-                    return null;
-                  }
+                  const summary = workoutCheckinSummary.get(workout.label) ?? {
+                    total: 0,
+                    lastDate: null,
+                  };
 
                   return (
                     <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-white/60 group-data-[state=open]:hidden">
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
                         {summary.total}x executado
                       </span>
-                      {summary.lastDate && (
-                        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                          Última execução: {format(new Date(summary.lastDate), 'dd/MM/yyyy', { locale: ptBR })}
-                        </span>
-                      )}
+                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                        {summary.lastDate
+                          ? `Última execução: ${format(new Date(summary.lastDate), 'dd/MM/yyyy', { locale: ptBR })}`
+                          : 'Sem registro'}
+                      </span>
                     </div>
                   );
                 })()}
