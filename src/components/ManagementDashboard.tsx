@@ -148,7 +148,7 @@ export const ManagementDashboard: React.FC = () => {
         <h2 className="text-2xl font-bold text-white">Dashboard de Gestão</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="bg-[#161616] border-gray-700">
+            <Card key={i} className="client-surface-panel rounded-3xl">
               <CardContent className="p-6">
                 <div className="animate-pulse">
                   <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
@@ -168,7 +168,7 @@ export const ManagementDashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-white">Dashboard de Gestão</h2>
-        <Card className="bg-red-900 border-red-700">
+        <Card className="rounded-3xl border-red-500/30 bg-[linear-gradient(180deg,rgba(34,10,12,0.98)_0%,rgba(18,6,7,0.98)_100%)]">
           <CardHeader>
             <CardTitle className="text-white">Erro ao carregar dados</CardTitle>
           </CardHeader>
@@ -191,11 +191,11 @@ export const ManagementDashboard: React.FC = () => {
         <h2 className="text-2xl font-bold text-white">Dashboard de Gestão</h2>
         
         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-[200px] bg-gray-800 border-gray-600 text-white">
+          <SelectTrigger className="client-input-surface w-[200px] text-white">
             <CalendarIcon className="w-4 h-4 mr-2" />
             <SelectValue placeholder="Selecionar mês" />
           </SelectTrigger>
-          <SelectContent className="bg-gray-800 border-gray-600 text-white z-50">
+          <SelectContent className="text-white z-50">
             {months.map((month) => (
               <SelectItem 
                 key={month.value} 

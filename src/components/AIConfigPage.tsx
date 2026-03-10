@@ -175,7 +175,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
             <Button 
               variant="outline" 
               onClick={onBack}
-              className="border-gray-700 text-black bg-white hover:bg-gray-100"
+              className="client-back-button"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar ao Início
@@ -188,7 +188,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
             <div className="w-[100px]"></div>
           </div>
 
-          <Card className="bg-[#161616] border-gray-700">
+          <Card className="client-surface-panel rounded-3xl">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Bot className="w-5 h-5 text-orange-500" />
@@ -204,7 +204,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="professionalName"
                     {...register('professionalName', { required: 'Nome é obrigatório' })}
-                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+                    className="client-input-surface"
                     placeholder="Digite o nome do nutricionista"
                   />
                   {errors.professionalName && (
@@ -219,7 +219,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="personalName"
                     {...register('personalName', { required: 'Nome do personal é obrigatório' })}
-                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+                    className="client-input-surface"
                     placeholder="Digite o nome do personal trainer"
                   />
                   {errors.personalName && (
@@ -234,7 +234,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="crn"
                     {...register('crn', { required: 'CRN é obrigatório' })}
-                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+                    className="client-input-surface"
                     placeholder="Digite o CRN do nutricionista"
                   />
                   {errors.crn && (
@@ -249,7 +249,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <Input
                     id="cref"
                     {...register('cref', { required: 'CREF é obrigatório' })}
-                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+                    className="client-input-surface"
                     placeholder="Digite o CREF do personal trainer"
                   />
                   {errors.cref && (
@@ -262,10 +262,10 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                     Tempo de Envio *
                   </Label>
                   <Select onValueChange={(value) => setValue('sendingTime', value)}>
-                    <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectTrigger className="client-input-surface text-white">
                       <SelectValue placeholder="Selecione o tempo de envio" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectContent className="text-white">
                       {sendingTimes.map((time) => (
                         <SelectItem 
                           key={time.value} 
@@ -284,10 +284,10 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                     Coleta de Feedback
                   </Label>
                   <Select onValueChange={(value) => setValue('feedbackCollection', value)}>
-                    <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectTrigger className="client-input-surface text-white">
                       <SelectValue placeholder="Selecione o dia da semana" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectContent className="text-white">
                       {feedbackDays.map((day) => (
                         <SelectItem 
                           key={day.value} 
@@ -306,10 +306,10 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                     Intervalo de Envio de Feedback
                   </Label>
                   <Select onValueChange={(value) => setValue('feedbackInterval', value)}>
-                    <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectTrigger className="client-input-surface text-white">
                       <SelectValue placeholder="Selecione o intervalo" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectContent className="text-white">
                       {feedbackIntervals.map((interval) => (
                         <SelectItem 
                           key={interval.value} 
@@ -326,7 +326,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                 <div className="flex gap-4 pt-6">
                   <Button 
                     type="submit" 
-                    className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white flex items-center gap-2"
+                    className="client-action-button flex items-center gap-2"
                   >
                     <Save className="w-4 h-4" />
                     Salvar Configurações
@@ -335,7 +335,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                     type="button" 
                     variant="outline" 
                     onClick={onBack}
-                    className="border-gray-600 text-black bg-white hover:bg-red-500 hover:text-white"
+                    className="client-back-button"
                   >
                     Cancelar
                   </Button>

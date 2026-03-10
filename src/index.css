@@ -97,15 +97,19 @@
   }
 
   .client-back-button {
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 0.5rem;
+    background-color: transparent !important;
     background-image: linear-gradient(135deg, #050505 0%, #1a1a1a 48%, #3a3a3a 100%);
     color: #ffffff;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
   }
 
-  .client-back-button:hover {
+  .client-back-button:hover,
+  .client-back-button:focus,
+  .client-back-button:focus-visible {
     background-image: linear-gradient(135deg, #101010 0%, #262626 48%, #4a4a4a 100%);
-    color: #ffffff;
+    color: #ffffff !important;
   }
 
   .client-input-surface {

@@ -129,7 +129,7 @@ export const DietPdfViewer: React.FC<DietPdfViewerProps> = ({
               <div className="flex items-center justify-end">
                 <Button 
                   variant="outline"
-                  className="client-action-button"
+                  className="client-back-button"
                   onClick={() => handleViewPdf(prescription)}
                   size="sm"
                 >

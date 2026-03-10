@@ -271,7 +271,7 @@ const ClientLogin = () => {
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => setShowForgotPassword(false)}
-                className="w-full text-white/60 hover:text-white text-sm transition-colors duration-300 flex items-center justify-center gap-2"
+                className="client-back-button flex w-full items-center justify-center gap-2 text-sm"
               >
                 <ArrowLeft className="w-3 h-3" />
                 Voltar

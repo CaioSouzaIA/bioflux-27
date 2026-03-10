@@ -176,7 +176,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <Button variant="outline" onClick={onBack} className="border-border text-foreground hover:bg-accent">
+        <Button variant="outline" onClick={onBack} className="client-back-button">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar à Lista
         </Button>
@@ -189,7 +189,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <Button 
             onClick={saveForm} 
             size="sm" 
-            className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+            className="client-action-button w-full sm:w-auto"
             disabled={isSaving}
           >
             <Save className="w-4 h-4 mr-2" />
@@ -198,35 +198,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       </div>
 
-      <Card className="bg-card border-border">
+      <Card className="client-surface-panel rounded-3xl">
         <CardHeader>
-          <CardTitle className="text-foreground">Configurações do Formulário</CardTitle>
+          <CardTitle className="text-white">Configurações do Formulário</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <Label htmlFor="form-title" className="text-foreground">Título do Formulário</Label>
+            <Label htmlFor="form-title" className="text-white">Título do Formulário</Label>
             <Input
               id="form-title"
               value={localFormConfig.title}
               onChange={(e) => updateFormTitle(e.target.value)}
               placeholder="Digite o título do formulário"
-              className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-2"
+              className="client-input-surface mt-2"
             />
           </div>
           <div>
-            <Label htmlFor="form-description" className="text-foreground">Descrição</Label>
+            <Label htmlFor="form-description" className="text-white">Descrição</Label>
             <Textarea
               id="form-description"
               value={localFormConfig.description}
               onChange={(e) => updateFormDescription(e.target.value)}
               placeholder="Digite a descrição do formulário"
-              className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-2"
+              className="client-input-surface mt-2"
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-card border-border">
+      <Card className="client-surface-panel rounded-3xl">
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-foreground">
             Campos do Formulário

@@ -64,7 +64,7 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-8 mb-12 px-2 max-w-6xl mx-auto">
-          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-500 cursor-pointer hover:border-orange-500/50 hover:scale-105" onClick={() => setCurrentView('ai-config')}>
+          <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-orange-500/30" style={{ ['--card-glow' as string]: 'rgba(249,115,22,0.30)' }} onClick={() => setCurrentView('ai-config')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
               <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-gradient-to-br from-orange-500/20 to-orange-600/30 rounded-2xl flex items-center justify-center mb-3 md:mb-6">
                 <Bot className="w-6 h-6 md:w-10 md:h-10 text-orange-500" />
@@ -75,13 +75,13 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Configure o bot de IA para prescrições personalizadas de dietas.
               </p>
-              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
+              <Button className="client-action-button w-full text-sm md:text-lg py-3 md:py-6 rounded-xl transition-all duration-300">
                 Configurar IA
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-500 cursor-pointer hover:border-green-500/50 hover:scale-105" onClick={() => setCurrentView('forms-list')}>
+          <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-green-500/30" style={{ ['--card-glow' as string]: 'rgba(34,197,94,0.30)' }} onClick={() => setCurrentView('forms-list')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
               <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-gradient-to-br from-green-500/20 to-green-600/30 rounded-2xl flex items-center justify-center mb-3 md:mb-6">
                 <Settings className="w-6 h-6 md:w-10 md:h-10 text-green-500" />
@@ -92,13 +92,13 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Configure e personalize seus formulários com campos fixos obrigatórios.
               </p>
-              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
+              <Button className="client-action-button w-full text-sm md:text-lg py-3 md:py-6 rounded-xl transition-all duration-300">
                 Acessar Formulários
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-500 cursor-pointer hover:border-purple-500/50 hover:scale-105" onClick={() => setCurrentView('leads')}>
+          <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-purple-500/30" style={{ ['--card-glow' as string]: 'rgba(168,85,247,0.30)' }} onClick={() => setCurrentView('leads')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
               <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-gradient-to-br from-purple-500/20 to-purple-600/30 rounded-2xl flex items-center justify-center mb-3 md:mb-6">
                 <Users className="w-6 h-6 md:w-10 md:h-10 text-purple-500" />
@@ -109,13 +109,13 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Visualize e gerencie todos os leads coletados pelos seus formulários.
               </p>
-              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
+              <Button className="client-action-button w-full text-sm md:text-lg py-3 md:py-6 rounded-xl transition-all duration-300">
                 Ver Leads
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#161616] border-gray-800 hover:shadow-xl hover:shadow-[0_0_35px_rgba(31,31,31,0.1)] transition-all duration-500 cursor-pointer hover:border-white/20 hover:scale-105" onClick={() => setCurrentView('management')}>
+          <Card className="client-glass-card cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:border-white/20" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }} onClick={() => setCurrentView('management')}>
             <CardHeader className="text-center pb-4 md:pb-6 p-3 md:p-6">
               <div className="mx-auto w-12 h-12 md:w-20 md:h-20 bg-[#1f1f1f] rounded-2xl flex items-center justify-center mb-3 md:mb-6">
                 <BarChart className="w-6 h-6 md:w-10 md:h-10 text-white" />
@@ -126,7 +126,7 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Dashboard com gráficos e estatísticas dos planos assinados pelos leads.
               </p>
-              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
+              <Button className="client-action-button w-full text-sm md:text-lg py-3 md:py-6 rounded-xl transition-all duration-300">
                 Ver Dashboard
               </Button>
             </CardContent>
@@ -147,12 +147,13 @@ const Index = () => {
 
       case 'management':
         return (
-          <div className="min-h-screen bg-black transition-colors duration-300">
+          <div className="min-h-screen relative overflow-hidden bg-black transition-colors duration-300">
+            <BackgroundAnimation />
             <AuthHeader />
-            <div className="p-6">
+            <div className="relative z-10 p-6">
               <div className="max-w-6xl mx-auto">
                 <div className="mb-8 flex items-center justify-between">
-                  <Button variant="outline" onClick={() => setCurrentView('home')} className="border-gray-700 text-black bg-white hover:bg-gray-100">
+                  <Button variant="outline" onClick={() => setCurrentView('home')} className="client-back-button">
                     ← Voltar ao Início
                   </Button>
                   <img 
@@ -170,12 +171,13 @@ const Index = () => {
 
       case 'forms-list':
         return (
-          <div className="min-h-screen bg-black transition-colors duration-300">
+          <div className="min-h-screen relative overflow-hidden bg-black transition-colors duration-300">
+            <BackgroundAnimation />
             <AuthHeader />
-            <div className="p-6">
+            <div className="relative z-10 p-6">
               <div className="max-w-4xl mx-auto">
                 <div className="mb-8 flex items-center justify-between">
-                  <Button variant="outline" onClick={() => setCurrentView('home')} className="border-gray-700 text-black bg-white hover:bg-gray-100">
+                  <Button variant="outline" onClick={() => setCurrentView('home')} className="client-back-button">
                     ← Voltar ao Início
                   </Button>
                   <img 
@@ -198,12 +200,13 @@ const Index = () => {
 
       case 'leads':
         return (
-          <div className="min-h-screen bg-black transition-colors duration-300">
+          <div className="min-h-screen relative overflow-hidden bg-black transition-colors duration-300">
+            <BackgroundAnimation />
             <AuthHeader />
-            <div className="p-6">
+            <div className="relative z-10 p-6">
               <div className="max-w-6xl mx-auto">
                 <div className="mb-8 flex items-center justify-between">
-                  <Button variant="outline" onClick={() => setCurrentView('home')} className="border-gray-700 text-black bg-white hover:bg-gray-100">
+                  <Button variant="outline" onClick={() => setCurrentView('home')} className="client-back-button">
                     ← Voltar ao Início
                   </Button>
                   <img 
@@ -222,15 +225,19 @@ const Index = () => {
       case 'edit-form':
         if (!currentForm) {
           return (
-            <div className="min-h-screen bg-black transition-colors duration-300 p-6 flex items-center justify-center">
+            <div className="min-h-screen relative overflow-hidden bg-black transition-colors duration-300 p-6 flex items-center justify-center">
+            <BackgroundAnimation />
+            <div className="relative z-10">
               <p className="text-white">Formulário não encontrado</p>
+            </div>
             </div>
           );
         }
         return (
-          <div className="min-h-screen bg-black transition-colors duration-300">
+          <div className="min-h-screen relative overflow-hidden bg-black transition-colors duration-300">
+            <BackgroundAnimation />
             <AuthHeader />
-            <div className="p-6">
+            <div className="relative z-10 p-6">
               <div className="max-w-4xl mx-auto">
                 <AdminDashboard
                   formConfig={currentForm}

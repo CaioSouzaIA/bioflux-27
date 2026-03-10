@@ -185,7 +185,7 @@ const PlanSelector: React.FC<PlanSelectorProps> = ({ onSubscriptionCreated, isUp
               <Button
                 onClick={handleBackToDashboard}
                 variant="outline"
-                className="bg-gray-800 border-gray-700 hover:bg-gray-700 hover:border-gray-600 text-white hover:text-white"
+                className="client-back-button"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar ao Dashboard

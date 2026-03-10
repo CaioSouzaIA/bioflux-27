@@ -58,7 +58,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
   };
 
   return (
-    <Card ref={setNodeRef} style={style} className="bg-[#161616] border-gray-700">
+    <Card ref={setNodeRef} style={style} className="client-surface-panel rounded-3xl">
       <CardContent className="pt-6">
         <div className="flex items-center gap-2 mb-4">
           <div
@@ -73,7 +73,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
             variant="destructive"
             size="sm"
             onClick={onRemove}
-            className="bg-red-600 hover:bg-red-700"
+            className="border-red-500/20 bg-red-500/80 hover:bg-red-500 text-white"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
@@ -83,10 +83,10 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
           <div>
             <Label className="text-gray-300">Tipo do Campo</Label>
             <Select value={field.type} onValueChange={(type) => updateField({ type: type as FormField['type'] })}>
-              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+              <SelectTrigger className="client-input-surface text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-600">
+              <SelectContent className="text-white">
                 <SelectItem value="text" className="text-white hover:bg-green-600 focus:bg-green-600 hover:text-white focus:text-white">Texto</SelectItem>
                 <SelectItem value="textarea" className="text-white hover:bg-green-600 focus:bg-green-600 hover:text-white focus:text-white">Texto Longo</SelectItem>
                 <SelectItem value="number" className="text-white hover:bg-green-600 focus:bg-green-600 hover:text-white focus:text-white">Número</SelectItem>
@@ -103,7 +103,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
               value={field.label}
               onChange={(e) => updateField({ label: e.target.value })}
               placeholder="Digite o rótulo"
-              className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+              className="client-input-surface"
             />
           </div>
           <div>
@@ -112,7 +112,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
               value={field.placeholder || ''}
               onChange={(e) => updateField({ placeholder: e.target.value })}
               placeholder="Texto de exemplo"
-              className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+              className="client-input-surface"
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -135,13 +135,13 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
                     value={option}
                     onChange={(e) => updateOption(index, e.target.value)}
                     placeholder={`Opção ${index + 1}`}
-                    className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
+                    className="client-input-surface"
                   />
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => removeOption(index)}
-                    className="border-gray-600 text-red-400 hover:bg-red-600 hover:text-white"
+                    className="border-red-500/30 text-red-400 hover:bg-red-500/12 hover:text-red-300"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -151,7 +151,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={addOption}
-                className="border-gray-600 text-green-400 hover:bg-green-600 hover:text-white"
+                className="client-action-button"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Opção

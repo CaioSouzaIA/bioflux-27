@@ -144,7 +144,7 @@ export const FormsList: React.FC<FormsListProps> = ({
         <h2 className="text-2xl font-bold text-white">Meus Formulários</h2>
         <Button 
           onClick={() => setShowCategorySelector(true)} 
-          className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+          className="client-action-button w-full sm:w-auto"
         >
           Novo Formulário
         </Button>
@@ -152,13 +152,13 @@ export const FormsList: React.FC<FormsListProps> = ({
 
       <div className="grid gap-6">
         {forms.length === 0 ? (
-          <Card className="bg-[#161616] border-gray-700">
+          <Card className="client-surface-panel rounded-3xl">
             <CardContent className="pt-8">
               <div className="text-center py-12">
                 <p className="text-gray-300 mb-6">Nenhum formulário criado ainda.</p>
                 <Button 
                   onClick={() => setShowCategorySelector(true)} 
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="client-action-button"
                 >
                   Criar Primeiro Formulário
                 </Button>
@@ -169,7 +169,7 @@ export const FormsList: React.FC<FormsListProps> = ({
           forms.map((form) => (
             <Card 
               key={form.id} 
-              className={`bg-[#161616] transition-all duration-300 ${getFormBorderClass(form.category || 'livre')}`}
+              className={`client-surface-panel rounded-3xl transition-all duration-300 ${getFormBorderClass(form.category || 'livre')}`}
             >
               <CardHeader>
                 <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
@@ -237,7 +237,7 @@ export const FormsList: React.FC<FormsListProps> = ({
                     Atualizado em {formatDate(form.updatedAt)}
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-700">
+                <div className="mt-4 border-t border-white/8 pt-4">
                   <p className="text-xs text-gray-400 break-all">
                     Link de compartilhamento: <span className="text-cyan-500">{window.location.origin}/form/{form.id}</span>
                   </p>

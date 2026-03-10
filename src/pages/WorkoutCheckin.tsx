@@ -109,7 +109,7 @@ const WorkoutCheckin: React.FC = () => {
                 type="button"
                 variant="ghost"
                 onClick={handleBack}
-                className="client-back-button gap-2 rounded-2xl px-4"
+                className="client-back-button gap-2 px-4"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
@@ -150,7 +150,7 @@ const WorkoutCheckin: React.FC = () => {
                       value={workoutDivision}
                       onChange={(e) => setWorkoutDivision(e.target.value)}
                       placeholder="Ex: Treino A - Peito e Tríceps"
-                      className="client-input-surface"
+                      className="client-input-surface !text-black"
                     />
                   </div>
 

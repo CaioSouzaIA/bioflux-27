@@ -12,7 +12,7 @@ interface FinancialTabsProps {
 
 export const FinancialTabs: React.FC<FinancialTabsProps> = ({ financialStats, subscriptions }) => {
   return (
-    <Card className="bg-[#161616] border-gray-700">
+    <Card className="client-surface-panel rounded-3xl">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-white" />

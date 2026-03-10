@@ -111,7 +111,7 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
 
 
   return (
-    <Card className="bg-[#161616] border-gray-700">
+    <Card className="client-surface-panel rounded-3xl">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <User className="w-5 h-5" />
@@ -130,7 +130,7 @@ export const SubscriptionsList: React.FC<SubscriptionsListProps> = ({ subscripti
             {recentSubscriptions.map((subscription) => (
               <div
                 key={subscription.id}
-                className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
+                className="client-surface-subtle flex items-center justify-between rounded-2xl p-4"
               >
                 <div className="flex items-center space-x-4">
                   <div className="flex-shrink-0">

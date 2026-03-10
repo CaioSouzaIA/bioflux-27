@@ -129,7 +129,7 @@ export const TrainingPdfViewer: React.FC<TrainingPdfViewerProps> = ({
               <div className="flex items-center justify-end">
                 <Button 
                   variant="outline"
-                  className="client-action-button"
+                  className="client-back-button"
                   onClick={() => handleViewPdf(prescription)}
                   size="sm"
                 >

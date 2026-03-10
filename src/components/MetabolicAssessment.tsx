@@ -54,7 +54,8 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
   // Verificar se o usuário está autenticado antes de renderizar
   if (authLoading) {
     return (
-      <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
+      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
+        <BackgroundAnimation />
         <div className="relative z-10 text-white text-xl">Carregando autenticação...</div>
       </div>
     );
@@ -62,10 +63,11 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
 
   if (!user) {
     return (
-      <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
+      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
+        <BackgroundAnimation />
         <div className="relative z-10 text-center">
           <div className="text-white text-xl mb-4">Usuário não autenticado</div>
-          <Button onClick={onBack} className="bg-[#161616] hover:bg-gray-800">
+          <Button onClick={onBack} className="client-back-button">
             Voltar ao Dashboard
           </Button>
         </div>
@@ -323,16 +325,17 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
   };
 
   return (
-    <div className="min-h-screen relative bg-black overflow-hidden">
-      <div className="relative z-10 min-h-screen p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      <BackgroundAnimation />
+      <div className="relative z-10">
+        <div className="container mx-auto max-w-5xl space-y-8 px-4 py-10">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8 pt-8">
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <Button 
                 variant="outline" 
                 onClick={onBack}
-                className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
+                className="client-back-button"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar
@@ -346,17 +349,17 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
           </div>
 
           {/* Título */}
-          <div className="mb-8">
+          <div>
             <h1 className="text-3xl font-bold text-white mb-2">Avaliação Metabólica</h1>
-            <p className="text-gray-300">
+            <p className="mt-1 text-sm text-white/60">
               Preencha seus dados para calcular a Taxa Metabólica Basal (TMB) e Gasto Energético Total (GET)
             </p>
           </div>
 
-          <Card className="bg-[#161616] border-black">
+          <Card className="client-surface-panel rounded-3xl">
             <CardHeader>
               <CardTitle className="text-white">Dados Antropométricos</CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardDescription className="text-white/60">
                 Informe seus dados corporais para realizar os cálculos metabólicos
               </CardDescription>
             </CardHeader>
@@ -370,7 +373,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 30"
                     value={formData.age}
                     onChange={(e) => handleInputChange('age', e.target.value)}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="client-input-surface text-white"
                   />
                 </div>
 
@@ -383,7 +386,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 70.5"
                     value={formData.weight}
                     onChange={(e) => handleInputChange('weight', e.target.value)}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="client-input-surface text-white"
                   />
                 </div>
 
@@ -395,17 +398,17 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 175"
                     value={formData.height}
                     onChange={(e) => handleInputChange('height', e.target.value)}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="client-input-surface text-white"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-white">Sexo biológico</Label>
                   <Select value={formData.biologicalSex} onValueChange={(value) => handleInputChange('biologicalSex', value)}>
-                    <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectTrigger className="client-input-surface text-white">
                       <SelectValue placeholder="Selecione o sexo" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectContent className="text-white">
                       <SelectItem value="masculino" className="text-white">Masculino</SelectItem>
                       <SelectItem value="feminino" className="text-white">Feminino</SelectItem>
                     </SelectContent>
@@ -415,9 +418,6 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                 <div className="space-y-2">
                   <Label htmlFor="waist" className="text-white">
                     Circunferência abdominal (cm)
-                    <span className="text-sm text-gray-400 block">
-                      Risco: ≥102 cm (homens) / ≥88 cm (mulheres)
-                    </span>
                   </Label>
                   <Input
                     id="waist"
@@ -426,17 +426,20 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     placeholder="Ex: 85.0"
                     value={formData.waistCircumference}
                     onChange={(e) => handleInputChange('waistCircumference', e.target.value)}
-                    className={`bg-gray-800 border-gray-600 text-white ${getWaistCircumferenceStatus()}`}
+                    className={`client-input-surface text-white ${getWaistCircumferenceStatus()}`}
                   />
+                  <p className="text-sm text-white/45">
+                    Risco: ≥102 cm (homens) / ≥88 cm (mulheres)
+                  </p>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-white">Fator de atividade física</Label>
                   <Select value={formData.activityFactor} onValueChange={(value) => handleInputChange('activityFactor', value)}>
-                    <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectTrigger className="client-input-surface text-white">
                       <SelectValue placeholder="Selecione o nível de atividade" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectContent className="text-white">
                       {activityOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value} className="text-white">
                           {option.label}
@@ -450,7 +453,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
               <Button 
                 onClick={calculateTMB} 
                 disabled={!isFormValid() || loading || !user}
-                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600"
+                className="client-action-button w-full rounded-xl"
               >
                 <Calculator className="w-4 h-4 mr-2" />
                 {loading ? 'Calculando...' : results ? 'Recalcular TMB e GET' : 'Calcular TMB e GET'}
@@ -459,13 +462,13 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
           </Card>
 
           {results && (
-            <Card className="bg-[#161616] border-black">
+            <Card className="client-surface-panel rounded-3xl">
               <CardHeader>
                 <CardTitle className="text-white">Resultados da Avaliação</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="text-center p-6 bg-[#1f1f1f] rounded-lg border border-white/20">
+                  <div className="client-surface-subtle rounded-2xl p-6 text-center">
                     <h3 className="text-lg font-semibold text-white mb-2">
                       Taxa Metabólica Basal (TMB)
                     </h3>
@@ -476,7 +479,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                     </p>
                   </div>
 
-                  <div className="text-center p-6 bg-green-600/20 rounded-lg border border-green-500/30">
+                  <div className="client-surface-subtle rounded-2xl border-green-500/20 bg-green-500/10 p-6 text-center">
                     <h3 className="text-lg font-semibold text-green-300 mb-2">
                       Gasto Energético Total (GET)
                     </h3>
@@ -488,7 +491,7 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
                   </div>
                 </div>
 
-                <div className="mt-6 p-4 bg-gray-800/50 rounded-lg">
+                <div className="client-surface-subtle mt-6 rounded-2xl p-4">
                   <h4 className="text-white font-medium mb-2">Interpretação:</h4>
                   <ul className="text-sm text-gray-300 space-y-1">
                     <li>• <strong>TMB:</strong> Representa o mínimo de energia que seu corpo precisa para funções vitais</li>

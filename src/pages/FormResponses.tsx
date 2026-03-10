@@ -312,7 +312,7 @@ const FormResponses = () => {
             <Button 
               variant="outline" 
               onClick={handleBack}
-              className="border-gray-600 text-white bg-gray-800 hover:bg-gray-700"
+              className="client-back-button"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar

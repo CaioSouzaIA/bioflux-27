@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { FileText, Dumbbell, UtensilsCrossed, Calendar, Calculator, Activity, Lock, Trophy } from 'lucide-react';
+import { ArrowLeft, FileText, Dumbbell, UtensilsCrossed, Calendar, Calculator, Activity, Lock, Target, Trophy } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import ClientDropdown from '@/components/ClientDropdown';
@@ -367,9 +367,10 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                 <Button 
                   variant="outline" 
                   onClick={() => setActiveView('dashboard')}
-                  className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
+                  className="client-back-button"
                 >
-                  ← Voltar
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Voltar
                 </Button>
                 <img 
                   src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
@@ -509,7 +510,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
                 <div className="client-card-top flex flex-col items-center flex-1 w-full">
                   <div className="mb-4 mt-2">
-                    <FileText className="w-10 h-10 text-white" />
+                    <Target className="w-10 h-10 text-white" />
                   </div>
                   <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Prescrições</h3>
                   <div className="client-card-copy text-center mb-6">

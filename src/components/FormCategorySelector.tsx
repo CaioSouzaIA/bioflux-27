@@ -52,8 +52,8 @@ export const FormCategorySelector: React.FC<FormCategorySelectorProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-900 rounded-lg p-6 w-full max-w-2xl border border-gray-700">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/78 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-6 text-white shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
         <h3 className="text-xl font-bold text-white mb-6">Escolha o tipo de formulário</h3>
         
         <div className="grid gap-4 mb-6">
@@ -65,7 +65,7 @@ export const FormCategorySelector: React.FC<FormCategorySelectorProps> = ({
             return (
               <Card
                 key={category.id}
-                className="bg-gray-800 border-gray-600 hover:border-gray-500 cursor-pointer transition-all duration-200 hover:bg-gray-750"
+                className="client-surface-panel cursor-pointer rounded-2xl transition-all duration-200 hover:border-white/16"
                 onClick={() => onSelect(category.id)}
               >
                 <CardContent className="p-4">
@@ -88,7 +88,7 @@ export const FormCategorySelector: React.FC<FormCategorySelectorProps> = ({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+            className="client-back-button"
           >
             Cancelar
           </Button>

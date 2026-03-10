@@ -31,7 +31,7 @@ export const DietView: React.FC<DietViewProps> = ({
             <Button 
               variant="outline" 
               onClick={onBack}
-              className="border-gray-700 text-black bg-white hover:bg-gray-100"
+              className="client-back-button"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
