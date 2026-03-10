@@ -553,7 +553,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/[0.04] transition-colors hover:bg-white/[0.08]"
+                      className="relative h-12 w-12 shrink-0 rounded-full bg-transparent p-0 transition-transform hover:scale-[1.02]"
                       aria-label="Escolher insígnia exibida"
                     >
                       <ShineBorder
@@ -562,16 +562,18 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                         shineColor={['rgb(34, 211, 238)', 'rgba(0,0,0,0)', 'rgb(34, 211, 238)']}
                         className="rounded-full"
                       />
-                      <Avatar className="relative z-10 h-12 w-12">
-                        <AvatarImage
-                          src={selectedBadge?.image_url || undefined}
-                          alt={selectedBadge?.name || "Insígnia"}
-                          className="scale-[1.3] object-cover"
-                        />
-                        <AvatarFallback className="bg-white/[0.06] text-xs font-semibold text-white">
-                          {selectedBadge ? getBadgeFallback(selectedBadge.name) : <Trophy className="h-4 w-4 text-yellow-400" />}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="absolute inset-px z-10 overflow-hidden rounded-full">
+                        <Avatar className="h-full w-full">
+                          <AvatarImage
+                            src={selectedBadge?.image_url || undefined}
+                            alt={selectedBadge?.name || "Insígnia"}
+                            className="scale-[1.3] object-cover"
+                          />
+                          <AvatarFallback className="bg-white/[0.06] text-xs font-semibold text-white">
+                            {selectedBadge ? getBadgeFallback(selectedBadge.name) : <Trophy className="h-4 w-4 text-yellow-400" />}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
                     </button>
                   </PopoverTrigger>
                   <PopoverContent align="end" className="w-[320px] rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
