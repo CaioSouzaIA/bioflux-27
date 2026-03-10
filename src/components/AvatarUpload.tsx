@@ -192,32 +192,21 @@ export function AvatarUpload({
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-5 py-4">
-          <Avatar className="h-32 w-32 border-4 border-gray-700">
-            <AvatarImage src={previewUrl || undefined} />
-            <AvatarFallback className="bg-gray-800 text-2xl text-white">{getUserInitials()}</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-32 w-32 border-4 border-gray-700">
+              <AvatarImage src={previewUrl || undefined} />
+              <AvatarFallback className="bg-gray-800 text-2xl text-white">{getUserInitials()}</AvatarFallback>
+            </Avatar>
 
-          <div className="flex w-full flex-col items-center gap-3">
-            <label htmlFor="avatar-upload">
-              <Button
-                type="button"
-                disabled={uploading}
-                className="cursor-pointer border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
-                onClick={() => document.getElementById('avatar-upload')?.click()}
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enviando...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Escolher Foto
-                  </>
-                )}
-              </Button>
-            </label>
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => document.getElementById('avatar-upload')?.click()}
+              className="absolute bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            </button>
+
             <input
               id="avatar-upload"
               type="file"
@@ -226,12 +215,12 @@ export function AvatarUpload({
               className="hidden"
               disabled={uploading}
             />
-            <p className="text-center text-xs text-gray-400">PNG, JPG ou WEBP (max. 5MB)</p>
           </div>
 
+          <p className="text-center text-xs text-gray-400">PNG, JPG ou WEBP (max. 5MB)</p>
+
           <div className="w-full space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-white/60">Edite seus dados e salve direto no banco.</p>
+            <div className="flex justify-center">
               <Button
                 type="button"
                 variant="outline"
@@ -239,7 +228,7 @@ export function AvatarUpload({
                 onClick={() => setIsEditingProfile((current) => !current)}
               >
                 <Pencil className="mr-2 h-4 w-4" />
-                {isEditingProfile ? 'Cancelar edicao' : 'Editar dados'}
+                {isEditingProfile ? 'Cancelar edicao' : 'Editar perfil'}
               </Button>
             </div>
 
