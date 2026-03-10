@@ -345,6 +345,7 @@ export type Database = {
           id: string
           last_name: string | null
           onboarding_completed: boolean | null
+          selected_badge_id: string | null
           unlimited_plan_enabled: boolean | null
           updated_at: string
           user_type: string
@@ -360,6 +361,7 @@ export type Database = {
           id: string
           last_name?: string | null
           onboarding_completed?: boolean | null
+          selected_badge_id?: string | null
           unlimited_plan_enabled?: boolean | null
           updated_at?: string
           user_type?: string
@@ -375,12 +377,21 @@ export type Database = {
           id?: string
           last_name?: string | null
           onboarding_completed?: boolean | null
+          selected_badge_id?: string | null
           unlimited_plan_enabled?: boolean | null
           updated_at?: string
           user_type?: string
           whatsapp?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_selected_badge_id_fkey"
+            columns: ["selected_badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       protocolos: {
         Row: {

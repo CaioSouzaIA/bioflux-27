@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, FileText, Dumbbell, UtensilsCrossed, Calendar, Calculator, Activity, Lock, Target, Trophy } from 'lucide-react';
+import { ArrowLeft, Check, FileText, Dumbbell, UtensilsCrossed, Calendar, Calculator, Activity, Lock, Target, Trophy } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import ClientDropdown from '@/components/ClientDropdown';
-import { format, addMonths, differenceInDays } from 'date-fns';
+import { format, addMonths, differenceInDays, endOfMonth, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
@@ -19,7 +21,7 @@ import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
 import OnboardingModal from '@/components/OnboardingModal';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface Subscription {
   id: string;
@@ -46,6 +48,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   const [activeView, setActiveView] = useState<'dashboard' | 'metabolic' | 'periodization'>('dashboard');
   const { user, userProfile } = useAuthContext();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   // Buscar prescrições de dieta e treino do usuário atual
   const { data: dietPrescriptions = [], isLoading: dietLoading } = useDietPrescriptions(user?.id);
@@ -89,21 +92,97 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     },
   });
 
+  const { data: badgeProfile } = useQuery({
+    queryKey: ["client-badge-profile", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("created_at, selected_badge_id")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: monthlyCheckins = [] } = useQuery({
+    queryKey: ["monthly-workout-checkins", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const monthStart = startOfMonth(new Date()).toISOString();
+      const monthEnd = endOfMonth(new Date()).toISOString();
+
+      const { data, error } = await (supabase as any)
+        .from("workout_checkins")
+        .select("id, workout_date")
+        .eq("user_id", user.id)
+        .gte("workout_date", monthStart)
+        .lte("workout_date", monthEnd);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const selectBadgeMutation = useMutation({
+    mutationFn: async (badgeId: string | null) => {
+      if (!user?.id) throw new Error("Usuário não autenticado");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ selected_badge_id: badgeId })
+        .eq("id", user.id);
+
+      if (error) throw error;
+      return badgeId;
+    },
+    onSuccess: (badgeId) => {
+      queryClient.setQueryData(["client-badge-profile", user?.id], (current: { created_at?: string; selected_badge_id?: string | null } | null) => ({
+        created_at: current?.created_at || badgeProfile?.created_at || new Date().toISOString(),
+        selected_badge_id: badgeId,
+      }));
+      toast({
+        title: "Insígnia atualizada",
+        description: badgeId ? "Sua insígnia exibida foi alterada." : "A insígnia exibida foi removida.",
+      });
+    },
+    onError: (error) => {
+      console.error("Erro ao atualizar insígnia:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar sua insígnia agora.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Calcular total de conquistas desbloqueadas
   const achievementsMap = new Map(
     userAchievements.map(a => [a.badge_id, a.earned_at])
   );
-  const earnedAchievementsCount = allBadges.filter(badge => {
+  const accountAgeDays = badgeProfile?.created_at
+    ? Math.floor((new Date().getTime() - new Date(badgeProfile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const monthlyCheckinsCount = monthlyCheckins.length;
+  const earnedBadges = allBadges.filter(badge => {
     const earnedDate = achievementsMap.get(badge.id);
-    const metadata = badge.metadata as { type?: string; days_required?: number } | null;
+    const metadata = badge.metadata as { type?: string; days_required?: number; monthly_checkins_required?: number } | null;
     const isAccountAgeBadge = metadata?.type === 'account_age';
     const daysRequired = metadata?.days_required || 0;
-    const accountAgeDays = userProfile?.created_at
-      ? Math.floor((new Date().getTime() - new Date(userProfile.created_at).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
     const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
-    return !!earnedDate || isEarnedByTime;
-  }).length;
+    const isWorkoutCheckinBadge = metadata?.type === 'workout_checkins';
+    const checkinsRequired = metadata?.monthly_checkins_required || 0;
+    const isEarnedByCheckins = isWorkoutCheckinBadge && monthlyCheckinsCount >= checkinsRequired;
+    return !!earnedDate || isEarnedByTime || isEarnedByCheckins;
+  });
+  const earnedAchievementsCount = earnedBadges.length;
+  const selectedBadge = earnedBadges.find((badge) => badge.id === badgeProfile?.selected_badge_id) || null;
 
   // Verificar se o usuário tem assinatura de treino
   const hasTrainingSubscription = subscriptions.some(sub => 
@@ -325,6 +404,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     setActiveView('periodization');
   };
 
+  const getBadgeFallback = (badgeName?: string | null) => {
+    if (!badgeName) return "BI";
+    return badgeName
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
   if (loading || prescriptionsLoading || metabolicLoading) {
     return (
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
@@ -429,11 +518,80 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
           {/* Assinaturas Ativas */}
           <div className="grid gap-6 mb-8">
             <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.14)' }}>
-              <CardHeader>
-                <CardTitle className="text-white">Suas Assinaturas</CardTitle>
-                <CardDescription className="text-gray-300">
-                  Planos ativos e serviços disponíveis
-                </CardDescription>
+              <CardHeader className="flex flex-row items-start justify-between gap-4">
+                <div className="space-y-1.5">
+                  <CardTitle className="text-white">Suas Assinaturas</CardTitle>
+                  <CardDescription className="text-gray-300">
+                    Planos ativos e serviços disponíveis
+                  </CardDescription>
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] transition-colors hover:bg-white/[0.08]"
+                      aria-label="Escolher insígnia exibida"
+                    >
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={selectedBadge?.image_url || undefined} alt={selectedBadge?.name || "Insígnia"} />
+                        <AvatarFallback className="bg-white/[0.06] text-xs font-semibold text-white">
+                          {selectedBadge ? getBadgeFallback(selectedBadge.name) : <Trophy className="h-4 w-4 text-yellow-400" />}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-[320px] rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+                    <div className="mb-3">
+                      <h4 className="text-sm font-semibold text-white">Insígnia exibida</h4>
+                      <p className="text-xs text-gray-400">Escolha qual insígnia aparecerá no seu card de assinaturas.</p>
+                    </div>
+                    {earnedBadges.length === 0 ? (
+                      <div className="client-surface-subtle rounded-2xl px-3 py-4 text-center text-sm text-gray-400">
+                        Você ainda não desbloqueou nenhuma insígnia.
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => selectBadgeMutation.mutate(null)}
+                          className={`client-surface-subtle flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition-colors ${!selectedBadge ? 'border-white/20 bg-white/[0.06]' : ''}`}
+                          disabled={selectBadgeMutation.isPending}
+                        >
+                          <span className="text-sm text-white">Não exibir insígnia</span>
+                          {!selectedBadge && <Check className="h-4 w-4 text-green-400" />}
+                        </button>
+                        <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+                          {earnedBadges.map((badge) => {
+                            const isSelected = selectedBadge?.id === badge.id;
+                            return (
+                              <button
+                                key={badge.id}
+                                type="button"
+                                onClick={() => selectBadgeMutation.mutate(badge.id)}
+                                className={`client-surface-subtle flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition-colors ${isSelected ? 'border-white/20 bg-white/[0.06]' : ''}`}
+                                disabled={selectBadgeMutation.isPending}
+                              >
+                                <span className="flex min-w-0 items-center gap-3">
+                                  <Avatar className="h-10 w-10 shrink-0">
+                                    <AvatarImage src={badge.image_url || undefined} alt={badge.name} />
+                                    <AvatarFallback className="bg-white/[0.06] text-xs font-semibold text-white">
+                                      {getBadgeFallback(badge.name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="min-w-0">
+                                    <span className="block truncate text-sm font-medium text-white">{badge.name}</span>
+                                    <span className="block truncate text-xs text-gray-400">{badge.description}</span>
+                                  </span>
+                                </span>
+                                {isSelected && <Check className="h-4 w-4 shrink-0 text-green-400" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
               </CardHeader>
               <CardContent>
                 {subscriptions.length === 0 ? (
