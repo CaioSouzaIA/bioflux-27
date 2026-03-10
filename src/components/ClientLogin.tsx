@@ -185,7 +185,7 @@ const ClientLogin = () => {
           transition={{ duration: 0.8 }}
           className="w-full max-w-sm relative z-10"
         >
-          <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl">
+          <div className="client-glass-card relative rounded-3xl p-6" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }}> 
             <div className="text-center space-y-1 mb-5">
               <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
                 Recuperar Senha
@@ -294,7 +294,7 @@ const ClientLogin = () => {
         >
           <div className="relative group">
             {/* Glass card background */}
-            <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl overflow-hidden">
+            <div className="client-glass-card relative overflow-hidden rounded-3xl p-6" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }}> 
               {/* Logo and header */}
               <div className="text-center space-y-1 mb-5">
                 <motion.h1
