@@ -106,13 +106,8 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
                   <div className="flex flex-wrap items-center gap-3 text-sm text-white/55">
                     <span className="inline-flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Criado em {formatDate(prescription.created_at)}
+                      Data do plano: {formatDate(prescription.created_at)}
                     </span>
-                    {prescription.completed_at && (
-                      <span>
-                        Finalizado em {formatDate(prescription.completed_at)}
-                      </span>
-                    )}
                   </div>
                   {previewPlan && (
                     <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
