@@ -4,7 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Download, Search, Users, RotateCcw, Crown } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Download, Search, Users, RotateCcw, Crown, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { WhatsAppPopup } from './WhatsAppPopup';
@@ -34,6 +45,7 @@ export const LeadsManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [resettingClient, setResettingClient] = useState<string | null>(null);
   const [toggleingUnlimited, setToggleingUnlimited] = useState<string | null>(null);
+  const [deletingClient, setDeletingClient] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -155,6 +167,78 @@ export const LeadsManager: React.FC = () => {
       });
     } finally {
       setResettingClient(null);
+    }
+  };
+
+  const handleDeleteClient = async (clientId: string, clientName: string) => {
+    try {
+      setDeletingClient(clientId);
+
+      for (const bucket of ['diet-pdfs', 'avatars'] as const) {
+        const { data: objects, error: listError } = await supabase.storage
+          .from(bucket)
+          .list(clientId, { limit: 1000 });
+
+        if (listError) {
+          console.error(`Erro ao listar arquivos do bucket ${bucket}:`, listError);
+          toast({
+            title: "Erro ao excluir arquivos",
+            description: "Não foi possível listar os arquivos do cliente antes da exclusão.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const pathsToRemove = (objects || [])
+          .filter((object) => object.name && object.name !== '.emptyFolderPlaceholder')
+          .map((object) => `${clientId}/${object.name}`);
+
+        if (pathsToRemove.length > 0) {
+          const { error: removeError } = await supabase.storage
+            .from(bucket)
+            .remove(pathsToRemove);
+
+          if (removeError) {
+            console.error(`Erro ao remover arquivos do bucket ${bucket}:`, removeError);
+            toast({
+              title: "Erro ao excluir arquivos",
+              description: "Não foi possível remover todos os arquivos do cliente.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+      }
+
+      const { error } = await supabase.rpc('delete_client_account', {
+        target_user_id: clientId,
+      });
+
+      if (error) {
+        console.error('Erro ao excluir cliente:', error);
+        toast({
+          title: "Erro ao excluir cliente",
+          description: "Não foi possível excluir o cliente e seus dados relacionados.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Cliente excluído",
+        description: `${clientName} e todos os dados relacionados foram removidos.`,
+      });
+
+      await loadClients();
+    } catch (error) {
+      console.error('Erro inesperado ao excluir cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro inesperado ao excluir o cliente.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingClient(null);
     }
   };
 
@@ -436,6 +520,45 @@ export const LeadsManager: React.FC = () => {
                                 )}
                               </Button>
                             )}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={deletingClient === client.id}
+                                  className="border-red-700 text-red-400 hover:bg-red-700 hover:text-white"
+                                >
+                                  {deletingClient === client.id ? (
+                                    <>Excluindo...</>
+                                  ) : (
+                                    <>
+                                      <Trash2 className="w-4 h-4 mr-1" />
+                                      Excluir
+                                    </>
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir cliente permanentemente?</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-gray-300">
+                                    Esta ação remove {clientName || 'este cliente'}, a conta de acesso e todos os dados relacionados em cascata.
+                                    Essa operação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="border-gray-600 bg-gray-800 text-white hover:bg-gray-700">
+                                    Cancelar
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteClient(client.id, clientName)}
+                                    className="bg-red-700 text-white hover:bg-red-600"
+                                  >
+                                    Excluir definitivamente
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </TableCell>
                       </TableRow>

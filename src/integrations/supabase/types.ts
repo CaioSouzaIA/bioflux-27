@@ -569,6 +569,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      delete_client_account: { Args: { target_user_id: string }; Returns: boolean }
       get_admin_ids: { Args: never; Returns: string[] }
       get_current_user_role: { Args: never; Returns: string }
       has_unlimited_plan: { Args: { user_id_param: string }; Returns: boolean }

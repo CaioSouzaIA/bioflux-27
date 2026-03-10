@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, Key, LifeBuoy, RefreshCcw, User, X, Camera } from 'lucide-react';
+import { ChevronDown, LogOut, Key, LifeBuoy, RefreshCcw, User, X, Camera } from 'lucide-react';
 import PasswordReset from './PasswordReset';
 import { AvatarUpload } from './AvatarUpload';
 
@@ -23,6 +23,7 @@ interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  whatsapp: string | null;
   avatar_url: string | null;
 }
 
@@ -32,6 +33,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -45,7 +47,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('first_name, last_name, email, avatar_url')
+        .select('first_name, last_name, email, whatsapp, avatar_url')
         .eq('id', user.id)
         .single();
 
@@ -88,8 +90,8 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
     return 'Usuário';
   };
 
-  const getDisplayEmail = () => {
-    return userProfile?.email || user?.email || '';
+  const getDisplayWhatsApp = () => {
+    return userProfile?.whatsapp || 'Nao informado';
   };
 
   if (showPasswordReset) {
@@ -98,40 +100,46 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="bg-[#161616] border-white text-white hover:bg-gray-800 hover:text-white"
+            className={`group min-w-[168px] justify-between border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)] hover:text-white ${
+              open ? 'rounded-b-md rounded-t-2xl border-b-transparent shadow-[0_0_0_1px_rgba(255,255,255,0.04)]' : 'rounded-2xl'
+            }`}
           >
-            <User className="w-5 h-5 mr-2" />
-            Minha Conta
+            <span className="flex items-center">
+              <User className="mr-2 h-5 w-5" />
+              Minha Conta
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64 bg-black border-white text-white">
-          <DropdownMenuLabel className="text-gray-300 px-3 py-2">
+        <DropdownMenuContent
+          align="end"
+          sideOffset={0}
+          className="w-[var(--radix-dropdown-menu-trigger-width)] translate-y-[-1px] rounded-b-2xl rounded-t-md border border-white/10 border-t-0 bg-[linear-gradient(180deg,rgba(18,18,22,0.98)_0%,rgba(8,8,11,0.98)_100%)] p-2 text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+        >
+          <DropdownMenuLabel className="rounded-xl border border-white/6 bg-white/[0.03] px-3 py-3 text-gray-300">
             <div className="flex flex-col">
               <span className="text-white font-medium text-sm">
                 {getDisplayName()}
               </span>
-              <span className="text-gray-400 text-xs">
-                {getDisplayEmail()}
-              </span>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-gray-700" />
+          <DropdownMenuSeparator className="my-2 bg-white/8" />
           
           <DropdownMenuItem 
             onClick={() => setShowAvatarUpload(true)}
-            className="text-white flex items-center bg-black hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
+            className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
             <Camera className="mr-2 h-4 w-4" />
-            Foto de perfil
+            Meu perfil
           </DropdownMenuItem>
           
           <DropdownMenuItem
             onClick={handlePasswordReset}
-            className="text-white flex items-center bg-black hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
+            className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
             <Key className="mr-2 h-4 w-4" />
             Trocar senha
@@ -139,7 +147,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handlePlanChange}
-            className="text-white flex items-center bg-black hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
+            className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
             <RefreshCcw className="mr-2 h-4 w-4" />
             Trocar plano
@@ -147,7 +155,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
 
           <DropdownMenuItem 
             onClick={handleCancelSubscription}
-            className="text-red-400 flex items-center bg-black hover:bg-gray-800 hover:text-red-300 focus:bg-gray-800 focus:text-red-300 cursor-pointer"
+            className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
           >
             <X className="mr-2 h-4 w-4" />
             Cancelar assinatura
@@ -155,17 +163,17 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
           
           <DropdownMenuItem 
             onClick={handleSupport}
-            className="text-white flex items-center bg-black hover:bg-gray-800 hover:text-white focus:bg-gray-800 focus:text-white cursor-pointer"
+            className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-white transition-colors hover:bg-white/6 hover:text-white focus:bg-white/6 focus:text-white"
           >
             <LifeBuoy className="mr-2 h-4 w-4" />
             Suporte
           </DropdownMenuItem>
           
-          <DropdownMenuSeparator className="bg-gray-700" />
+          <DropdownMenuSeparator className="my-2 bg-white/8" />
           
           <DropdownMenuItem 
             onClick={onLogout}
-            className="text-red-400 flex items-center bg-black hover:bg-gray-800 hover:text-red-300 focus:bg-gray-800 focus:text-red-300 cursor-pointer"
+            className="flex cursor-pointer items-center rounded-xl px-3 py-2.5 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sair
@@ -178,6 +186,7 @@ const ClientDropdown: React.FC<ClientDropdownProps> = ({ onLogout }) => {
         onOpenChange={setShowAvatarUpload}
         currentAvatarUrl={userProfile?.avatar_url}
         userName={getDisplayName()}
+        userWhatsapp={getDisplayWhatsApp()}
       />
     </>
   );

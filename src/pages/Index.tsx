@@ -75,7 +75,7 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Configure o bot de IA para prescrições personalizadas de dietas.
               </p>
-              <Button className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg transition-all duration-300">
+              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
                 Configurar IA
               </Button>
             </CardContent>
@@ -92,7 +92,7 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Configure e personalize seus formulários com campos fixos obrigatórios.
               </p>
-              <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg transition-all duration-300">
+              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
                 Acessar Formulários
               </Button>
             </CardContent>
@@ -109,7 +109,7 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Visualize e gerencie todos os leads coletados pelos seus formulários.
               </p>
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg transition-all duration-300">
+              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
                 Ver Leads
               </Button>
             </CardContent>
@@ -126,7 +126,7 @@ const Index = () => {
               <p className="text-gray-300 text-sm md:text-lg mb-4 md:mb-8 leading-relaxed">
                 Dashboard com gráficos e estatísticas dos planos assinados pelos leads.
               </p>
-              <Button className="w-full bg-[#1f1f1f] hover:bg-[#292929] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg transition-all duration-300">
+              <Button className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white text-sm md:text-lg py-3 md:py-6 rounded-xl shadow-lg shadow-black/30 transition-all duration-300 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]">
                 Ver Dashboard
               </Button>
             </CardContent>

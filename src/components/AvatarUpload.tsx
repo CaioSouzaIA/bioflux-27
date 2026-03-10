@@ -12,9 +12,10 @@ interface AvatarUploadProps {
   onOpenChange: (open: boolean) => void;
   currentAvatarUrl?: string | null;
   userName: string;
+  userWhatsapp?: string;
 }
 
-export function AvatarUpload({ open, onOpenChange, currentAvatarUrl, userName }: AvatarUploadProps) {
+export function AvatarUpload({ open, onOpenChange, currentAvatarUrl, userName, userWhatsapp }: AvatarUploadProps) {
   const { user } = useAuthContext();
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl || null);
@@ -117,9 +118,9 @@ export function AvatarUpload({ open, onOpenChange, currentAvatarUrl, userName }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gray-900 border-gray-700 text-white">
+      <DialogContent className="border-white/10 bg-black text-white shadow-2xl shadow-black/60">
         <DialogHeader>
-          <DialogTitle className="text-white">Atualizar Foto de Perfil</DialogTitle>
+          <DialogTitle className="text-white">Meu Perfil</DialogTitle>
         </DialogHeader>
         
         <div className="flex flex-col items-center gap-6 py-4">
@@ -130,12 +131,22 @@ export function AvatarUpload({ open, onOpenChange, currentAvatarUrl, userName }:
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex flex-col items-center gap-3 w-full">
+          <div className="w-full space-y-3">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+              <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Nome</p>
+              <p className="mt-1 text-sm font-medium text-white">{userName}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center">
+              <p className="text-xs uppercase tracking-[0.18em] text-gray-500">WhatsApp</p>
+              <p className="mt-1 text-sm font-medium text-white">{userWhatsapp || "Nao informado"}</p>
+            </div>
+
+            <div className="flex flex-col items-center gap-3 w-full">
             <label htmlFor="avatar-upload">
               <Button
                 type="button"
                 disabled={uploading}
-                className="bg-[#1f1f1f] hover:bg-[#292929] cursor-pointer"
+                className="cursor-pointer border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
                 onClick={() => document.getElementById('avatar-upload')?.click()}
               >
                 {uploading ? (
@@ -162,6 +173,7 @@ export function AvatarUpload({ open, onOpenChange, currentAvatarUrl, userName }:
             <p className="text-xs text-gray-400 text-center">
               PNG, JPG ou WEBP (máx. 5MB)
             </p>
+            </div>
           </div>
         </div>
       </DialogContent>

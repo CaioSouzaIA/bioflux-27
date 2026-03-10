@@ -435,7 +435,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
           {/* Assinaturas Ativas */}
           <div className="grid gap-6 mb-8">
-            <Card className="bg-[#161616] border-black backdrop-blur-sm">
+            <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.14)' }}>
               <CardHeader>
                 <CardTitle className="text-white">Suas Assinaturas</CardTitle>
                 <CardDescription className="text-gray-300">
@@ -505,15 +505,15 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
           {/* Seções Principais */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Prescrições Card */}
-            <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
-              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
-                <div className="flex flex-col items-center flex-1 w-full">
+            <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }}>
+              <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                <div className="client-card-top flex flex-col items-center flex-1 w-full">
                   <div className="mb-4 mt-2">
                     <FileText className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-white font-semibold text-lg text-center mb-3">Prescrições</h3>
-                  <div className="text-center mb-6">
-                    <div className="text-3xl font-bold text-white mb-1">{totalPrescriptions}</div>
+                  <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Prescrições</h3>
+                  <div className="client-card-copy text-center mb-6">
+                    <div className="client-card-metric text-3xl font-bold text-white mb-1">{totalPrescriptions}</div>
                     <div className="flex gap-3 text-xs justify-center">
                       <span className="text-green-400 flex items-center gap-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
@@ -527,7 +527,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   </div>
                 </div>
                 <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
                   onClick={handlePrescriptionsAccess}
                 >
                   Ver Prescrições
@@ -536,20 +536,20 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             </Card>
 
             {/* Conquistas Card */}
-            <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
-              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
-                <div className="flex flex-col items-center flex-1 w-full">
+            <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(234,179,8,0.30)' }}>
+              <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                <div className="client-card-top flex flex-col items-center flex-1 w-full">
                   <div className="mb-4 mt-2">
                     <Trophy className="w-10 h-10 text-yellow-500" />
                   </div>
-                  <h3 className="text-white font-semibold text-lg text-center mb-3">Conquistas</h3>
-                  <div className="text-center mb-6 flex-1 flex flex-col items-center justify-center">
-                    <div className="text-3xl font-bold text-yellow-500 mb-1">{earnedAchievementsCount}/{allBadges.length}</div>
+                  <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Conquistas</h3>
+                  <div className="client-card-copy text-center mb-6 flex-1 flex flex-col items-center justify-center">
+                    <div className="client-card-metric text-3xl font-bold text-yellow-500 mb-1">{earnedAchievementsCount}/{allBadges.length}</div>
                     <p className="text-gray-400 text-sm">Conquistas desbloqueadas</p>
                   </div>
                 </div>
                 <Button
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
+                  className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
                   onClick={handleAchievementsAccess}
                 >
                   Ver Conquistas
@@ -558,29 +558,25 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             </Card>
 
             {/* Formulários Card */}
-            <Card className={`bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full transition-all ${
-              hasMetabolicAssessment
-                ? 'hover:bg-gray-900/50'
-                : 'opacity-60'
-            }`}>
-              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
-                <div className="flex flex-col items-center flex-1 w-full">
+            <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(168,85,247,0.30)' }}>
+              <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                <div className="client-card-top flex flex-col items-center flex-1 w-full">
                   <div className="mb-4 mt-2 relative">
                     <FileText className="w-10 h-10 text-purple-500" />
                     {!hasMetabolicAssessment && (
                       <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                     )}
                   </div>
-                  <h3 className="text-white font-semibold text-lg text-center mb-3">Formulários</h3>
-                  <div className="text-center mb-6 flex-1 flex flex-col items-center justify-center">
-                    <div className="text-3xl font-bold text-purple-500 mb-1">{formsCount}</div>
+                  <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Formulários</h3>
+                  <div className="client-card-copy text-center mb-6 flex-1 flex flex-col items-center justify-center">
+                    <div className="client-card-metric text-3xl font-bold text-purple-500 mb-1">{formsCount}</div>
                     <p className="text-gray-400 text-sm">Formulários</p>
                   </div>
                 </div>
                 <Button
                   className={`w-full font-medium ${
                     hasMetabolicAssessment
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                      ? 'border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]'
                       : 'bg-gray-600 cursor-not-allowed text-gray-400'
                   }`}
                   onClick={handleFormsAccess}
@@ -592,13 +588,13 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             </Card>
 
             {/* Avaliação Metabólica Card */}
-            <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
-              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
-                <div className="flex flex-col items-center flex-1 w-full">
+            <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(249,115,22,0.30)' }}>
+              <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                <div className="client-card-top flex flex-col items-center flex-1 w-full">
                   <div className="mb-4 mt-2">
                     <Calculator className="w-10 h-10 text-orange-500" />
                   </div>
-                  <h3 className="text-white font-semibold text-lg text-center mb-3">Avaliação<br />metabólica</h3>
+                  <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Avaliação<br />metabólica</h3>
                   {hasMetabolicAssessment && (
                     <div className="mb-6 flex items-center gap-2 justify-center">
                       <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10 text-xs">
@@ -609,7 +605,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   {!hasMetabolicAssessment && <div className="mb-6 flex-1"></div>}
                 </div>
                 <Button
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
+                  className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
                   onClick={handleMetabolicAssessment}
                 >
                   {hasMetabolicAssessment ? 'Ver/Atualizar TMB' : 'Calcular TMB'}
@@ -618,28 +614,24 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
             </Card>
 
             {/* AI Coach - Bloqueado para plano Standard */}
-            <Card className={`bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full transition-all ${
-              !hasStandardPlan
-                ? 'hover:bg-gray-900/50'
-                : 'opacity-60'
-            }`}>
-              <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
-                <div className="flex flex-col items-center flex-1 w-full">
+            <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(34,197,94,0.30)' }}>
+              <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                <div className="client-card-top flex flex-col items-center flex-1 w-full">
                   <div className="mb-4 mt-2 relative">
                     <MessageCircle className="w-10 h-10 text-green-500" />
                     {hasStandardPlan && (
                       <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                     )}
                   </div>
-                  <h3 className="text-white font-semibold text-lg text-center mb-6">AI Coach</h3>
-                  <div className="text-center mb-6 flex-1 flex items-center justify-center">
+                  <h3 className="client-card-title text-white font-semibold text-lg text-center mb-6">AI Coach</h3>
+                  <div className="client-card-copy text-center mb-6 flex-1 flex items-center justify-center">
                     <p className="text-gray-400 text-sm">Tire dúvidas com seu AI coach</p>
                   </div>
                 </div>
                 <Button
                   className={`w-full font-medium ${
                     !hasStandardPlan
-                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      ? 'border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]'
                       : 'bg-gray-600 cursor-not-allowed text-gray-400'
                   }`}
                   onClick={handleWhatsAppRedirect}
@@ -652,28 +644,24 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
             {/* Periodização de Treino - Bloqueado para plano Standard */}
             {hasTrainingSubscription && (
-              <Card className={`bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full transition-all ${
-                !hasStandardPlan
-                  ? 'hover:bg-gray-900/50'
-                  : 'opacity-60'
-              }`}>
-                <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
-                  <div className="flex flex-col items-center flex-1 w-full">
+              <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(239,68,68,0.30)' }}>
+                <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                  <div className="client-card-top flex flex-col items-center flex-1 w-full">
                     <div className="mb-4 mt-2 relative">
                       <Activity className="w-10 h-10 text-red-500" />
                       {hasStandardPlan && (
                         <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
                       )}
                     </div>
-                    <h3 className="text-white font-semibold text-lg text-center mb-6">Periodização<br />de Treino</h3>
-                    <div className="text-center mb-6 flex-1 flex items-center justify-center">
+                    <h3 className="client-card-title text-white font-semibold text-lg text-center mb-6">Periodização<br />de Treino</h3>
+                    <div className="client-card-copy text-center mb-6 flex-1 flex items-center justify-center">
                       <p className="text-gray-400 text-sm">Veja os detalhes do seu treino</p>
                     </div>
                   </div>
                   <Button
                     className={`w-full font-medium ${
                       !hasStandardPlan
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        ? 'border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]'
                         : 'bg-gray-600 cursor-not-allowed text-gray-400'
                     }`}
                     onClick={handleTrainingPeriodization}
@@ -687,20 +675,20 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
             {/* Check-in de Treino */}
             {hasTrainingSubscription && (
-              <Card className="bg-[#161616] border-black backdrop-blur-sm flex flex-col h-full hover:bg-gray-900/50 transition-all">
-                <CardContent className="flex flex-col items-center justify-between flex-1 p-6">
-                  <div className="flex flex-col items-center flex-1 w-full">
+              <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(6,182,212,0.30)' }}>
+                <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                  <div className="client-card-top flex flex-col items-center flex-1 w-full">
                     <div className="mb-4 mt-2">
                       <Dumbbell className="w-10 h-10 text-cyan-500" />
                     </div>
-                    <h3 className="text-white font-semibold text-lg text-center mb-3">Check-in<br />de Treino</h3>
-                    <div className="text-center mb-6 flex-1 flex flex-col items-center justify-center">
-                      <div className="text-3xl font-bold text-cyan-500 mb-1">{weeklyCheckins.length}/7</div>
+                    <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Check-in<br />de Treino</h3>
+                    <div className="client-card-copy text-center mb-6 flex-1 flex flex-col items-center justify-center">
+                      <div className="client-card-metric text-3xl font-bold text-cyan-500 mb-1">{weeklyCheckins.length}/7</div>
                       <p className="text-gray-400 text-sm">Treinos nesta semana</p>
                     </div>
                   </div>
                   <Button
-                    className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium"
+                    className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white font-medium shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
                     onClick={handleWorkoutCheckin}
                   >
                     Registrar Treino

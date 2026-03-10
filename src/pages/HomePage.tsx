@@ -31,7 +31,7 @@ const HomePage = () => {
             <CardContent>
               <Button
                 onClick={() => navigate('/admin')}
-                className="w-full bg-white text-black hover:bg-gray-200"
+                className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
               >
                 Acessar Admin
               </Button>
@@ -49,7 +49,7 @@ const HomePage = () => {
             <CardContent>
               <Button
                 onClick={() => navigate('/client')}
-                className="w-full bg-[#1f1f1f] text-white hover:bg-[#292929]"
+                className="w-full border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
               >
                 Acessar Cliente
               </Button>
