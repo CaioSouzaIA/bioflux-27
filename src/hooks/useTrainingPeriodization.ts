@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { StructuredTrainingWorkout } from '@/types/training';
 
 export interface TrainingPeriodization {
   id: string;
@@ -13,6 +14,7 @@ export interface TrainingPeriodization {
   created_at: string;
   updated_at: string;
   status: string;
+  workouts?: StructuredTrainingWorkout[] | null;
 }
 
 export const useTrainingPeriodization = (userId?: string) => {

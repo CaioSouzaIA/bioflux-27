@@ -267,6 +267,36 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     return data;
   };
 
+  const sendTrainingIntakeToSupabase = async (webhookPayload: any) => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error('❌ Erro ao obter sessão antes de chamar a Edge Function de treino:', sessionError);
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('Sessão inválida para iniciar a geração do treino.');
+    }
+
+    const { data, error } = await supabase.functions.invoke('training-intake-webhook', {
+      body: webhookPayload,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (error) {
+      console.error('❌ Erro ao iniciar geração do treino:', error);
+      throw error;
+    }
+
+    console.log('✅ Fluxo de treino iniciado:', data);
+    return data;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -335,15 +365,20 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
 
       if (formConfig.category === 'anamnese-dieta') {
         await sendDietIntakeToSupabase(webhookPayload);
+      } else if (formConfig.category === 'anamnese-treino') {
+        await sendTrainingIntakeToSupabase(webhookPayload);
       } else {
         await sendToWebhook(webhookPayload, webhookUrl);
       }
 
       toast({
         title: "Formulário Enviado!",
-        description: formConfig.category === 'anamnese-dieta'
-          ? "Suas respostas foram enviadas. O plano alimentar já entrou em geração."
-          : "Suas respostas foram enviadas com sucesso. Obrigado!",
+        description:
+          formConfig.category === 'anamnese-dieta'
+            ? "Suas respostas foram enviadas. O plano alimentar já entrou em geração."
+            : formConfig.category === 'anamnese-treino'
+              ? "Suas respostas foram enviadas. O plano de treino já entrou em geração."
+              : "Suas respostas foram enviadas com sucesso. Obrigado!",
       });
 
       // Usar callback onBack em vez de redirecionamento direto

@@ -6,7 +6,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { useNavigate } from 'react-router-dom';
 import { DietPrescriptionViewer } from '@/components/diet/DietPrescriptionViewer';
-import { TrainingPdfViewer } from '@/components/TrainingPdfViewer';
+import { TrainingPrescriptionViewer } from '@/components/training/TrainingPrescriptionViewer';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
 import { useQueryClient } from '@tanstack/react-query';
@@ -75,7 +75,7 @@ const ClientPrescriptions: React.FC = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Suas Prescrições</h1>
             <p className="text-gray-300">
-              Acompanhe seus planos alimentares estruturados e suas prescrições de treino
+              Acompanhe seus planos alimentares e de treino em formato estruturado
             </p>
           </div>
 
@@ -106,7 +106,7 @@ const ClientPrescriptions: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="treino" className="mt-6">
-              <TrainingPdfViewer 
+              <TrainingPrescriptionViewer
                 prescriptions={trainingPrescriptions} 
                 isLoading={isTrainingLoading}
               />

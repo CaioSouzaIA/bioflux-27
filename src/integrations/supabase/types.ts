@@ -421,31 +421,58 @@ export type Database = {
       training_prescriptions: {
         Row: {
           created_at: string | null
-          file_name: string
-          file_path: string
+          completed_at: string | null
+          error_message: string | null
+          file_name: string | null
+          file_path: string | null
           form_response_id: string | null
+          generation_payload: Json | null
+          generation_status: string
           id: string
+          model_slug: string | null
+          plan_name: string
+          plan_sequence: number
+          raw_plan_text: string | null
           status: string | null
+          structured_plan: Json | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
-          file_name: string
-          file_path: string
+          completed_at?: string | null
+          error_message?: string | null
+          file_name?: string | null
+          file_path?: string | null
           form_response_id?: string | null
+          generation_payload?: Json | null
+          generation_status?: string
           id?: string
+          model_slug?: string | null
+          plan_name: string
+          plan_sequence: number
+          raw_plan_text?: string | null
           status?: string | null
+          structured_plan?: Json | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
-          file_name?: string
-          file_path?: string
+          completed_at?: string | null
+          error_message?: string | null
+          file_name?: string | null
+          file_path?: string | null
           form_response_id?: string | null
+          generation_payload?: Json | null
+          generation_status?: string
           id?: string
+          model_slug?: string | null
+          plan_name?: string
+          plan_sequence?: number
+          raw_plan_text?: string | null
           status?: string | null
+          structured_plan?: Json | null
           updated_at?: string | null
           user_id?: string
         }
@@ -597,6 +624,14 @@ export type Database = {
         Returns: boolean
       }
       delete_client_account: { Args: { target_user_id: string }; Returns: boolean }
+      create_training_prescription: {
+        Args: {
+          p_form_response_id: string
+          p_generation_payload?: Json
+          p_user_id: string
+        }
+        Returns: Database["public"]["Tables"]["training_prescriptions"]["Row"]
+      }
       get_admin_ids: { Args: never; Returns: string[] }
       get_current_user_role: { Args: never; Returns: string }
       has_unlimited_plan: { Args: { user_id_param: string }; Returns: boolean }

@@ -6,9 +6,11 @@ import { FormConfig, FormResponse } from '@/types/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DietView } from './DietView';
+import { TrainingView } from './TrainingView';
 import { WhatsAppPopup } from './WhatsAppPopup';
 import { useNavigate } from 'react-router-dom';
 import type { DietPrescription } from '@/hooks/useDietPrescriptions';
+import type { TrainingPrescription } from '@/hooks/useTrainingPrescriptions';
 
 interface ResponseViewProps {
   formConfig: FormConfig;
@@ -28,6 +30,8 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
   const [loading, setLoading] = useState(true);
   const [selectedDietPrescription, setSelectedDietPrescription] = useState<DietPrescription | null>(null);
   const [selectedDietName, setSelectedDietName] = useState<string>('');
+  const [selectedTrainingPrescription, setSelectedTrainingPrescription] = useState<TrainingPrescription | null>(null);
+  const [selectedTrainingName, setSelectedTrainingName] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -226,12 +230,41 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
     }
   };
 
-  const handleViewTreino = (response: FormResponse) => {
-    // Funcionalidade para ver treino - implementar conforme necessário
-    toast({
-      title: "Ver Treino",
-      description: "Funcionalidade de treino em desenvolvimento.",
-    });
+  const handleViewTreino = async (response: FormResponse) => {
+    try {
+      const respondent = getRespondentName(response);
+
+      const { data: structuredPrescription, error } = await supabase
+        .from('training_prescriptions')
+        .select('*')
+        .eq('form_response_id', response.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao buscar prescrição estruturada de treino:', error);
+      }
+
+      if (structuredPrescription) {
+        setSelectedTrainingName(respondent);
+        setSelectedTrainingPrescription(structuredPrescription as TrainingPrescription);
+        return;
+      }
+
+      toast({
+        title: "Plano não encontrado",
+        description: "Ainda não existe um plano de treino associado a esta resposta.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error('Erro ao carregar plano de treino:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao carregar o plano de treino.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleViewSupplementacao = (response: FormResponse) => {
@@ -245,6 +278,11 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
   const handleBackFromDiet = () => {
     setSelectedDietPrescription(null);
     setSelectedDietName('');
+  };
+
+  const handleBackFromTraining = () => {
+    setSelectedTrainingPrescription(null);
+    setSelectedTrainingName('');
   };
 
   const getRespondentName = (response: FormResponse) => {
@@ -324,6 +362,16 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
         respondentName={selectedDietName}
         prescription={selectedDietPrescription}
         onBack={handleBackFromDiet}
+      />
+    );
+  }
+
+  if (selectedTrainingPrescription) {
+    return (
+      <TrainingView
+        respondentName={selectedTrainingName}
+        prescription={selectedTrainingPrescription}
+        onBack={handleBackFromTraining}
       />
     );
   }
