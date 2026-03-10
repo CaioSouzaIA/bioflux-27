@@ -453,7 +453,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     {subscriptions.map((subscription) => (
                       <div
                         key={subscription.id}
-                        className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg"
+                        className="client-surface-subtle flex items-center justify-between rounded-2xl bg-black p-4"
                       >
                         <div className="flex items-center gap-4">
                           {getServiceIcon(subscription.service_type)}
