@@ -43,6 +43,12 @@ const formatDate = (value: string) =>
     year: 'numeric',
   });
 
+const extractSplitLabel = (value: string) => {
+  const normalizedValue = value?.replace(/\(.*?\)/g, '').trim() || '';
+  const tokenMatch = normalizedValue.match(/\b[A-F]{1,6}\b/i);
+  return tokenMatch ? tokenMatch[0].toUpperCase() : normalizedValue || 'Divisão não informada';
+};
+
 export const TrainingPrescriptionViewer: React.FC<TrainingPrescriptionViewerProps> = ({
   prescriptions,
   isLoading,
@@ -115,7 +121,7 @@ export const TrainingPrescriptionViewer: React.FC<TrainingPrescriptionViewerProp
                         {previewPlan.header.objective || 'Objetivo não informado'}
                       </span>
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        {previewPlan.header.split || 'Divisão não informada'}
+                        {extractSplitLabel(previewPlan.header.split)}
                       </span>
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
                         {previewPlan.header.stimulus || 'Estímulo não informado'}

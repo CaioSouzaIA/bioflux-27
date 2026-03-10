@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, FileText, Flame, Loader2, Target, Timer, Weight } from 'lucide-react';
+import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, FileCheck2, FileText, Flame, Loader2, Target, Timer, Weight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -27,6 +27,20 @@ const extractSplitLabel = (value: string) => {
   const normalizedValue = value?.replace(/\(.*?\)/g, '').trim() || '';
   const tokenMatch = normalizedValue.match(/\b[A-F]{1,6}\b/i);
   return tokenMatch ? tokenMatch[0].toUpperCase() : normalizedValue || '—';
+};
+
+const formatAge = (value: string) => {
+  const trimmed = value?.trim() || '';
+  if (!trimmed) return '—';
+  return /\banos?\b/i.test(trimmed) ? trimmed : `${trimmed} anos`;
+};
+
+const formatWeight = (value: string) => {
+  const trimmed = value?.trim() || '';
+  if (!trimmed) return '—';
+  const numeric = trimmed.match(/-?\d+(?:[.,]\d+)?/);
+  if (!numeric) return trimmed;
+  return `${numeric[0].replace(',', '.')} kg`;
 };
 
 export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
@@ -266,12 +280,12 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
       <div className="grid gap-4 lg:grid-cols-4">
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <p className="text-xs uppercase tracking-[0.18em] text-white/45">Idade</p>
-          <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.age || '—'}</p>
+          <p className="mt-3 text-3xl font-semibold text-white">{formatAge(structuredPlan.header.age)}</p>
         </div>
 
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
           <p className="text-xs uppercase tracking-[0.18em] text-white/45">Peso</p>
-          <p className="mt-3 text-3xl font-semibold text-white">{structuredPlan.header.weight || '—'}</p>
+          <p className="mt-3 text-3xl font-semibold text-white">{formatWeight(structuredPlan.header.weight)}</p>
         </div>
 
         <div className="client-surface-subtle rounded-2xl p-4 text-white">
@@ -359,7 +373,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                   </Button>
                 )}
                 <AccordionPrimitive.Header className="flex">
-                  <AccordionPrimitive.Trigger className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)] [&[data-state=open]>svg]:rotate-180">
+                  <AccordionPrimitive.Trigger className="inline-flex h-10 w-10 items-center justify-center bg-transparent text-white/70 transition-all hover:text-white [&[data-state=open]>svg]:rotate-180">
                     <ChevronDown className="h-4 w-4 transition-transform duration-200" />
                   </AccordionPrimitive.Trigger>
                 </AccordionPrimitive.Header>
@@ -429,7 +443,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                               }
                               disabled={saveLoad.isPending}
                             >
-                              <Check className="h-4 w-4" />
+                              <FileCheck2 className="h-4 w-4" />
                             </Button>
                           </div>
                           {latestLoad && (
