@@ -145,7 +145,7 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="client-surface-subtle rounded-2xl p-4 text-white">
             <p className="text-xs uppercase tracking-[0.18em] text-white/45">Objetivo</p>
-            <p className="mt-3 text-base font-medium leading-relaxed text-white">
+            <p className="mt-3 text-xl font-semibold leading-relaxed text-white">
               {structuredPlan.header.objective || 'Não informado'}
             </p>
           </div>
