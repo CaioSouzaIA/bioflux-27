@@ -28,7 +28,7 @@ export function AvatarUpload({
   userWhatsapp,
   onProfileUpdated,
 }: AvatarUploadProps) {
-  const { user } = useAuthContext();
+  const { user, refreshUserType } = useAuthContext();
   const [uploading, setUploading] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -82,6 +82,7 @@ export function AvatarUpload({
         ...updates,
         avatar_url: previewUrl,
       });
+      await refreshUserType();
 
       setIsEditingProfile(false);
       toast({
@@ -167,6 +168,7 @@ export function AvatarUpload({
         whatsapp: profileWhatsapp.trim() || null,
         avatar_url: publicUrl,
       });
+      await refreshUserType();
 
       toast({
         title: 'Sucesso!',

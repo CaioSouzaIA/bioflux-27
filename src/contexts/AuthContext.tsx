@@ -10,8 +10,14 @@ export interface UserProfile {
   user_type: UserType;
   email: string;
   activated: boolean;
+  avatar_url?: string | null;
+  created_at?: string;
+  first_name?: string | null;
   updated_at: string;
+  last_name?: string | null;
   onboarding_completed?: boolean;
+  selected_badge_id?: string | null;
+  whatsapp?: string | null;
 }
 
 interface AuthContextType {
@@ -56,7 +62,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('id, user_type, email, activated, updated_at, onboarding_completed')
+        .select('id, user_type, email, activated, updated_at, onboarding_completed, first_name, last_name, avatar_url, whatsapp, created_at, selected_badge_id')
         .eq('id', userId)
         .maybeSingle();
       

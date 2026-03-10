@@ -21,7 +21,7 @@ import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
 import OnboardingModal from '@/components/OnboardingModal';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 interface Subscription {
   id: string;
@@ -46,9 +46,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   const [formsCount, setFormsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'dashboard' | 'metabolic' | 'periodization'>('dashboard');
-  const { user, userProfile } = useAuthContext();
+  const { user, userProfile, refreshUserType } = useAuthContext();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   
   // Buscar prescrições de dieta e treino do usuário atual
   const { data: dietPrescriptions = [], isLoading: dietLoading } = useDietPrescriptions(user?.id);
@@ -92,23 +91,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     },
   });
 
-  const { data: badgeProfile } = useQuery({
-    queryKey: ["client-badge-profile", user?.id],
-    enabled: !!user?.id,
-    queryFn: async () => {
-      if (!user?.id) return null;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("created_at, selected_badge_id, first_name, last_name, avatar_url")
-        .eq("id", user.id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const { data: monthlyCheckins = [] } = useQuery({
     queryKey: ["monthly-workout-checkins", user?.id],
     enabled: !!user?.id,
@@ -142,23 +124,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       if (error) throw error;
       return badgeId;
     },
-    onSuccess: (badgeId) => {
-      queryClient.setQueryData(
-        ["client-badge-profile", user?.id],
-        (current: {
-          created_at?: string;
-          selected_badge_id?: string | null;
-          first_name?: string | null;
-          last_name?: string | null;
-          avatar_url?: string | null;
-        } | null) => ({
-          created_at: current?.created_at || badgeProfile?.created_at || new Date().toISOString(),
-          selected_badge_id: badgeId,
-          first_name: current?.first_name ?? badgeProfile?.first_name ?? null,
-          last_name: current?.last_name ?? badgeProfile?.last_name ?? null,
-          avatar_url: current?.avatar_url ?? badgeProfile?.avatar_url ?? null,
-        })
-      );
+    onSuccess: async (badgeId) => {
+      await refreshUserType();
       toast({
         title: "Insígnia atualizada",
         description: badgeId ? "Sua insígnia exibida foi alterada." : "A insígnia exibida foi removida.",
@@ -178,8 +145,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   const achievementsMap = new Map(
     userAchievements.map(a => [a.badge_id, a.earned_at])
   );
-  const accountAgeDays = badgeProfile?.created_at
-    ? Math.floor((new Date().getTime() - new Date(badgeProfile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+  const accountAgeDays = userProfile?.created_at
+    ? Math.floor((new Date().getTime() - new Date(userProfile.created_at).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
   const monthlyCheckinsCount = monthlyCheckins.length;
   const earnedBadges = allBadges.filter(badge => {
@@ -194,7 +161,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     return !!earnedDate || isEarnedByTime || isEarnedByCheckins;
   });
   const earnedAchievementsCount = earnedBadges.length;
-  const selectedBadge = earnedBadges.find((badge) => badge.id === badgeProfile?.selected_badge_id) || null;
+  const selectedBadge = earnedBadges.find((badge) => badge.id === userProfile?.selected_badge_id) || null;
 
   // Verificar se o usuário tem assinatura de treino
   const hasTrainingSubscription = subscriptions.some(sub => 
@@ -427,11 +394,11 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   };
 
   const getDisplayName = () => {
-    if (badgeProfile?.first_name && badgeProfile?.last_name) {
-      return `${badgeProfile.first_name} ${badgeProfile.last_name}`;
+    if (userProfile?.first_name && userProfile?.last_name) {
+      return `${userProfile.first_name} ${userProfile.last_name}`;
     }
-    if (badgeProfile?.first_name) {
-      return badgeProfile.first_name;
+    if (userProfile?.first_name) {
+      return userProfile.first_name;
     }
     const metadataFirstName = user?.user_metadata?.first_name as string | undefined;
     const metadataLastName = user?.user_metadata?.last_name as string | undefined;
@@ -448,8 +415,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   };
 
   const getUserInitials = () => {
-    const first = badgeProfile?.first_name?.trim()?.[0] || (user?.user_metadata?.first_name as string | undefined)?.trim()?.[0] || "";
-    const last = badgeProfile?.last_name?.trim()?.[0] || (user?.user_metadata?.last_name as string | undefined)?.trim()?.[0] || "";
+    const first = userProfile?.first_name?.trim()?.[0] || (user?.user_metadata?.first_name as string | undefined)?.trim()?.[0] || "";
+    const last = userProfile?.last_name?.trim()?.[0] || (user?.user_metadata?.last_name as string | undefined)?.trim()?.[0] || "";
     const initials = `${first}${last}`.trim();
 
     if (initials) {
@@ -570,7 +537,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <CardHeader className="flex flex-row items-start justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar className="h-12 w-12 border border-white/10">
-                    <AvatarImage src={badgeProfile?.avatar_url || undefined} alt={getDisplayName()} />
+                    <AvatarImage src={userProfile?.avatar_url || undefined} alt={getDisplayName()} />
                     <AvatarFallback className="bg-white/[0.06] text-white">
                       {getUserInitials()}
                     </AvatarFallback>
