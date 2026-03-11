@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, FileCheck2, FileText, Flame, Loader2, Target, Timer, Weight } from 'lucide-react';
-import { format } from 'date-fns';
+import { endOfMonth, format, getDate, isSameMonth, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -47,6 +47,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   prescription,
   enableCheckins = false,
 }) => {
+  const currentMonthKey = format(new Date(), 'yyyy-MM');
   const structuredPlan = prescription.structured_plan;
   const { toast } = useToast();
   const [selectedWorkoutKey, setSelectedWorkoutKey] = useState<string | null>(null);
@@ -58,10 +59,12 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const [loadDrafts, setLoadDrafts] = useState<Record<string, ExerciseLoadDraft>>({});
   const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
   const { latestLoadsMap, saveLoad } = useExerciseLoadLogs(prescription.user_id, prescription.id);
-
-  const recentCheckins = useMemo(
-    () => allCheckins.slice(0, 8),
-    [allCheckins],
+  const [checkinAccordionValue, setCheckinAccordionValue] = useState('');
+  const [selectedMonthKey, setSelectedMonthKey] = useState(currentMonthKey);
+  const selectedMonth = useMemo(() => new Date(`${selectedMonthKey}-01T00:00:00`), [selectedMonthKey]);
+  const daysInCurrentMonth = useMemo(
+    () => getDate(endOfMonth(selectedMonth)),
+    [selectedMonth],
   );
 
   const splitLabel = useMemo(
@@ -92,6 +95,71 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
 
     return summary;
   }, [allCheckins]);
+
+  const currentMonthCheckins = useMemo(
+    () =>
+      allCheckins.filter((checkin) =>
+        isSameMonth(new Date(checkin.workout_date), selectedMonth),
+      ),
+    [allCheckins, selectedMonth],
+  );
+
+  const checkedDays = useMemo(() => {
+    const days = new Set<number>();
+
+    for (const checkin of currentMonthCheckins) {
+      days.add(getDate(new Date(checkin.workout_date)));
+    }
+
+    return days;
+  }, [currentMonthCheckins]);
+
+  const currentMonthDivisionSummary = useMemo(() => {
+    const summary = new Map<string, { label: string; total: number }>();
+
+    for (const workout of structuredPlan?.workouts ?? []) {
+      summary.set(workout.label, {
+        label: `Treino ${workout.label} - ${workout.title}`,
+        total: 0,
+      });
+    }
+
+    for (const checkin of currentMonthCheckins) {
+      const workoutLabelMatch = checkin.workout_division.match(/Treino\s+([A-Z])/i);
+      const workoutLabel = workoutLabelMatch?.[1]?.toUpperCase();
+
+      if (!workoutLabel) {
+        continue;
+      }
+
+      const current = summary.get(workoutLabel) ?? {
+        label: checkin.workout_division,
+        total: 0,
+      };
+
+      summary.set(workoutLabel, {
+        ...current,
+        total: current.total + 1,
+      });
+    }
+
+    return Array.from(summary.values()).filter((entry) => entry.total > 0);
+  }, [currentMonthCheckins, structuredPlan?.workouts]);
+
+  const monthOptions = useMemo(() => {
+    const keys = new Set<string>([currentMonthKey]);
+
+    for (const checkin of allCheckins) {
+      keys.add(format(new Date(checkin.workout_date), 'yyyy-MM'));
+    }
+
+    return Array.from(keys)
+      .sort((a, b) => b.localeCompare(a))
+      .map((key) => ({
+        value: key,
+        label: format(new Date(`${key}-01T00:00:00`), "MMMM 'de' yyyy", { locale: ptBR }),
+      }));
+  }, [allCheckins, currentMonthKey]);
 
   useEffect(() => {
     if (!structuredPlan) {
@@ -518,29 +586,92 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
       </Accordion>
 
       {enableCheckins && (
-        <div className="client-surface-subtle rounded-2xl p-4 text-white">
-          <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
-            <Check className="h-4 w-4" />
-            Check-ins registrados
-          </div>
-          {recentCheckins.length > 0 ? (
-            <div className="space-y-3">
-              {recentCheckins.map((checkin) => (
-                <div
-                  key={checkin.id}
-                  className="client-surface-subtle flex flex-col gap-1 rounded-2xl px-4 py-3 text-sm text-white/80 md:flex-row md:items-center md:justify-between"
-                >
-                  <span className="font-medium text-white">{checkin.workout_division}</span>
-                  <span className="text-white/60">
-                    {format(new Date(checkin.workout_date), "dd/MM/yyyy", { locale: ptBR })}
-                  </span>
+        <Accordion
+          type="single"
+          collapsible
+          value={checkinAccordionValue}
+          onValueChange={setCheckinAccordionValue}
+          className="space-y-4"
+        >
+          <AccordionItem
+            value={`${prescription.id}-checkins`}
+            className="client-surface-subtle overflow-hidden rounded-2xl border border-white/8 px-5"
+          >
+            <AccordionTrigger className="py-5 text-left text-white hover:no-underline">
+              <div className="flex items-center gap-2 text-sm uppercase tracking-[0.22em] text-white/45">
+                <Check className="h-4 w-4" />
+                Check-ins do mês
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-5 pb-5 text-white">
+              <div className="space-y-2">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <p className="text-sm font-medium text-white/80">
+                    {format(startOfMonth(selectedMonth), "MMMM 'de' yyyy", { locale: ptBR })}
+                  </p>
+                  <Select value={selectedMonthKey} onValueChange={setSelectedMonthKey}>
+                    <SelectTrigger className="w-full rounded-xl border-white/10 bg-black/70 text-white md:w-[220px]">
+                      <SelectValue placeholder="Escolha o mês" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-white/55">Nenhum treino registrado ainda nesta aba.</p>
-          )}
-        </div>
+                <div className="grid grid-cols-7 gap-2 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-[repeat(12,minmax(0,1fr))]">
+                  {Array.from({ length: daysInCurrentMonth }, (_, index) => {
+                    const day = index + 1;
+                    const isChecked = checkedDays.has(day);
+
+                    return (
+                      <div
+                        key={`month-day-${day}`}
+                        className={cn(
+                          'flex aspect-square items-center justify-center rounded-full border text-xs font-medium transition-colors',
+                          isChecked
+                            ? 'border-cyan-400/60 bg-cyan-400/20 text-cyan-100'
+                            : 'border-white/10 bg-white/[0.03] text-white/40'
+                        )}
+                      >
+                        {day}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+                <div className="client-surface-subtle rounded-2xl p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/45">Total de treinos</p>
+                  <p className="mt-3 text-3xl font-semibold text-white">{currentMonthCheckins.length}</p>
+                </div>
+
+                <div className="client-surface-subtle rounded-2xl p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/45">Execuções por divisão</p>
+                  {currentMonthDivisionSummary.length > 0 ? (
+                    <div className="mt-3 grid gap-2 md:grid-cols-2">
+                      {currentMonthDivisionSummary.map((entry) => (
+                        <div
+                          key={entry.label}
+                          className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
+                        >
+                          <p className="text-sm font-medium text-white">{entry.label}</p>
+                          <p className="mt-1 text-sm text-white/60">{entry.total} execução(ões)</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-white/55">Nenhum treino registrado neste mês ainda.</p>
+                  )}
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       )}
 
       <Accordion type="single" collapsible className="space-y-4">

@@ -165,6 +165,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   });
   const earnedAchievementsCount = earnedBadges.length;
   const selectedBadge = earnedBadges.find((badge) => badge.id === userProfile?.selected_badge_id) || null;
+  const selectedBadgeBorderColor = selectedBadge?.category_color || 'rgb(34, 211, 238)';
 
   // Verificar se o usuário tem assinatura de treino
   const hasTrainingSubscription = subscriptions.some(sub => 
@@ -559,7 +560,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                       <ShineBorder
                         borderWidth={1}
                         duration={7}
-                        shineColor={['rgb(34, 211, 238)', 'rgba(0,0,0,0)', 'rgb(34, 211, 238)']}
+                        shineColor={[selectedBadgeBorderColor, 'rgba(0,0,0,0)', selectedBadgeBorderColor]}
                         className="rounded-full"
                       />
                       <div className="absolute inset-px z-10 overflow-hidden rounded-full">
