@@ -62,11 +62,22 @@ interface BadgeDraft {
   subtitle: string;
 }
 
+interface ExistingBadgeForm {
+  achievementTitle: string;
+  categoryId: string;
+  description: string;
+  id: string;
+  imageFile: File | null;
+  imageUrl: string;
+  previewUrl: string | null;
+}
+
 const DEFAULT_BADGE_COLOR = '#22D3EE';
 const PANEL_CARD_CLASS = 'achievements-config-panel rounded-3xl text-white';
 const SUBTLE_CARD_CLASS = 'achievements-config-subtle rounded-3xl text-white';
 const DARK_INPUT_CLASS = 'achievements-config-input';
 type CategoryModalView = 'create' | 'edit';
+type BadgeModalView = 'create' | 'edit';
 
 const createDraft = (defaultCategoryId = '', overrides?: Partial<BadgeDraft>): BadgeDraft => ({
   achievementTitle: '',
@@ -114,9 +125,11 @@ export const AchievementsConfigPage: React.FC = () => {
   const [categoryDraft, setCategoryDraft] = useState({ color: DEFAULT_BADGE_COLOR, name: '' });
   const [drafts, setDrafts] = useState<BadgeDraft[]>([createDraft()]);
   const [existingCategoryValues, setExistingCategoryValues] = useState<Record<string, { color: string; name: string }>>({});
+  const [existingBadgeValues, setExistingBadgeValues] = useState<Record<string, ExistingBadgeForm>>({});
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
   const [categoryModalView, setCategoryModalView] = useState<CategoryModalView>('create');
+  const [badgeModalView, setBadgeModalView] = useState<BadgeModalView>('create');
 
   const { data: categories = [] } = useQuery({
     queryKey: ['achievement-categories'],
@@ -176,6 +189,30 @@ export const AchievementsConfigPage: React.FC = () => {
     );
   }, [categories]);
 
+  useEffect(() => {
+    if (!badges.length) return;
+
+    setExistingBadgeValues((current) => {
+      const next = { ...current };
+
+      for (const badge of badges) {
+        if (!next[badge.id]) {
+          next[badge.id] = {
+            achievementTitle: badge.achievement_title,
+            categoryId: badge.category_id,
+            description: badge.description,
+            id: badge.id,
+            imageFile: null,
+            imageUrl: badge.image_url,
+            previewUrl: null,
+          };
+        }
+      }
+
+      return next;
+    });
+  }, [badges]);
+
   const ensureCategoryForNewDraft = (draft: BadgeDraft) => {
     if (draft.categoryId) return draft;
     return {
@@ -205,6 +242,25 @@ export const AchievementsConfigPage: React.FC = () => {
 
     updateDraft(draftId, {
       achievementTitle: formatFileNameToTitle(file.name),
+      imageFile: file,
+      previewUrl: URL.createObjectURL(file),
+    });
+  };
+
+  const updateExistingBadge = (badgeId: string, updates: Partial<ExistingBadgeForm>) => {
+    setExistingBadgeValues((current) => ({
+      ...current,
+      [badgeId]: {
+        ...current[badgeId],
+        ...updates,
+      },
+    }));
+  };
+
+  const handleExistingBadgeImageChange = (badgeId: string, file: File | null) => {
+    if (!file) return;
+
+    updateExistingBadge(badgeId, {
       imageFile: file,
       previewUrl: URL.createObjectURL(file),
     });
@@ -352,6 +408,77 @@ export const AchievementsConfigPage: React.FC = () => {
     },
   });
 
+  const updateBadgeMutation = useMutation({
+    mutationFn: async (badgeId: string) => {
+      if (!user?.id) throw new Error('Usuário não autenticado');
+
+      const badgeState = existingBadgeValues[badgeId];
+      if (!badgeState) {
+        throw new Error('Conquista não encontrada para edição.');
+      }
+
+      if (!badgeState.achievementTitle.trim() || !badgeState.description.trim() || !badgeState.categoryId) {
+        throw new Error('Título, subtítulo e categoria são obrigatórios.');
+      }
+
+      const category = categoriesById.get(badgeState.categoryId);
+      if (!category) {
+        throw new Error('Selecione uma categoria válida.');
+      }
+
+      let imageUrl = badgeState.imageUrl;
+
+      if (badgeState.imageFile) {
+        const fileExtension = badgeState.imageFile.name.split('.').pop() || 'png';
+        const filePath = `${user.id}/${Date.now()}-${slugify(badgeState.achievementTitle)}.${fileExtension}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('badges')
+          .upload(filePath, badgeState.imageFile, { upsert: false });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('badges').getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('badges')
+        .update({
+          achievement_title: badgeState.achievementTitle.trim(),
+          category_color: category.color,
+          category_id: category.id,
+          description: badgeState.description.trim(),
+          image_url: imageUrl,
+          name: `${category.name} - ${badgeState.achievementTitle.trim()}`,
+        })
+        .eq('id', badgeId);
+
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['admin-badges'] });
+      await queryClient.invalidateQueries({ queryKey: ['all-badges'] });
+      toast({
+        title: 'Conquista atualizada',
+        description: 'As alterações da conquista foram salvas com sucesso.',
+      });
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar conquista:', error);
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Não foi possível atualizar a conquista.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   return (
     <div className="achievements-config-page space-y-8">
       <Card className={PANEL_CARD_CLASS}>
@@ -389,7 +516,10 @@ export const AchievementsConfigPage: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => setIsBadgeModalOpen(true)}
+            onClick={() => {
+              setBadgeModalView('create');
+              setIsBadgeModalOpen(true);
+            }}
             className={`${SUBTLE_CARD_CLASS} flex min-h-[180px] flex-col items-start justify-between p-6 text-left transition-colors hover:border-white/15`}
           >
             <div className="space-y-3">
@@ -647,147 +777,290 @@ export const AchievementsConfigPage: React.FC = () => {
       <Dialog open={isBadgeModalOpen} onOpenChange={setIsBadgeModalOpen}>
         <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white">Cadastrar conquista</DialogTitle>
+            <DialogTitle className="text-white">Conquistas</DialogTitle>
             <DialogDescription>
-              Escolha a categoria, envie a imagem e defina o nome específico da conquista.
+              Cadastre novas conquistas ou edite as já cadastradas.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex gap-3 border-b border-white/8 pb-4">
             <Button
               type="button"
-              onClick={() => setDrafts((current) => [...current, createDraft(categories[0]?.id || '')])}
-              className="client-back-button"
+              onClick={() => setBadgeModalView('create')}
+              className={badgeModalView === 'create' ? 'client-action-button' : 'client-back-button'}
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Nova linha
+              Cadastrar conquista
             </Button>
             <Button
               type="button"
-              onClick={() => saveBadgesMutation.mutate()}
-              disabled={saveBadgesMutation.isPending}
-              className="client-action-button"
+              onClick={() => setBadgeModalView('edit')}
+              className={badgeModalView === 'edit' ? 'client-action-button' : 'client-back-button'}
             >
-              <Save className="mr-2 h-4 w-4" />
-              {saveBadgesMutation.isPending ? 'Salvando...' : 'Salvar lote'}
+              Editar conquista
             </Button>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            {drafts.map((rawDraft, index) => {
-              const draft = ensureCategoryForNewDraft(rawDraft);
-              const selectedCategory = categoriesById.get(draft.categoryId);
-              const fullTitle = selectedCategory?.name
-                ? `${selectedCategory.name} - ${draft.achievementTitle || 'Nome da conquista'}`
-                : 'Selecione uma categoria';
+          {badgeModalView === 'create' ? (
+            <>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  onClick={() => setDrafts((current) => [...current, createDraft(categories[0]?.id || '')])}
+                  className="client-back-button"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nova linha
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => saveBadgesMutation.mutate()}
+                  disabled={saveBadgesMutation.isPending}
+                  className="client-action-button"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {saveBadgesMutation.isPending ? 'Salvando...' : 'Salvar lote'}
+                </Button>
+              </div>
 
-              return (
-                <Card key={draft.id} className={SUBTLE_CARD_CLASS}>
-                  <CardContent className="space-y-5 p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-white">Conquista {index + 1}</p>
-                        <p className="text-xs text-white/50">{fullTitle}</p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => removeDraft(draft.id)}
-                        className="client-back-button h-9 px-3"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {drafts.map((rawDraft, index) => {
+                  const draft = ensureCategoryForNewDraft(rawDraft);
+                  const selectedCategory = categoriesById.get(draft.categoryId);
+                  const fullTitle = selectedCategory?.name
+                    ? `${selectedCategory.name} - ${draft.achievementTitle || 'Nome da conquista'}`
+                    : 'Selecione uma categoria';
 
-                    <div className="flex flex-col gap-4 sm:flex-row">
-                      <div className="flex shrink-0 flex-col items-center gap-3">
-                        <div
-                          className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2"
+                  return (
+                    <Card key={draft.id} className={SUBTLE_CARD_CLASS}>
+                      <CardContent className="space-y-5 p-5">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-medium text-white">Conquista {index + 1}</p>
+                            <p className="text-xs text-white/50">{fullTitle}</p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => removeDraft(draft.id)}
+                            className="client-back-button h-9 px-3"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="flex flex-col gap-4 sm:flex-row">
+                          <div className="flex shrink-0 flex-col items-center gap-3">
+                            <div
+                              className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2"
+                              style={{
+                                borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.9),
+                                background: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.12),
+                              }}
+                            >
+                              {draft.previewUrl ? (
+                                <img
+                                  src={draft.previewUrl}
+                                  alt={draft.achievementTitle || 'Preview da conquista'}
+                                  className="h-full w-full rounded-full object-cover"
+                                />
+                              ) : (
+                                <ImagePlus className="h-8 w-8 text-white/40" />
+                              )}
+                            </div>
+
+                            <Label
+                              htmlFor={`badge-upload-${draft.id}`}
+                              className="inline-flex cursor-pointer items-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] px-3 py-2 text-sm font-medium text-white shadow-lg shadow-black/30 transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
+                            >
+                              <UploadCloud className="mr-2 h-4 w-4" />
+                              Imagem
+                            </Label>
+                            <input
+                              id={`badge-upload-${draft.id}`}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(event) => handleSingleImageChange(draft.id, event.target.files?.[0] || null)}
+                            />
+                          </div>
+
+                          <div className="grid flex-1 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-white">Categoria</Label>
+                              <Select
+                                value={draft.categoryId}
+                                onValueChange={(value) => updateDraft(draft.id, { categoryId: value })}
+                              >
+                                <SelectTrigger className={`${DARK_INPUT_CLASS} achievements-config-select`}>
+                                  <SelectValue placeholder="Selecione uma categoria" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {categories.map((category) => (
+                                    <SelectItem key={category.id} value={category.id}>
+                                      {category.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label className="text-white">Nome da conquista</Label>
+                              <Input
+                                value={draft.achievementTitle}
+                                onChange={(event) => updateDraft(draft.id, { achievementTitle: event.target.value })}
+                                placeholder="Ex: 6 meses"
+                                className={DARK_INPUT_CLASS}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label className="text-white">Subtítulo</Label>
+                              <Input
+                                value={draft.subtitle}
+                                onChange={(event) => updateDraft(draft.id, { subtitle: event.target.value })}
+                                placeholder="Ex: Permaneça ativo por 180 dias"
+                                className={DARK_INPUT_CLASS}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/50 px-4 py-3 text-sm text-white/65">
+                <span>{filledDraftsCount} conquista(s) preparada(s) para salvar</span>
+                <Badge variant="outline" className="border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
+                  Lote
+                </Badge>
+              </div>
+            </>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {badges.map((badge) => {
+                const badgeState = existingBadgeValues[badge.id];
+                if (!badgeState) return null;
+
+                const selectedCategory = categoriesById.get(badgeState.categoryId);
+                const previewSrc = badgeState.previewUrl || badgeState.imageUrl;
+                const fullTitle = selectedCategory?.name
+                  ? `${selectedCategory.name} - ${badgeState.achievementTitle || 'Nome da conquista'}`
+                  : badge.name;
+
+                return (
+                  <Card key={badge.id} className={SUBTLE_CARD_CLASS}>
+                    <CardContent className="space-y-5 p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-white">Editar conquista</p>
+                          <p className="text-xs text-white/50">{fullTitle}</p>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="border-white/10 text-white"
                           style={{
-                            borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.9),
-                            background: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.12),
+                            borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.45),
+                            color: selectedCategory?.color || DEFAULT_BADGE_COLOR,
                           }}
                         >
-                          {draft.previewUrl ? (
-                            <img
-                              src={draft.previewUrl}
-                              alt={draft.achievementTitle || 'Preview da conquista'}
-                              className="h-full w-full rounded-full object-cover"
-                            />
-                          ) : (
-                            <ImagePlus className="h-8 w-8 text-white/40" />
-                          )}
-                        </div>
-
-                        <Label
-                          htmlFor={`badge-upload-${draft.id}`}
-                          className="inline-flex cursor-pointer items-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] px-3 py-2 text-sm font-medium text-white shadow-lg shadow-black/30 transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
-                        >
-                          <UploadCloud className="mr-2 h-4 w-4" />
-                          Imagem
-                        </Label>
-                        <input
-                          id={`badge-upload-${draft.id}`}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(event) => handleSingleImageChange(draft.id, event.target.files?.[0] || null)}
-                        />
+                          {selectedCategory?.name || 'Sem categoria'}
+                        </Badge>
                       </div>
 
-                      <div className="grid flex-1 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-white">Categoria</Label>
-                          <Select
-                            value={draft.categoryId}
-                            onValueChange={(value) => updateDraft(draft.id, { categoryId: value })}
+                      <div className="flex flex-col gap-4 sm:flex-row">
+                        <div className="flex shrink-0 flex-col items-center gap-3">
+                          <div
+                            className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2"
+                            style={{
+                              borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.9),
+                              background: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.12),
+                            }}
                           >
-                            <SelectTrigger className={`${DARK_INPUT_CLASS} achievements-config-select`}>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.map((category) => (
-                                <SelectItem key={category.id} value={category.id}>
-                                  {category.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                            {previewSrc ? (
+                              <img
+                                src={previewSrc}
+                                alt={badgeState.achievementTitle || 'Preview da conquista'}
+                                className="h-full w-full rounded-full object-cover"
+                              />
+                            ) : (
+                              <ImagePlus className="h-8 w-8 text-white/40" />
+                            )}
+                          </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-white">Nome da conquista</Label>
-                          <Input
-                            value={draft.achievementTitle}
-                            onChange={(event) => updateDraft(draft.id, { achievementTitle: event.target.value })}
-                            placeholder="Ex: 6 meses"
-                            className={DARK_INPUT_CLASS}
+                          <Label
+                            htmlFor={`existing-badge-upload-${badge.id}`}
+                            className="inline-flex cursor-pointer items-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] px-3 py-2 text-sm font-medium text-white shadow-lg shadow-black/30 transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
+                          >
+                            <UploadCloud className="mr-2 h-4 w-4" />
+                            Trocar imagem
+                          </Label>
+                          <input
+                            id={`existing-badge-upload-${badge.id}`}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(event) => handleExistingBadgeImageChange(badge.id, event.target.files?.[0] || null)}
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-white">Subtítulo</Label>
-                          <Input
-                            value={draft.subtitle}
-                            onChange={(event) => updateDraft(draft.id, { subtitle: event.target.value })}
-                            placeholder="Ex: Permaneça ativo por 180 dias"
-                            className={DARK_INPUT_CLASS}
-                          />
+                        <div className="grid flex-1 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-white">Categoria</Label>
+                            <Select
+                              value={badgeState.categoryId}
+                              onValueChange={(value) => updateExistingBadge(badge.id, { categoryId: value })}
+                            >
+                              <SelectTrigger className={`${DARK_INPUT_CLASS} achievements-config-select`}>
+                                <SelectValue placeholder="Selecione uma categoria" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {categories.map((category) => (
+                                  <SelectItem key={category.id} value={category.id}>
+                                    {category.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-white">Nome da conquista</Label>
+                            <Input
+                              value={badgeState.achievementTitle}
+                              onChange={(event) => updateExistingBadge(badge.id, { achievementTitle: event.target.value })}
+                              className={DARK_INPUT_CLASS}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-white">Subtítulo</Label>
+                            <Input
+                              value={badgeState.description}
+                              onChange={(event) => updateExistingBadge(badge.id, { description: event.target.value })}
+                              className={DARK_INPUT_CLASS}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
 
-          <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/50 px-4 py-3 text-sm text-white/65">
-            <span>{filledDraftsCount} conquista(s) preparada(s) para salvar</span>
-            <Badge variant="outline" className="border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
-              Lote
-            </Badge>
-          </div>
+                      <Button
+                        type="button"
+                        onClick={() => updateBadgeMutation.mutate(badge.id)}
+                        disabled={updateBadgeMutation.isPending}
+                        className="client-action-button w-full"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar conquista
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
