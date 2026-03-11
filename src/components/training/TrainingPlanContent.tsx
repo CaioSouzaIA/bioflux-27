@@ -147,19 +147,18 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   }, [currentMonthCheckins, structuredPlan?.workouts]);
 
   const monthOptions = useMemo(() => {
-    const keys = new Set<string>([currentMonthKey]);
+    const currentYear = Number(currentMonthKey.slice(0, 4));
 
-    for (const checkin of allCheckins) {
-      keys.add(format(new Date(checkin.workout_date), 'yyyy-MM'));
-    }
+    return Array.from({ length: 12 }, (_, index) => {
+      const month = String(index + 1).padStart(2, '0');
+      const value = `${currentYear}-${month}`;
 
-    return Array.from(keys)
-      .sort((a, b) => b.localeCompare(a))
-      .map((key) => ({
-        value: key,
-        label: format(new Date(`${key}-01T00:00:00`), "MMMM 'de' yyyy", { locale: ptBR }),
-      }));
-  }, [allCheckins, currentMonthKey]);
+      return {
+        value,
+        label: format(new Date(`${value}-01T00:00:00`), "MMMM 'de' yyyy", { locale: ptBR }),
+      };
+    });
+  }, [currentMonthKey]);
 
   useEffect(() => {
     if (!structuredPlan) {
@@ -605,7 +604,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
             </AccordionTrigger>
             <AccordionContent className="space-y-5 pb-5 text-white">
               <div className="space-y-2">
-                <div className="flex justify-end">
+                <div className="flex justify-start pb-2">
                   <Select value={selectedMonthKey} onValueChange={setSelectedMonthKey}>
                     <SelectTrigger className="client-back-button h-11 w-full justify-between rounded-xl border-white/5 bg-transparent text-white hover:text-white focus:text-white md:w-[220px]">
                       <SelectValue placeholder="Escolha o mês" />
