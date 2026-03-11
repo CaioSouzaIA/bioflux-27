@@ -103,7 +103,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
               value={field.label}
               onChange={(e) => updateField({ label: e.target.value })}
               placeholder="Digite o rótulo"
-              className="client-input-surface"
+              className="client-input-surface !text-white placeholder:text-white/35"
             />
           </div>
           <div>
@@ -112,7 +112,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
               value={field.placeholder || ''}
               onChange={(e) => updateField({ placeholder: e.target.value })}
               placeholder="Texto de exemplo"
-              className="client-input-surface"
+              className="client-input-surface !text-white placeholder:text-white/35"
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -135,7 +135,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
                     value={option}
                     onChange={(e) => updateOption(index, e.target.value)}
                     placeholder={`Opção ${index + 1}`}
-                    className="client-input-surface"
+                    className="client-input-surface !text-white placeholder:text-white/35"
                   />
                   <Button
                     variant="outline"

@@ -193,12 +193,8 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-8">
             <Card
-              className="client-glass-card cursor-pointer transition-transform duration-300 hover:scale-[1.01]"
+              className="client-glass-card"
               style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }}
-              onClick={() => {
-                setSelectedAgentKey(AI_AGENT_DEFINITIONS[0].key);
-                setIsPromptModalOpen(true);
-              }}
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
@@ -211,17 +207,9 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
                   <p>{AI_AGENT_DEFINITIONS.length} agentes dinâmicos ativos.</p>
                   <p>{totalPromptVersions} commit(s) registrados no total.</p>
                 </div>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setSelectedAgentKey(AI_AGENT_DEFINITIONS[0].key);
-                    setIsPromptModalOpen(true);
-                  }}
-                  className="client-action-button w-full"
-                >
-                  <History className="mr-2 h-4 w-4" />
-                  Abrir logs
-                </Button>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70">
+                  Use os cards dos agentes para abrir o modal com logs e restauração.
+                </div>
               </CardContent>
             </Card>
 

@@ -210,7 +210,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               value={localFormConfig.title}
               onChange={(e) => updateFormTitle(e.target.value)}
               placeholder="Digite o título do formulário"
-              className="client-input-surface mt-2"
+              className="client-input-surface mt-2 !text-white placeholder:text-white/35"
             />
           </div>
           <div>
@@ -220,7 +220,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               value={localFormConfig.description}
               onChange={(e) => updateFormDescription(e.target.value)}
               placeholder="Digite a descrição do formulário"
-              className="client-input-surface mt-2"
+              className="client-input-surface mt-2 !text-white placeholder:text-white/35"
             />
           </div>
         </CardContent>
@@ -228,7 +228,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       <Card className="client-surface-panel rounded-3xl">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between text-foreground">
+          <CardTitle className="flex items-center justify-between text-white">
             Campos do Formulário
             <Button onClick={addField} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
