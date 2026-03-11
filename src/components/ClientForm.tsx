@@ -14,6 +14,8 @@ import { FormConfig, FormResponse } from '@/types/form';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { getMetabolicAssessmentAgeInDays, isMetabolicAssessmentExpired, METABOLIC_ASSESSMENT_MAX_AGE_DAYS, useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
 
 interface ClientFormProps {
   formConfig: FormConfig;
@@ -25,6 +27,12 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuthContext();
+  const navigate = useNavigate();
+  const { data: metabolicAssessment, isLoading: metabolicLoading } = useMetabolicAssessment(user?.id);
+  const needsMetabolicAssessment = formConfig.category === 'anamnese-dieta' || formConfig.category === 'anamnese-treino';
+  const hasMetabolicAssessment = !!metabolicAssessment;
+  const metabolicAssessmentExpired = isMetabolicAssessmentExpired(metabolicAssessment?.created_at);
+  const metabolicAssessmentAgeInDays = getMetabolicAssessmentAgeInDays(metabolicAssessment?.created_at);
 
   // Debug logs para investigar problema com campos
   console.log('🔍 ClientForm - Debugging form fields:');
@@ -302,6 +310,18 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     
     if (!validateForm()) return;
 
+    if (needsMetabolicAssessment && (!hasMetabolicAssessment || metabolicAssessmentExpired)) {
+      toast({
+        title: 'Avaliação metabólica necessária',
+        description: !hasMetabolicAssessment
+          ? 'Complete sua avaliação metabólica antes de enviar este formulário.'
+          : `Sua última avaliação metabólica foi feita há ${metabolicAssessmentAgeInDays} dias. Atualize-a para gerar uma nova prescrição.`,
+        variant: 'destructive',
+      });
+      navigate('/client?view=metabolic');
+      return;
+    }
+
     // Verificar se o usuário está logado
     if (!user) {
       toast({
@@ -390,9 +410,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       setFormData({});
     } catch (error) {
       console.error('❌ Erro ao enviar formulário:', error);
+      const message = error instanceof Error ? error.message : 'Houve um problema ao enviar o formulário. Tente novamente.';
       toast({
         title: "Erro no Envio",
-        description: "Houve um problema ao enviar o formulário. Tente novamente.",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -522,6 +543,45 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     );
   }
 
+  if (metabolicLoading && needsMetabolicAssessment) {
+    return (
+      <div className="max-w-2xl mx-auto px-4">
+        <Card className="bg-[#161616] border-gray-700">
+          <CardContent className="p-8 text-center">
+            <p className="text-white">Carregando avaliação metabólica...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (needsMetabolicAssessment && (!hasMetabolicAssessment || metabolicAssessmentExpired)) {
+    return (
+      <div className="max-w-2xl mx-auto px-4">
+        <Card className="bg-[#161616] border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Atualize sua avaliação metabólica</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-300">
+              {!hasMetabolicAssessment
+                ? 'Você precisa concluir a avaliação metabólica antes de preencher este formulário.'
+                : `Sua última avaliação metabólica foi feita há ${metabolicAssessmentAgeInDays} dias. Após ${METABOLIC_ASSESSMENT_MAX_AGE_DAYS} dias, é obrigatório atualizar os dados para gerar uma nova prescrição.`}
+            </p>
+            <div className="flex gap-3">
+              <Button className="bg-green-600 hover:bg-green-700" onClick={() => navigate('/client?view=metabolic')}>
+                Ir para avaliação metabólica
+              </Button>
+              <Button variant="outline" className="text-white" onClick={onBack}>
+                Voltar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Ordenar campos por ordem
   const sortedFields = [...formConfig.fields].sort((a, b) => a.order - b.order);
   console.log('📊 Campos ordenados:', sortedFields.map(f => ({ id: f.id, label: f.label, order: f.order })));
@@ -569,7 +629,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
                 <Button 
                   type="submit" 
                   className="w-full bg-green-600 hover:bg-green-700 text-base py-3" 
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || (needsMetabolicAssessment && (!hasMetabolicAssessment || metabolicAssessmentExpired))}
                 >
                   {isSubmitting ? (
                     <>Enviando...</>

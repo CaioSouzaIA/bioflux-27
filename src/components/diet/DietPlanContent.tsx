@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { DietPrescription } from '@/hooks/useDietPrescriptions';
+import { formatDietItemDescription, formatDietSubstitutionDescription } from '@/lib/diet-format';
 
 interface DietPlanContentProps {
   prescription: DietPrescription;
@@ -206,15 +207,9 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
             <AccordionContent className="space-y-4 pb-5">
               {meal.items.map((item, index) => (
                 <div key={`${meal.meal_number}-${index}`} className="client-surface-subtle rounded-2xl p-4">
-                  <div className="flex flex-col gap-1">
-                    <p className="text-base font-semibold text-white">
-                      {item.name}
-                    </p>
-                    <p className="text-sm text-white/70">
-                      {item.preparation ? `${item.preparation} • ` : ''}
-                      {item.quantity || 'Quantidade não informada'}
-                    </p>
-                  </div>
+                  <p className="text-base font-semibold text-white">
+                    {formatDietItemDescription(item)}
+                  </p>
 
                   {item.substitutions.length > 0 && (
                     <div className="mt-4 space-y-2">
@@ -227,8 +222,7 @@ export const DietPlanContent: React.FC<DietPlanContentProps> = ({ prescription }
                             key={`${meal.meal_number}-${index}-sub-${substitutionIndex}`}
                             className="client-surface-subtle rounded-xl px-3 py-2 text-sm text-white/80"
                           >
-                            <span className="font-medium text-white">{substitution.name}</span>
-                            {substitution.quantity ? ` - ${substitution.quantity}` : ''}
+                            <span className="font-medium text-white">{formatDietSubstitutionDescription(substitution)}</span>
                           </div>
                         ))}
                       </div>

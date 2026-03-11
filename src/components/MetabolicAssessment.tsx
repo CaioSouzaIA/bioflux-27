@@ -1,22 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calculator, ArrowLeft } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/accordion';
+import { Calculator, ArrowLeft, Calendar, ChevronDown, History } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
+import { getMetabolicAssessmentAgeInDays, METABOLIC_ASSESSMENT_MAX_AGE_DAYS, useMetabolicAssessmentHistory } from '@/hooks/useMetabolicAssessment';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface MetabolicAssessmentProps {
   onBack: () => void;
 }
 
+const formatAssessmentDate = (value: string) =>
+  new Date(value).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+
 const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => {
   const { user, loading: authLoading } = useAuthContext();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+  const [expandedHistoryItem, setExpandedHistoryItem] = useState('');
   const [formData, setFormData] = useState({
     age: '',
     weight: '',
@@ -30,6 +44,9 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
     tmb: number;
     get: number;
   } | null>(null);
+  const { data: assessmentHistory = [] } = useMetabolicAssessmentHistory(user?.id);
+  const latestAssessment = assessmentHistory[0] ?? null;
+  const previousAssessments = assessmentHistory.slice(1);
 
   const activityOptions = [
     { label: 'Sedentário (pouco ou nenhum exercício)', value: '1.2' },
@@ -39,17 +56,29 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
     { label: 'Muito intenso (nível competitivo/atleta)', value: '1.9' }
   ];
 
-  // Carregar dados salvos quando o componente é montado e o usuário estiver disponível
   useEffect(() => {
-    console.log('🔍 Estado do usuário no MetabolicAssessment:', { 
-      user: user?.id, 
-      authLoading 
+    console.log('🔍 Estado do usuário no MetabolicAssessment:', {
+      user: user?.id,
+      authLoading,
+      latestAssessment: latestAssessment?.id,
     });
-    
-    if (user && !authLoading) {
-      loadSavedAssessment();
+
+    if (latestAssessment) {
+      setFormData({
+        age: latestAssessment.age.toString(),
+        weight: latestAssessment.weight.toString(),
+        height: latestAssessment.height.toString(),
+        biologicalSex: latestAssessment.biological_sex,
+        waistCircumference: latestAssessment.waist_circumference.toString(),
+        activityFactor: latestAssessment.activity_factor.toString(),
+      });
+
+      setResults({
+        tmb: latestAssessment.tmb,
+        get: latestAssessment.get_value,
+      });
     }
-  }, [user, authLoading]);
+  }, [authLoading, latestAssessment, user]);
 
   // Verificar se o usuário está autenticado antes de renderizar
   if (authLoading) {
@@ -74,53 +103,6 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
       </div>
     );
   }
-
-  const loadSavedAssessment = async () => {
-    if (!user) {
-      console.log('❌ Usuário não disponível para carregar avaliação');
-      return;
-    }
-
-    try {
-      console.log('📊 Carregando avaliação para usuário:', user.id);
-      
-      const { data, error } = await supabase
-        .from('metabolic_assessments')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Erro ao carregar avaliação:', error);
-        return;
-      }
-
-      if (data) {
-        console.log('✅ Avaliação carregada:', data);
-        // Preencher formulário com dados salvos
-        setFormData({
-          age: data.age.toString(),
-          weight: data.weight.toString(),
-          height: data.height.toString(),
-          biologicalSex: data.biological_sex,
-          waistCircumference: data.waist_circumference.toString(),
-          activityFactor: data.activity_factor.toString()
-        });
-
-        // Mostrar resultados salvos
-        setResults({
-          tmb: data.tmb,
-          get: data.get_value
-        });
-      } else {
-        console.log('ℹ️ Nenhuma avaliação anterior encontrada');
-      }
-    } catch (error) {
-      console.error('Erro inesperado ao carregar avaliação:', error);
-    }
-  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -238,9 +220,6 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
 
       console.log('💾 Salvando avaliação no banco de dados...');
 
-      // Verificar se é a primeira avaliação (para recarregar página depois)
-      const isFirstAssessment = !results; // Se não há resultados, é primeira vez
-      
       // Salvar no banco de dados - sempre inserir nova entrada
       const { error } = await supabase
         .from('metabolic_assessments')
@@ -268,19 +247,15 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
 
       console.log('✅ Avaliação salva com sucesso');
       setResults(finalResults);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['metabolic-assessment', user.id] }),
+        queryClient.invalidateQueries({ queryKey: ['metabolic-assessment-history', user.id] }),
+      ]);
       
       toast({
         title: "Sucesso!",
         description: "Avaliação metabólica calculada e salva com sucesso.",
       });
-
-      // Recarregar página apenas na primeira vez para atualizar as restrições
-      if (isFirstAssessment) {
-        console.log('🔄 Primeira avaliação completada - recarregando página para atualizar acesso');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500); // Delay para mostrar o toast
-      }
 
     } catch (error) {
       console.error('❌ Erro no cálculo:', error);
@@ -465,6 +440,12 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
             <Card className="client-surface-panel rounded-3xl">
               <CardHeader>
                 <CardTitle className="text-white">Resultados da Avaliação</CardTitle>
+                {latestAssessment && (
+                  <CardDescription className="flex items-center gap-2 text-white/60">
+                    <Calendar className="h-4 w-4" />
+                    Avaliação atual de {formatAssessmentDate(latestAssessment.created_at)}
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -501,6 +482,126 @@ const MetabolicAssessment: React.FC<MetabolicAssessmentProps> = ({ onBack }) => 
               </CardContent>
             </Card>
           )}
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2">
+                <History className="h-5 w-5 text-white/70" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-white">Registro de avaliações anteriores</h2>
+                <p className="mt-1 text-sm text-white/60">
+                  Histórico das avaliações metabólicas salvas, com preview e detalhes.
+                </p>
+              </div>
+            </div>
+
+            {!previousAssessments.length ? (
+              <Card className="client-surface-panel rounded-3xl">
+                <CardContent className="p-6">
+                  <p className="text-sm text-white/60">Ainda não existem avaliações metabólicas anteriores registradas.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Accordion
+                type="single"
+                collapsible
+                value={expandedHistoryItem}
+                onValueChange={setExpandedHistoryItem}
+                className="space-y-4"
+              >
+                {previousAssessments.map((assessment) => {
+                  const accordionValue = assessment.id;
+                  const ageInDays = getMetabolicAssessmentAgeInDays(assessment.created_at);
+
+                  return (
+                    <AccordionItem
+                      key={assessment.id}
+                      value={accordionValue}
+                      className="group client-surface-panel overflow-hidden rounded-3xl border border-white/10 px-6"
+                    >
+                      <div className="flex items-start gap-4 py-6">
+                        <div className="flex-1 space-y-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-lg font-semibold text-white">
+                              Avaliação de {formatAssessmentDate(assessment.created_at)}
+                            </p>
+                            <Badge variant="outline" className="border-white/15 bg-white/5 text-white/70">
+                              Registro
+                            </Badge>
+                          </div>
+
+                          {expandedHistoryItem !== accordionValue && (
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
+                              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                                TMB: {assessment.tmb} kcal
+                              </span>
+                              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                                GET: {assessment.get_value} kcal
+                              </span>
+                              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                                Peso: {assessment.weight} kg
+                              </span>
+                              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                                Cintura: {assessment.waist_circumference} cm
+                              </span>
+                              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                                {ageInDays} dias atrás
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <AccordionPrimitive.Header className="flex">
+                          <AccordionPrimitive.Trigger className="inline-flex h-10 w-10 items-center justify-center bg-transparent text-white/70 transition-all hover:text-white [&[data-state=open]>svg]:rotate-180">
+                            <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                          </AccordionPrimitive.Trigger>
+                        </AccordionPrimitive.Header>
+                      </div>
+
+                      <AccordionContent className="space-y-6 pb-6">
+                        <div className="grid gap-6 md:grid-cols-2">
+                          <div className="client-surface-subtle rounded-2xl p-6 text-center">
+                            <h3 className="mb-2 text-lg font-semibold text-white">Taxa Metabólica Basal (TMB)</h3>
+                            <p className="text-3xl font-bold text-white">{assessment.tmb}</p>
+                            <p className="mt-1 text-sm text-gray-300">kcal/dia</p>
+                          </div>
+
+                          <div className="client-surface-subtle rounded-2xl border-green-500/20 bg-green-500/10 p-6 text-center">
+                            <h3 className="mb-2 text-lg font-semibold text-green-300">Gasto Energético Total (GET)</h3>
+                            <p className="text-3xl font-bold text-green-400">{assessment.get_value}</p>
+                            <p className="mt-1 text-sm text-gray-300">kcal/dia</p>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="client-surface-subtle rounded-2xl p-4">
+                            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Dados corporais</p>
+                            <div className="mt-3 space-y-2 text-sm text-white/80">
+                              <p>Idade: {assessment.age} anos</p>
+                              <p>Peso: {assessment.weight} kg</p>
+                              <p>Altura: {assessment.height} cm</p>
+                              <p>Cintura: {assessment.waist_circumference} cm</p>
+                            </div>
+                          </div>
+
+                          <div className="client-surface-subtle rounded-2xl p-4">
+                            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Contexto metabólico</p>
+                            <div className="mt-3 space-y-2 text-sm text-white/80">
+                              <p>Sexo biológico: {assessment.biological_sex}</p>
+                              <p>Fator de atividade: {assessment.activity_factor}</p>
+                              <p>Registro feito há {ageInDays} dias</p>
+                              <p>Validade operacional: {METABOLIC_ASSESSMENT_MAX_AGE_DAYS} dias</p>
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+            )}
+          </div>
         </div>
       </div>
     </div>

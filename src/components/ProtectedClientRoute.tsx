@@ -28,7 +28,7 @@ const ProtectedClientRoute = ({ children }: ProtectedClientRouteProps) => {
     });
   }, [user, userType, loading]);
 
-  if (loading) {
+  if (loading || (user && userType === null)) {
     console.log('⏳ ProtectedClientRoute - Ainda carregando...');
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">

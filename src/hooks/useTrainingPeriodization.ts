@@ -26,24 +26,23 @@ export const useTrainingPeriodization = (userId?: string) => {
         return null;
       }
 
-      console.log(`🔍 [TRAINING-PERIODIZATION] Fetching training periodization for user: ${userId}`);
+      console.log(`🔍 [TRAINING-PERIODIZATION] Fetching training periodization history for user: ${userId}`);
       
-      const { data: periodization, error } = await supabase
+      const { data: periodizations, error } = await supabase
         .from('training_periodization')
         .select('*')
         .eq('user_id', userId)
-        .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .maybeSingle();
+        .order('updated_at', { ascending: false });
 
       if (error) {
         console.error('❌ [TRAINING-PERIODIZATION] Error fetching training periodization:', error);
         throw error;
       }
 
-      console.log(`✅ [TRAINING-PERIODIZATION] Found periodization:`, periodization);
+      console.log(`✅ [TRAINING-PERIODIZATION] Found periodizations:`, periodizations);
       
-      return periodization as TrainingPeriodization | null;
+      return (periodizations ?? []) as TrainingPeriodization[];
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 15, // 15 minutos

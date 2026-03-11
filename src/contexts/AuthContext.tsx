@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const bootstrapped = useRef(false);
 
   // Fetch user profile and type
-  const fetchUserProfile = async (userId: string): Promise<void> => {
+  const fetchUserProfile = async (userId: string): Promise<UserType> => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error('❌ Erro ao buscar perfil:', error);
         setUserType('client');
         setUserProfile(null);
-        return;
+        return 'client';
       }
       
       if (!profile) {
@@ -89,16 +89,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         setUserType('client');
         setUserProfile(null);
-        return;
+        return 'client';
       }
       
       const fetchedUserType = (profile.user_type as UserType) || 'client';
       setUserType(fetchedUserType);
       setUserProfile(profile as UserProfile);
+      return fetchedUserType;
     } catch (error) {
       console.error('❌ Erro inesperado ao buscar perfil:', error);
       setUserType('client');
       setUserProfile(null);
+      return 'client';
     }
   };
 
@@ -119,8 +121,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           console.log('✅ Initial session found:', initialSession.user.id);
           setUser(initialSession.user);
           setSession(initialSession);
-          // Defer profile fetch to prevent blocking
-          setTimeout(() => fetchUserProfile(initialSession.user.id), 0);
+          await fetchUserProfile(initialSession.user.id);
         } else {
           console.log('🚫 No initial session');
         }
@@ -130,19 +131,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // 2) Set up auth state listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
           console.log('🔔 Auth event:', event, session?.user?.id);
-          
-          setUser(session?.user ?? null);
-          setSession(session);
 
-          if (session?.user && event === 'SIGNED_IN') {
-            // Defer profile fetch to prevent blocking
-            setTimeout(() => fetchUserProfile(session.user.id), 0);
-          } else if (event === 'SIGNED_OUT') {
-            setUserType(null);
-            setUserProfile(null);
-          }
+          void (async () => {
+            setUser(session?.user ?? null);
+            setSession(session);
 
-          setLoading(false);
+            if (session?.user) {
+              setLoading(true);
+              await fetchUserProfile(session.user.id);
+              setLoading(false);
+              return;
+            }
+
+            if (event === 'SIGNED_OUT' || !session?.user) {
+              setUserType(null);
+              setUserProfile(null);
+            }
+
+            setLoading(false);
+          })();
         });
 
         unsub = () => subscription.unsubscribe();

@@ -85,6 +85,11 @@ const ClientLogin = () => {
     await signIn(email, password);
   };
 
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleLogin(email, password);
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await signUp(email, password, firstName, lastName, whatsapp);
@@ -335,83 +340,87 @@ const ClientLogin = () => {
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="login" className="space-y-4 mt-4">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-white/40" />
-                    <CustomInput
-                      type="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30"
-                    />
-                  </div>
-                  
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
-                    <CustomInput
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Senha"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30"
-                    />
-                    <div 
-                      onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-3 top-3 cursor-pointer"
-                    >
-                      {showPassword ? (
-                        <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                      ) : (
-                        <EyeClosed className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                      )}
+                <TabsContent value="login" className="mt-4">
+                  <form onSubmit={handleLoginSubmit} className="space-y-4">
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-white/40" />
+                      <CustomInput
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10 bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30"
+                        required
+                      />
                     </div>
-                  </div>
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleLogin(email, password)}
-                    disabled={loading}
-                    className="w-full relative group/button mt-5"
-                  >
-                    <div className="relative overflow-hidden bg-white text-black font-medium h-10 rounded-lg transition-all duration-300 flex items-center justify-center">
-                      <AnimatePresence mode="wait">
-                        {loading ? (
-                          <motion.div
-                            key="loading"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex items-center justify-center"
-                          >
-                            <div className="w-4 h-4 border-2 border-black/70 border-t-transparent rounded-full animate-spin" />
-                          </motion.div>
+                    
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
+                      <CustomInput
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Senha"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 pr-10 bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30"
+                        required
+                      />
+                      <div 
+                        onClick={() => setShowPassword(!showPassword)} 
+                        className="absolute right-3 top-3 cursor-pointer"
+                      >
+                        {showPassword ? (
+                          <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
                         ) : (
-                          <motion.span
-                            key="button-text"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex items-center justify-center gap-1 text-sm font-medium"
-                          >
-                            Entrar
-                            <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
-                          </motion.span>
+                          <EyeClosed className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
                         )}
-                      </AnimatePresence>
+                      </div>
                     </div>
-                  </motion.button>
-
-                  {/* Link para esqueci minha senha */}
-                  <div className="text-center">
-                    <button
-                      onClick={() => setShowForgotPassword(true)}
-                      className="text-white/60 hover:text-white text-xs transition-colors duration-300 underline"
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="submit"
+                      disabled={loading}
+                      className="w-full relative group/button mt-5"
                     >
-                      Esqueci minha senha
-                    </button>
-                  </div>
+                      <div className="relative overflow-hidden bg-white text-black font-medium h-10 rounded-lg transition-all duration-300 flex items-center justify-center">
+                        <AnimatePresence mode="wait">
+                          {loading ? (
+                            <motion.div
+                              key="loading"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="flex items-center justify-center"
+                            >
+                              <div className="w-4 h-4 border-2 border-black/70 border-t-transparent rounded-full animate-spin" />
+                            </motion.div>
+                          ) : (
+                            <motion.span
+                              key="button-text"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="flex items-center justify-center gap-1 text-sm font-medium"
+                            >
+                              Entrar
+                              <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.button>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-white/60 hover:text-white text-xs transition-colors duration-300 underline"
+                      >
+                        Esqueci minha senha
+                      </button>
+                    </div>
+                  </form>
                 </TabsContent>
                 
                 <TabsContent value="signup" className="space-y-4 mt-4">

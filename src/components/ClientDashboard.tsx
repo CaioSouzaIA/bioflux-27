@@ -14,10 +14,10 @@ import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import ClientDropdown from '@/components/ClientDropdown';
 import { format, addMonths, differenceInDays, endOfMonth, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
-import { useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
+import { getMetabolicAssessmentAgeInDays, isMetabolicAssessmentExpired, METABOLIC_ASSESSMENT_MAX_AGE_DAYS, useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
 import { BucketUserCorrelation } from '@/components/BucketUserCorrelation';
 import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
@@ -46,10 +46,14 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [formsCount, setFormsCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState<'dashboard' | 'metabolic' | 'periodization'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'metabolic' | 'periodization'>(() => {
+    const view = new URLSearchParams(window.location.search).get('view');
+    return view === 'metabolic' || view === 'periodization' ? view : 'dashboard';
+  });
   const [badgePickerOpen, setBadgePickerOpen] = useState(false);
   const { user, userProfile, refreshUserType } = useAuthContext();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Buscar prescrições de dieta e treino do usuário atual
   const { data: dietPrescriptions = [], isLoading: dietLoading } = useDietPrescriptions(user?.id);
@@ -61,6 +65,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   // Verificar se o usuário tem avaliação metabólica
   const { data: metabolicAssessment, isLoading: metabolicLoading } = useMetabolicAssessment(user?.id);
   const hasMetabolicAssessment = !!metabolicAssessment;
+  const metabolicAssessmentExpired = isMetabolicAssessmentExpired(metabolicAssessment?.created_at);
+  const metabolicAssessmentAgeInDays = getMetabolicAssessmentAgeInDays(metabolicAssessment?.created_at);
 
   // Buscar todas as badges disponíveis
   const { data: allBadges = [] } = useQuery({
@@ -181,6 +187,11 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   useEffect(() => {
     fetchSubscriptions();
   }, [user]);
+
+  useEffect(() => {
+    const view = new URLSearchParams(location.search).get('view');
+    setActiveView(view === 'metabolic' || view === 'periodization' ? view : 'dashboard');
+  }, [location.search]);
 
   useEffect(() => {
     if (subscriptions.length > 0) {
@@ -352,14 +363,6 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   };
 
   const handleFormsAccess = () => {
-    if (!hasMetabolicAssessment) {
-      toast({
-        title: "Avaliação Metabólica Necessária",
-        description: "Complete sua avaliação metabólica antes de acessar os formulários.",
-        variant: "destructive",
-      });
-      return;
-    }
     navigate('/client/forms');
   };
 
@@ -372,7 +375,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   };
 
   const handleMetabolicAssessment = () => {
-    setActiveView('metabolic');
+    navigate('/client?view=metabolic');
   };
 
   const handleTrainingPeriodization = () => {
@@ -384,7 +387,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       });
       return;
     }
-    setActiveView('periodization');
+    navigate('/client?view=periodization');
   };
 
   const getBadgeFallback = (badgeName?: string | null) => {
@@ -449,7 +452,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       <div className="min-h-screen relative bg-black overflow-hidden">
         <BackgroundAnimation />
         <div className="relative z-10 min-h-screen p-4">
-          <MetabolicAssessment onBack={() => setActiveView('dashboard')} />
+          <MetabolicAssessment onBack={() => navigate('/client')} />
         </div>
       </div>
     );
@@ -467,7 +470,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               <div className="flex items-center gap-3">
                 <Button 
                   variant="outline" 
-                  onClick={() => setActiveView('dashboard')}
+                  onClick={() => navigate('/client')}
                   className="client-back-button"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -481,7 +484,10 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </div>
             </div>
 
-            <TrainingPeriodization userId={user?.id || ''} />
+            <TrainingPeriodization
+              userId={user?.id || ''}
+              currentTrainingPrescriptionId={trainingPrescriptions[0]?.id}
+            />
           </div>
         </div>
       </div>
@@ -528,6 +534,29 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                     size="sm"
                   >
                     Fazer Avaliação
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {hasMetabolicAssessment && metabolicAssessmentExpired && (
+            <Card className="mb-6 border-amber-500/50 bg-amber-900/40 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Calculator className="h-5 w-5 text-amber-300" />
+                  <div>
+                    <h3 className="font-medium text-amber-100">Atualize sua avaliação metabólica</h3>
+                    <p className="text-sm text-amber-200">
+                      Sua última avaliação foi feita há {metabolicAssessmentAgeInDays} dias. Após {METABOLIC_ASSESSMENT_MAX_AGE_DAYS} dias, é preciso atualizar para liberar novas prescrições.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleMetabolicAssessment}
+                    className="bg-amber-500 text-black hover:bg-amber-400"
+                    size="sm"
+                  >
+                    Atualizar avaliação
                   </Button>
                 </div>
               </CardContent>

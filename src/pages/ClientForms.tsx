@@ -10,6 +10,7 @@ import { FileText, ArrowLeft, Lock } from 'lucide-react';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { getMetabolicAssessmentAgeInDays, isMetabolicAssessmentExpired, METABOLIC_ASSESSMENT_MAX_AGE_DAYS, useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
 
 interface Form {
   id: string;
@@ -23,6 +24,10 @@ const ClientForms: React.FC = () => {
   const { user, signOut } = useAuthContext();
   const navigate = useNavigate();
   const { data: subscriptions = [], isLoading: subscriptionLoading } = useSubscriptions();
+  const { data: metabolicAssessment, isLoading: metabolicLoading } = useMetabolicAssessment(user?.id);
+  const hasMetabolicAssessment = !!metabolicAssessment;
+  const metabolicAssessmentExpired = isMetabolicAssessmentExpired(metabolicAssessment?.created_at);
+  const metabolicAssessmentAgeInDays = getMetabolicAssessmentAgeInDays(metabolicAssessment?.created_at);
 
   // Verificar se o cliente já completou os formulários
   const activeSubscription = subscriptions.find(sub => sub.status === 'ativo');
@@ -139,7 +144,22 @@ const ClientForms: React.FC = () => {
     }
   };
 
-  const handleFormAccess = (formId: string) => {
+  const requiresMetabolicAssessment = (category: string) =>
+    category === 'anamnese-dieta' || category === 'anamnese-treino';
+
+  const handleFormAccess = (formId: string, category: string) => {
+    if (requiresMetabolicAssessment(category) && (!hasMetabolicAssessment || metabolicAssessmentExpired)) {
+      toast({
+        title: 'Avaliação metabólica necessária',
+        description: !hasMetabolicAssessment
+          ? 'Você precisa completar sua avaliação metabólica antes de preencher um formulário.'
+          : `Sua última avaliação metabólica foi feita há ${metabolicAssessmentAgeInDays} dias. Atualize-a para liberar novas prescrições.`,
+        variant: 'destructive',
+      });
+      navigate('/client?view=metabolic');
+      return;
+    }
+
     // Verificar se o usuário pode acessar formulários
     if (formsCompleted) {
       toast({
@@ -155,7 +175,7 @@ const ClientForms: React.FC = () => {
   };
 
   // Se ainda está carregando e o usuário existe
-  if ((isLoading || subscriptionLoading) && user) {
+  if ((isLoading || subscriptionLoading || metabolicLoading) && user) {
     return (
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
         <BackgroundAnimation />
@@ -234,6 +254,23 @@ const ClientForms: React.FC = () => {
                 </p>
               </div>
             )}
+            {hasMetabolicAssessment && metabolicAssessmentExpired && (
+              <div className="client-surface-subtle mt-4 rounded-2xl border-amber-500/20 bg-amber-500/10 p-4">
+                <div className="flex items-center gap-2 text-amber-300">
+                  <Lock className="h-5 w-5" />
+                  <span className="font-medium">Avaliação metabólica expirada</span>
+                </div>
+                <p className="mt-2 text-sm text-amber-200">
+                  Sua última avaliação foi feita há {metabolicAssessmentAgeInDays} dias. Após {METABOLIC_ASSESSMENT_MAX_AGE_DAYS} dias, é necessário atualizar na página de avaliação metabólica.
+                </p>
+                <Button
+                  className="mt-3 bg-amber-500 text-black hover:bg-amber-400"
+                  onClick={() => navigate('/client?view=metabolic')}
+                >
+                  Atualizar avaliação
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Lista de Formulários */}
@@ -274,10 +311,14 @@ const ClientForms: React.FC = () => {
                   <CardContent>
                     <Button 
                       className="client-action-button w-full"
-                      onClick={() => handleFormAccess(form.id)}
-                      disabled={formsCompleted}
+                      onClick={() => handleFormAccess(form.id, form.category)}
+                      disabled={formsCompleted || (requiresMetabolicAssessment(form.category) && (!hasMetabolicAssessment || metabolicAssessmentExpired))}
                     >
-                      {formsCompleted ? 'Formulário Bloqueado' : 'Preencher Formulário'}
+                      {formsCompleted
+                        ? 'Formulário Bloqueado'
+                        : requiresMetabolicAssessment(form.category) && (!hasMetabolicAssessment || metabolicAssessmentExpired)
+                          ? 'Atualize sua avaliação metabólica'
+                          : 'Preencher Formulário'}
                     </Button>
                   </CardContent>
                 </Card>
