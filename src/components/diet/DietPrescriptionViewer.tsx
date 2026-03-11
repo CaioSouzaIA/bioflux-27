@@ -1,10 +1,14 @@
-import React from 'react';
-import { AlertCircle, Calendar, UtensilsCrossed } from 'lucide-react';
+import React, { useState } from 'react';
+import * as AccordionPrimitive from '@radix-ui/react-accordion';
+import { AlertCircle, Calendar, ChevronDown, Download, UtensilsCrossed } from 'lucide-react';
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { DietPrescription } from '@/hooks/useDietPrescriptions';
+import { useToast } from '@/hooks/use-toast';
+import { downloadDietPrescriptionPdf } from '@/lib/prescription-pdf';
 import { DietPlanContent } from './DietPlanContent';
 
 interface DietPrescriptionViewerProps {
@@ -46,6 +50,9 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
   prescriptions,
   isLoading,
 }) => {
+  const [expandedPrescription, setExpandedPrescription] = useState('');
+  const { toast } = useToast();
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -73,60 +80,65 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
   }
 
   return (
-    <Accordion type="single" collapsible className="space-y-4">
+    <Accordion
+      type="single"
+      collapsible
+      value={expandedPrescription}
+      onValueChange={setExpandedPrescription}
+      className="space-y-4"
+    >
       {prescriptions.map((prescription) => {
         const status = statusMap[prescription.generation_status];
         const shouldShowStatusBadge = prescription.generation_status !== 'completed';
         const previewPlan = prescription.structured_plan;
+        const accordionValue = prescription.id;
 
         return (
           <AccordionItem
             key={prescription.id}
-            value={prescription.id}
+            value={accordionValue}
             className="group client-surface-panel overflow-hidden rounded-3xl border border-white/10 px-6"
           >
-            <AccordionTrigger className="py-6 text-left text-white hover:no-underline">
-              <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-lg font-semibold text-white">{prescription.plan_name}</p>
-                    {shouldShowStatusBadge && (
-                      <Badge variant="outline" className={status.className}>
-                        {status.label}
-                      </Badge>
-                    )}
-                    {prescription.file_path && !prescription.structured_plan && (
-                      <Badge variant="outline" className="border-white/15 bg-white/5 text-white/70">
-                        Legado PDF
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-white/55">
-                    <span className="inline-flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      Data do plano: {formatDate(prescription.created_at)}
-                    </span>
-                  </div>
-                  {previewPlan && (
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-white/60 group-data-[state=open]:hidden">
-                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        {previewPlan.header.estimated_calories_kcal ?? '—'} Kcal
-                      </span>
-                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        Prot: {previewPlan.header.macros.proteins_g ?? '—'}g
-                      </span>
-                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        Carbo: {previewPlan.header.macros.carbs_g ?? '—'}g
-                      </span>
-                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        Gord: {previewPlan.header.macros.fats_g ?? '—'}g
-                      </span>
-                      <span className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        {previewPlan.header.objective || 'Objetivo não informado'}
-                      </span>
-                    </div>
+            <div className="flex items-start gap-4 py-6">
+              <div className="flex-1 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-lg font-semibold text-white">{prescription.plan_name}</p>
+                  {shouldShowStatusBadge && (
+                    <Badge variant="outline" className={status.className}>
+                      {status.label}
+                    </Badge>
+                  )}
+                  {prescription.file_path && !prescription.structured_plan && (
+                    <Badge variant="outline" className="border-white/15 bg-white/5 text-white/70">
+                      Legado PDF
+                    </Badge>
                   )}
                 </div>
+                <div className="flex flex-wrap items-center gap-3 text-sm text-white/55">
+                  <span className="inline-flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Data do plano: {formatDate(prescription.created_at)}
+                  </span>
+                </div>
+                {previewPlan && expandedPrescription !== accordionValue && (
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                      {previewPlan.header.estimated_calories_kcal ?? '—'} Kcal
+                    </span>
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                      Prot: {previewPlan.header.macros.proteins_g ?? '—'}g
+                    </span>
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                      Carbo: {previewPlan.header.macros.carbs_g ?? '—'}g
+                    </span>
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                      Gord: {previewPlan.header.macros.fats_g ?? '—'}g
+                    </span>
+                    <span className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                      {previewPlan.header.objective || 'Objetivo não informado'}
+                    </span>
+                  </div>
+                )}
 
                 {prescription.error_message && prescription.generation_status === 'failed' && (
                   <div className="inline-flex max-w-md items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs text-red-200">
@@ -135,7 +147,37 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
                   </div>
                 )}
               </div>
-            </AccordionTrigger>
+
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="client-back-button h-10 w-10 rounded-xl"
+                  onClick={async (event) => {
+                    event.stopPropagation();
+
+                    try {
+                      await downloadDietPrescriptionPdf(prescription);
+                    } catch (error) {
+                      const message = error instanceof Error ? error.message : 'Nao foi possivel baixar o PDF.';
+                      toast({
+                        title: 'Erro ao baixar PDF',
+                        description: message,
+                        variant: 'destructive',
+                      });
+                    }
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <AccordionPrimitive.Header className="flex">
+                  <AccordionPrimitive.Trigger className="inline-flex h-10 w-10 items-center justify-center bg-transparent text-white/70 transition-all hover:text-white [&[data-state=open]>svg]:rotate-180">
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                  </AccordionPrimitive.Trigger>
+                </AccordionPrimitive.Header>
+              </div>
+            </div>
             <AccordionContent className="pb-6">
               <DietPlanContent prescription={prescription} />
             </AccordionContent>
