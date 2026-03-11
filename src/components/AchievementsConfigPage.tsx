@@ -9,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   ImagePlus,
   Palette,
   Plus,
@@ -59,6 +66,7 @@ const DEFAULT_BADGE_COLOR = '#22D3EE';
 const PANEL_CARD_CLASS = 'achievements-config-panel rounded-3xl text-white';
 const SUBTLE_CARD_CLASS = 'achievements-config-subtle rounded-3xl text-white';
 const DARK_INPUT_CLASS = 'achievements-config-input';
+type CategoryModalView = 'create' | 'edit';
 
 const createDraft = (defaultCategoryId = '', overrides?: Partial<BadgeDraft>): BadgeDraft => ({
   achievementTitle: '',
@@ -106,6 +114,9 @@ export const AchievementsConfigPage: React.FC = () => {
   const [categoryDraft, setCategoryDraft] = useState({ color: DEFAULT_BADGE_COLOR, name: '' });
   const [drafts, setDrafts] = useState<BadgeDraft[]>([createDraft()]);
   const [existingCategoryValues, setExistingCategoryValues] = useState<Record<string, { color: string; name: string }>>({});
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+  const [categoryModalView, setCategoryModalView] = useState<CategoryModalView>('create');
 
   const { data: categories = [] } = useQuery({
     queryKey: ['achievement-categories'],
@@ -218,6 +229,7 @@ export const AchievementsConfigPage: React.FC = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['achievement-categories'] });
       setCategoryDraft({ color: DEFAULT_BADGE_COLOR, name: '' });
+      setCategoryModalView('edit');
       toast({
         title: 'Categoria criada',
         description: 'A categoria de conquista foi cadastrada com sucesso.',
@@ -324,6 +336,7 @@ export const AchievementsConfigPage: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['admin-badges'] });
       await queryClient.invalidateQueries({ queryKey: ['all-badges'] });
       setDrafts([createDraft(categories[0]?.id || '')]);
+      setIsBadgeModalOpen(false);
       toast({
         title: 'Conquistas salvas',
         description: 'As novas conquistas foram cadastradas com sucesso.',
@@ -342,171 +355,303 @@ export const AchievementsConfigPage: React.FC = () => {
   return (
     <div className="achievements-config-page space-y-8">
       <Card className={PANEL_CARD_CLASS}>
-        <CardHeader>
+        <CardHeader className="space-y-4">
           <CardTitle className="flex items-center gap-2 text-white">
-            <Shapes className="h-5 w-5 text-cyan-400" />
-            Categorias das Conquistas
+            <Trophy className="h-5 w-5 text-cyan-400" />
+            Configurações de Conquistas
           </CardTitle>
           <p className="text-sm text-white/60">
-            Defina o nome e a cor da categoria. O título final sempre será composto como
-            {' '}
-            <span className="text-white">Categoria - Nome da conquista</span>.
+            Organize categorias e cadastre novas conquistas em modais separados.
           </p>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="achievements-config-subtle rounded-3xl p-5">
-            <div className="grid gap-4 lg:grid-cols-[1.1fr_180px_auto]">
-              <div className="space-y-2">
-                <Label className="text-white">Nome da categoria</Label>
-                <Input
-                  value={categoryDraft.name}
-                  onChange={(event) => setCategoryDraft((current) => ({ ...current, name: event.target.value }))}
-                  placeholder="Ex: Lealdade"
-                  className={DARK_INPUT_CLASS}
-                />
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => {
+              setCategoryModalView('create');
+              setIsCategoryModalOpen(true);
+            }}
+            className={`${SUBTLE_CARD_CLASS} flex min-h-[180px] flex-col items-start justify-between p-6 text-left transition-colors hover:border-white/15`}
+          >
+            <div className="space-y-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10">
+                <Shapes className="h-6 w-6 text-cyan-300" />
               </div>
-              <div className="space-y-2">
-                <Label className="text-white">Cor da categoria</Label>
-                <div className="achievements-config-color-wrap flex items-center gap-3 rounded-2xl px-3 py-2">
-                  <input
-                    type="color"
-                    value={categoryDraft.color}
-                    onChange={(event) => setCategoryDraft((current) => ({ ...current, color: event.target.value }))}
-                    className="achievements-config-color-picker h-10 w-12 cursor-pointer rounded-xl p-1"
-                  />
-                  <Input
-                    value={categoryDraft.color}
-                    onChange={(event) => setCategoryDraft((current) => ({ ...current, color: event.target.value }))}
-                    className={`${DARK_INPUT_CLASS} uppercase`}
-                  />
-                </div>
-              </div>
-              <div className="flex items-end">
-                <Button
-                  type="button"
-                  onClick={() => createCategoryMutation.mutate()}
-                  disabled={createCategoryMutation.isPending}
-                  className="client-action-button w-full"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  {createCategoryMutation.isPending ? 'Salvando...' : 'Salvar categoria'}
-                </Button>
+              <div>
+                <h3 className="text-xl font-semibold text-white">Categorias</h3>
+                <p className="mt-2 text-sm text-white/60">
+                  Crie categorias novas ou edite as já cadastradas com nome e cor.
+                </p>
               </div>
             </div>
-          </div>
+            <span className="text-sm text-cyan-300">{categories.length} categoria(s)</span>
+          </button>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            {categories.map((category) => {
-              const currentValues = existingCategoryValues[category.id] ?? {
-                color: category.color,
-                name: category.name,
-              };
-
-              return (
-                <Card key={category.id} className={SUBTLE_CARD_CLASS}>
-                  <CardContent className="space-y-4 p-5">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-white">{category.name}</p>
-                        <p className="text-xs text-white/50">Cor aplicada na borda da conquista desbloqueada.</p>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="border-white/10 text-white"
-                        style={{
-                          borderColor: hexToRgba(currentValues.color, 0.45),
-                          color: currentValues.color,
-                        }}
-                      >
-                        {currentValues.color}
-                      </Badge>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-[1.1fr_180px]">
-                      <div className="space-y-2">
-                        <Label className="text-white">Nome</Label>
-                        <Input
-                          value={currentValues.name}
-                          onChange={(event) =>
-                            setExistingCategoryValues((current) => ({
-                              ...current,
-                              [category.id]: {
-                                ...currentValues,
-                                name: event.target.value,
-                              },
-                            }))
-                          }
-                          className={DARK_INPUT_CLASS}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-white">Cor</Label>
-                        <div className="achievements-config-color-wrap flex items-center gap-3 rounded-2xl px-3 py-2">
-                          <input
-                            type="color"
-                            value={currentValues.color}
-                            onChange={(event) =>
-                              setExistingCategoryValues((current) => ({
-                                ...current,
-                                [category.id]: {
-                                  ...currentValues,
-                                  color: event.target.value,
-                                },
-                              }))
-                            }
-                            className="achievements-config-color-picker h-10 w-12 cursor-pointer rounded-xl p-1"
-                          />
-                          <Input
-                            value={currentValues.color}
-                            onChange={(event) =>
-                              setExistingCategoryValues((current) => ({
-                                ...current,
-                                [category.id]: {
-                                  ...currentValues,
-                                  color: event.target.value,
-                                },
-                              }))
-                            }
-                            className={`${DARK_INPUT_CLASS} uppercase`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        updateCategoryMutation.mutate({
-                          categoryId: category.id,
-                          color: currentValues.color,
-                          name: currentValues.name,
-                        })
-                      }
-                      disabled={updateCategoryMutation.isPending}
-                      className="client-back-button w-full"
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      Salvar categoria
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsBadgeModalOpen(true)}
+            className={`${SUBTLE_CARD_CLASS} flex min-h-[180px] flex-col items-start justify-between p-6 text-left transition-colors hover:border-white/15`}
+          >
+            <div className="space-y-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10">
+                <Trophy className="h-6 w-6 text-cyan-300" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-white">Cadastrar conquista</h3>
+                <p className="mt-2 text-sm text-white/60">
+                  Abra o modal de lote para enviar imagens e cadastrar várias conquistas.
+                </p>
+              </div>
+            </div>
+            <span className="text-sm text-cyan-300">{filledDraftsCount} pronta(s) no lote</span>
+          </button>
         </CardContent>
       </Card>
 
       <Card className={PANEL_CARD_CLASS}>
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Trophy className="h-5 w-5 text-cyan-400" />
-              Cadastro de Conquistas
-            </CardTitle>
-            <p className="mt-2 text-sm text-white/60">
-              Escolha a categoria, envie a imagem e defina o nome específico da conquista.
-            </p>
+        <CardHeader>
+          <CardTitle className="text-white">Conquistas cadastradas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="client-surface-subtle h-40 animate-pulse rounded-3xl" />
+              ))}
+            </div>
+          ) : badges.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {badges.map((badge) => {
+                const category = badge.achievement_categories;
+                const badgeColor = category?.color || badge.category_color || DEFAULT_BADGE_COLOR;
+
+                return (
+                  <Card
+                    key={badge.id}
+                    className={`${SUBTLE_CARD_CLASS} border`}
+                    style={{ borderColor: hexToRgba(badgeColor, 0.42) }}
+                  >
+                    <CardContent className="flex h-full flex-col gap-4 p-5">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="rounded-full border-2 p-1"
+                          style={{
+                            borderColor: hexToRgba(badgeColor, 0.9),
+                            background: hexToRgba(badgeColor, 0.12),
+                          }}
+                        >
+                          <img src={badge.image_url} alt={badge.name} className="h-16 w-16 rounded-full object-cover" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="truncate text-base font-semibold text-white">{badge.name}</h3>
+                          <p className="mt-1 line-clamp-2 text-sm text-white/60">{badge.description}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-auto flex items-center justify-between gap-3">
+                        <Badge
+                          variant="outline"
+                          className="border-white/10 text-white"
+                          style={{
+                            borderColor: hexToRgba(badgeColor, 0.45),
+                            color: badgeColor,
+                          }}
+                        >
+                          {category?.name || 'Sem categoria'}
+                        </Badge>
+                        <span className="text-xs text-white/45">{badge.achievement_title}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="client-surface-subtle rounded-3xl p-10 text-center text-white/60">
+              Nenhuma conquista cadastrada ainda.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
+        <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Categorias</DialogTitle>
+            <DialogDescription>
+              Crie uma categoria nova ou altere as categorias já cadastradas.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-3 border-b border-white/8 pb-4">
+            <Button
+              type="button"
+              onClick={() => setCategoryModalView('create')}
+              className={categoryModalView === 'create' ? 'client-action-button' : 'client-back-button'}
+            >
+              Criar categoria
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setCategoryModalView('edit')}
+              className={categoryModalView === 'edit' ? 'client-action-button' : 'client-back-button'}
+            >
+              Editar categoria
+            </Button>
           </div>
+
+          {categoryModalView === 'create' ? (
+            <div className="achievements-config-subtle rounded-3xl p-5">
+              <div className="grid gap-4 lg:grid-cols-[1.1fr_180px_auto]">
+                <div className="space-y-2">
+                  <Label className="text-white">Nome da categoria</Label>
+                  <Input
+                    value={categoryDraft.name}
+                    onChange={(event) => setCategoryDraft((current) => ({ ...current, name: event.target.value }))}
+                    placeholder="Ex: Lealdade"
+                    className={DARK_INPUT_CLASS}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white">Cor da categoria</Label>
+                  <div className="achievements-config-color-wrap flex items-center gap-3 rounded-2xl px-3 py-2">
+                    <input
+                      type="color"
+                      value={categoryDraft.color}
+                      onChange={(event) => setCategoryDraft((current) => ({ ...current, color: event.target.value }))}
+                      className="achievements-config-color-picker h-10 w-12 cursor-pointer rounded-xl p-1"
+                    />
+                    <Input
+                      value={categoryDraft.color}
+                      onChange={(event) => setCategoryDraft((current) => ({ ...current, color: event.target.value }))}
+                      className={`${DARK_INPUT_CLASS} uppercase`}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    onClick={() => createCategoryMutation.mutate()}
+                    disabled={createCategoryMutation.isPending}
+                    className="client-action-button w-full"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    {createCategoryMutation.isPending ? 'Salvando...' : 'Salvar categoria'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {categories.map((category) => {
+                const currentValues = existingCategoryValues[category.id] ?? {
+                  color: category.color,
+                  name: category.name,
+                };
+
+                return (
+                  <Card key={category.id} className={SUBTLE_CARD_CLASS}>
+                    <CardContent className="space-y-4 p-5">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-white">{category.name}</p>
+                          <p className="text-xs text-white/50">Cor aplicada na borda da conquista desbloqueada.</p>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="border-white/10 text-white"
+                          style={{
+                            borderColor: hexToRgba(currentValues.color, 0.45),
+                            color: currentValues.color,
+                          }}
+                        >
+                          {currentValues.color}
+                        </Badge>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-[1.1fr_180px]">
+                        <div className="space-y-2">
+                          <Label className="text-white">Nome</Label>
+                          <Input
+                            value={currentValues.name}
+                            onChange={(event) =>
+                              setExistingCategoryValues((current) => ({
+                                ...current,
+                                [category.id]: {
+                                  ...currentValues,
+                                  name: event.target.value,
+                                },
+                              }))
+                            }
+                            className={DARK_INPUT_CLASS}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Cor</Label>
+                          <div className="achievements-config-color-wrap flex items-center gap-3 rounded-2xl px-3 py-2">
+                            <input
+                              type="color"
+                              value={currentValues.color}
+                              onChange={(event) =>
+                                setExistingCategoryValues((current) => ({
+                                  ...current,
+                                  [category.id]: {
+                                    ...currentValues,
+                                    color: event.target.value,
+                                  },
+                                }))
+                              }
+                              className="achievements-config-color-picker h-10 w-12 cursor-pointer rounded-xl p-1"
+                            />
+                            <Input
+                              value={currentValues.color}
+                              onChange={(event) =>
+                                setExistingCategoryValues((current) => ({
+                                  ...current,
+                                  [category.id]: {
+                                    ...currentValues,
+                                    color: event.target.value,
+                                  },
+                                }))
+                              }
+                              className={`${DARK_INPUT_CLASS} uppercase`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          updateCategoryMutation.mutate({
+                            categoryId: category.id,
+                            color: currentValues.color,
+                            name: currentValues.name,
+                          })
+                        }
+                        disabled={updateCategoryMutation.isPending}
+                        className="client-back-button w-full"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar categoria
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isBadgeModalOpen} onOpenChange={setIsBadgeModalOpen}>
+        <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Cadastrar conquista</DialogTitle>
+            <DialogDescription>
+              Escolha a categoria, envie a imagem e defina o nome específico da conquista.
+            </DialogDescription>
+          </DialogHeader>
 
           <div className="flex flex-wrap gap-3">
             <Button
@@ -527,9 +672,7 @@ export const AchievementsConfigPage: React.FC = () => {
               {saveBadgesMutation.isPending ? 'Salvando...' : 'Salvar lote'}
             </Button>
           </div>
-        </CardHeader>
 
-        <CardContent className="space-y-6">
           <div className="grid gap-4 lg:grid-cols-2">
             {drafts.map((rawDraft, index) => {
               const draft = ensureCategoryForNewDraft(rawDraft);
@@ -645,74 +788,8 @@ export const AchievementsConfigPage: React.FC = () => {
               Lote
             </Badge>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className={PANEL_CARD_CLASS}>
-        <CardHeader>
-          <CardTitle className="text-white">Conquistas cadastradas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {[...Array(6)].map((_, index) => (
-                <div key={index} className="client-surface-subtle h-40 animate-pulse rounded-3xl" />
-              ))}
-            </div>
-          ) : badges.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {badges.map((badge) => {
-                const category = badge.achievement_categories;
-                const badgeColor = category?.color || badge.category_color || DEFAULT_BADGE_COLOR;
-
-                return (
-                  <Card
-                    key={badge.id}
-                    className={`${SUBTLE_CARD_CLASS} border`}
-                    style={{ borderColor: hexToRgba(badgeColor, 0.42) }}
-                  >
-                    <CardContent className="flex h-full flex-col gap-4 p-5">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className="rounded-full border-2 p-1"
-                          style={{
-                            borderColor: hexToRgba(badgeColor, 0.9),
-                            background: hexToRgba(badgeColor, 0.12),
-                          }}
-                        >
-                          <img src={badge.image_url} alt={badge.name} className="h-16 w-16 rounded-full object-cover" />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="truncate text-base font-semibold text-white">{badge.name}</h3>
-                          <p className="mt-1 line-clamp-2 text-sm text-white/60">{badge.description}</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-auto flex items-center justify-between gap-3">
-                        <Badge
-                          variant="outline"
-                          className="border-white/10 text-white"
-                          style={{
-                            borderColor: hexToRgba(badgeColor, 0.45),
-                            color: badgeColor,
-                          }}
-                        >
-                          {category?.name || 'Sem categoria'}
-                        </Badge>
-                        <span className="text-xs text-white/45">{badge.achievement_title}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="client-surface-subtle rounded-3xl p-10 text-center text-white/60">
-              Nenhuma conquista cadastrada ainda.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
