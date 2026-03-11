@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -56,6 +56,9 @@ interface BadgeDraft {
 }
 
 const DEFAULT_BADGE_COLOR = '#22D3EE';
+const PANEL_CARD_CLASS = 'client-surface-panel rounded-3xl !border-white/8 !bg-transparent !text-white';
+const SUBTLE_CARD_CLASS = 'client-surface-subtle rounded-3xl !border-white/8 !bg-transparent !text-white';
+const DARK_INPUT_CLASS = 'client-input-surface !border-white/10 !bg-white/[0.04] !text-white placeholder:text-white/35';
 
 const createDraft = (defaultCategoryId = '', overrides?: Partial<BadgeDraft>): BadgeDraft => ({
   achievementTitle: '',
@@ -146,6 +149,21 @@ export const AchievementsConfigPage: React.FC = () => {
     () => new Map(categories.map((category) => [category.id, category])),
     [categories]
   );
+
+  useEffect(() => {
+    if (!categories.length) return;
+
+    setDrafts((current) =>
+      current.map((draft) =>
+        draft.categoryId
+          ? draft
+          : {
+              ...draft,
+              categoryId: categories[0].id,
+            }
+      )
+    );
+  }, [categories]);
 
   const ensureCategoryForNewDraft = (draft: BadgeDraft) => {
     if (draft.categoryId) return draft;
@@ -323,7 +341,7 @@ export const AchievementsConfigPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <Card className="client-surface-panel rounded-3xl">
+      <Card className={PANEL_CARD_CLASS}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <Shapes className="h-5 w-5 text-cyan-400" />
@@ -344,7 +362,7 @@ export const AchievementsConfigPage: React.FC = () => {
                   value={categoryDraft.name}
                   onChange={(event) => setCategoryDraft((current) => ({ ...current, name: event.target.value }))}
                   placeholder="Ex: Lealdade"
-                  className="client-input-surface !text-white placeholder:text-white/35"
+                  className={DARK_INPUT_CLASS}
                 />
               </div>
               <div className="space-y-2">
@@ -359,7 +377,7 @@ export const AchievementsConfigPage: React.FC = () => {
                   <Input
                     value={categoryDraft.color}
                     onChange={(event) => setCategoryDraft((current) => ({ ...current, color: event.target.value }))}
-                    className="client-input-surface !text-white uppercase placeholder:text-white/35"
+                    className={`${DARK_INPUT_CLASS} uppercase`}
                   />
                 </div>
               </div>
@@ -385,7 +403,7 @@ export const AchievementsConfigPage: React.FC = () => {
               };
 
               return (
-                <Card key={category.id} className="client-surface-subtle rounded-3xl border border-white/8">
+                <Card key={category.id} className={SUBTLE_CARD_CLASS}>
                   <CardContent className="space-y-4 p-5">
                     <div className="flex items-center justify-between gap-4">
                       <div>
@@ -418,7 +436,7 @@ export const AchievementsConfigPage: React.FC = () => {
                               },
                             }))
                           }
-                          className="client-input-surface !text-white placeholder:text-white/35"
+                          className={DARK_INPUT_CLASS}
                         />
                       </div>
                       <div className="space-y-2">
@@ -449,7 +467,7 @@ export const AchievementsConfigPage: React.FC = () => {
                                 },
                               }))
                             }
-                            className="client-input-surface !text-white uppercase placeholder:text-white/35"
+                            className={`${DARK_INPUT_CLASS} uppercase`}
                           />
                         </div>
                       </div>
@@ -478,7 +496,7 @@ export const AchievementsConfigPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="client-surface-panel rounded-3xl">
+      <Card className={PANEL_CARD_CLASS}>
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-white">
@@ -521,7 +539,7 @@ export const AchievementsConfigPage: React.FC = () => {
                 : 'Selecione uma categoria';
 
               return (
-                <Card key={draft.id} className="client-surface-subtle rounded-3xl border border-white/8">
+                <Card key={draft.id} className={SUBTLE_CARD_CLASS}>
                   <CardContent className="space-y-5 p-5">
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -581,7 +599,7 @@ export const AchievementsConfigPage: React.FC = () => {
                             value={draft.categoryId}
                             onValueChange={(value) => updateDraft(draft.id, { categoryId: value })}
                           >
-                            <SelectTrigger className="client-input-surface !text-white">
+                            <SelectTrigger className={DARK_INPUT_CLASS}>
                               <SelectValue placeholder="Selecione uma categoria" />
                             </SelectTrigger>
                             <SelectContent>
@@ -600,7 +618,7 @@ export const AchievementsConfigPage: React.FC = () => {
                             value={draft.achievementTitle}
                             onChange={(event) => updateDraft(draft.id, { achievementTitle: event.target.value })}
                             placeholder="Ex: 6 meses"
-                            className="client-input-surface !text-white placeholder:text-white/35"
+                            className={DARK_INPUT_CLASS}
                           />
                         </div>
 
@@ -610,7 +628,7 @@ export const AchievementsConfigPage: React.FC = () => {
                             value={draft.subtitle}
                             onChange={(event) => updateDraft(draft.id, { subtitle: event.target.value })}
                             placeholder="Ex: Permaneça ativo por 180 dias"
-                            className="client-input-surface !text-white placeholder:text-white/35"
+                            className={DARK_INPUT_CLASS}
                           />
                         </div>
                       </div>
@@ -630,7 +648,7 @@ export const AchievementsConfigPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="client-surface-panel rounded-3xl">
+      <Card className={PANEL_CARD_CLASS}>
         <CardHeader>
           <CardTitle className="text-white">Conquistas cadastradas</CardTitle>
         </CardHeader>
@@ -650,7 +668,7 @@ export const AchievementsConfigPage: React.FC = () => {
                 return (
                   <Card
                     key={badge.id}
-                    className="client-surface-subtle rounded-3xl border"
+                    className={`${SUBTLE_CARD_CLASS} border`}
                     style={{ borderColor: hexToRgba(badgeColor, 0.42) }}
                   >
                     <CardContent className="flex h-full flex-col gap-4 p-5">
