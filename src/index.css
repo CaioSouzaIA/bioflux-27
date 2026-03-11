@@ -127,6 +127,50 @@
     border-color: rgba(255, 255, 255, 0.18);
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
   }
+
+  .achievements-config-panel {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: linear-gradient(180deg, rgba(18, 18, 22, 0.96) 0%, rgba(8, 8, 11, 0.98) 100%) !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .achievements-config-subtle {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: linear-gradient(180deg, rgba(24, 24, 28, 0.92) 0%, rgba(10, 10, 14, 0.94) 100%) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  }
+
+  .achievements-config-input,
+  .achievements-config-select {
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #ffffff !important;
+  }
+
+  .achievements-config-input::placeholder,
+  .achievements-config-select::placeholder {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+
+  .achievements-config-input:focus,
+  .achievements-config-input:focus-visible,
+  .achievements-config-select:focus,
+  .achievements-config-select:focus-visible {
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .achievements-config-color-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .achievements-config-color-picker {
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
 }
 
 @layer base {

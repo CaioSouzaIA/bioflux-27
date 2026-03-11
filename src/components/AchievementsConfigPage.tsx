@@ -56,9 +56,9 @@ interface BadgeDraft {
 }
 
 const DEFAULT_BADGE_COLOR = '#22D3EE';
-const PANEL_CARD_CLASS = 'client-surface-panel rounded-3xl !border-white/8 !bg-transparent !text-white';
-const SUBTLE_CARD_CLASS = 'client-surface-subtle rounded-3xl !border-white/8 !bg-transparent !text-white';
-const DARK_INPUT_CLASS = 'client-input-surface !border-white/10 !bg-white/[0.04] !text-white placeholder:text-white/35';
+const PANEL_CARD_CLASS = 'achievements-config-panel rounded-3xl text-white';
+const SUBTLE_CARD_CLASS = 'achievements-config-subtle rounded-3xl text-white';
+const DARK_INPUT_CLASS = 'achievements-config-input';
 
 const createDraft = (defaultCategoryId = '', overrides?: Partial<BadgeDraft>): BadgeDraft => ({
   achievementTitle: '',
@@ -340,7 +340,7 @@ export const AchievementsConfigPage: React.FC = () => {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="achievements-config-page space-y-8">
       <Card className={PANEL_CARD_CLASS}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
@@ -354,7 +354,7 @@ export const AchievementsConfigPage: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="client-surface-subtle rounded-3xl border border-white/8 p-5">
+          <div className="achievements-config-subtle rounded-3xl p-5">
             <div className="grid gap-4 lg:grid-cols-[1.1fr_180px_auto]">
               <div className="space-y-2">
                 <Label className="text-white">Nome da categoria</Label>
@@ -367,12 +367,12 @@ export const AchievementsConfigPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label className="text-white">Cor da categoria</Label>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/60 px-3 py-2">
+                <div className="achievements-config-color-wrap flex items-center gap-3 rounded-2xl px-3 py-2">
                   <input
                     type="color"
                     value={categoryDraft.color}
                     onChange={(event) => setCategoryDraft((current) => ({ ...current, color: event.target.value }))}
-                    className="h-10 w-12 cursor-pointer rounded-xl border border-white/10 bg-black/70 p-1"
+                    className="achievements-config-color-picker h-10 w-12 cursor-pointer rounded-xl p-1"
                   />
                   <Input
                     value={categoryDraft.color}
@@ -441,7 +441,7 @@ export const AchievementsConfigPage: React.FC = () => {
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white">Cor</Label>
-                        <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/60 px-3 py-2">
+                        <div className="achievements-config-color-wrap flex items-center gap-3 rounded-2xl px-3 py-2">
                           <input
                             type="color"
                             value={currentValues.color}
@@ -454,7 +454,7 @@ export const AchievementsConfigPage: React.FC = () => {
                                 },
                               }))
                             }
-                            className="h-10 w-12 cursor-pointer rounded-xl border border-white/10 bg-black/70 p-1"
+                            className="achievements-config-color-picker h-10 w-12 cursor-pointer rounded-xl p-1"
                           />
                           <Input
                             value={currentValues.color}
@@ -599,7 +599,7 @@ export const AchievementsConfigPage: React.FC = () => {
                             value={draft.categoryId}
                             onValueChange={(value) => updateDraft(draft.id, { categoryId: value })}
                           >
-                            <SelectTrigger className={DARK_INPUT_CLASS}>
+                            <SelectTrigger className={`${DARK_INPUT_CLASS} achievements-config-select`}>
                               <SelectValue placeholder="Selecione uma categoria" />
                             </SelectTrigger>
                             <SelectContent>
