@@ -15,6 +15,7 @@ import {
   TRAINING_PERIODIZATION_ANALYSIS_PROMPT,
 } from "../_shared/training-plan.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { loadActivePrompt } from "../_shared/prompt-store.ts";
 
 const getContentAsText = (content: unknown) => {
   if (typeof content === "string") {
@@ -105,6 +106,16 @@ serve(async (req) => {
 
     const payload = (prescription.generation_payload ?? {}) as Record<string, unknown>;
     const instructionQuery = buildTrainingDocumentQuery(payload);
+    const activeTrainingPrompt = await loadActivePrompt(
+      supabaseClient,
+      "training_generation",
+      TREINOAI_SYSTEM_PROMPT,
+    );
+    const activePeriodizationPrompt = await loadActivePrompt(
+      supabaseClient,
+      "training_periodization",
+      TRAINING_PERIODIZATION_ANALYSIS_PROMPT,
+    );
 
     const { data: instructionDocuments, error: documentsError } = await supabaseClient
       .from("documents")
@@ -141,7 +152,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: TREINOAI_SYSTEM_PROMPT,
+            content: activeTrainingPrompt,
           },
           {
             role: "user",
@@ -179,7 +190,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: TRAINING_PERIODIZATION_ANALYSIS_PROMPT,
+            content: activePeriodizationPrompt,
           },
           {
             role: "user",

@@ -9,6 +9,7 @@ import {
   parseStructuredDietPlan,
 } from "../_shared/diet-plan.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { loadActivePrompt } from "../_shared/prompt-store.ts";
 
 const getContentAsText = (content: unknown) => {
   if (typeof content === "string") {
@@ -98,6 +99,11 @@ serve(async (req) => {
       .eq("id", prescriptionId);
 
     const payload = (prescription.generation_payload ?? {}) as Record<string, unknown>;
+    const activeDietPrompt = await loadActivePrompt(
+      supabaseClient,
+      "diet_generation",
+      NUTRIAI_SYSTEM_PROMPT,
+    );
 
     const requestToModel = {
       model: OPENROUTER_MODEL,
@@ -105,7 +111,7 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: NUTRIAI_SYSTEM_PROMPT,
+          content: activeDietPrompt,
         },
         {
           role: "user",

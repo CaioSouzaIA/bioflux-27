@@ -35,6 +35,53 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_agent_prompt_versions: {
+        Row: {
+          agent_key: string
+          agent_label: string
+          commit_name: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          prompt_content: string
+          prompt_format: string
+          updated_at: string
+        }
+        Insert: {
+          agent_key: string
+          agent_label: string
+          commit_name: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          prompt_content: string
+          prompt_format: string
+          updated_at?: string
+        }
+        Update: {
+          agent_key?: string
+          agent_label?: string
+          commit_name?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          prompt_content?: string
+          prompt_format?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_prompt_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           achievement_title: string
