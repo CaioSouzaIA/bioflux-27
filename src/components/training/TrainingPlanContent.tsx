@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, FileCheck2, FileText, Flame, Loader2, Target, Timer, Weight } from 'lucide-react';
-import { endOfMonth, format, getDate, isSameMonth, startOfMonth } from 'date-fns';
+import { endOfMonth, format, getDate, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -605,12 +605,9 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
             </AccordionTrigger>
             <AccordionContent className="space-y-5 pb-5 text-white">
               <div className="space-y-2">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <p className="text-sm font-medium text-white/80">
-                    {format(startOfMonth(selectedMonth), "MMMM 'de' yyyy", { locale: ptBR })}
-                  </p>
+                <div className="flex justify-end">
                   <Select value={selectedMonthKey} onValueChange={setSelectedMonthKey}>
-                    <SelectTrigger className="w-full rounded-xl border-white/10 bg-black/70 text-white md:w-[220px]">
+                    <SelectTrigger className="client-back-button h-11 w-full justify-between rounded-xl border-white/5 bg-transparent text-white hover:text-white focus:text-white md:w-[220px]">
                       <SelectValue placeholder="Escolha o mês" />
                     </SelectTrigger>
                     <SelectContent>
