@@ -92,6 +92,7 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
         const shouldShowStatusBadge = prescription.generation_status !== 'completed';
         const previewPlan = prescription.structured_plan;
         const accordionValue = prescription.id;
+        const isCurrentPrescription = prescriptions[0]?.id === prescription.id;
 
         return (
           <AccordionItem
@@ -103,6 +104,11 @@ export const DietPrescriptionViewer: React.FC<DietPrescriptionViewerProps> = ({
               <div className="flex-1 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-lg font-semibold text-white">{prescription.plan_name}</p>
+                  {isCurrentPrescription && (
+                    <Badge variant="outline" className="border-emerald-400/40 bg-emerald-400/10 text-emerald-200">
+                      Dieta atual
+                    </Badge>
+                  )}
                   {shouldShowStatusBadge && (
                     <Badge variant="outline" className={status.className}>
                       {status.label}

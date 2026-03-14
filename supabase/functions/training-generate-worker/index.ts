@@ -42,6 +42,29 @@ const getContentAsText = (content: unknown) => {
   return "";
 };
 
+const extractSeriesCount = (prescription: string) => {
+  const match = prescription.match(/(\d+)\s*x\s*\d+/i);
+  return match ? Number(match[1]) : 0;
+};
+
+const calculateMonthlyTrainingVolume = (
+  workouts: Array<{ exercises?: Array<{ prescription: string }> | null }> | null | undefined,
+) => {
+  if (!workouts?.length) {
+    return null;
+  }
+
+  const weeklyTotalSeries = workouts.reduce((workoutTotal, workout) => {
+    const exerciseSeries = (workout.exercises ?? []).reduce((exerciseTotal, exercise) => {
+      return exerciseTotal + extractSeriesCount(exercise.prescription ?? "");
+    }, 0);
+
+    return workoutTotal + exerciseSeries;
+  }, 0);
+
+  return weeklyTotalSeries > 0 ? weeklyTotalSeries * 4 : null;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -175,6 +198,7 @@ serve(async (req) => {
     }
 
     const structuredPlan = parseStructuredTrainingPlan(rawPlanText);
+    const monthlyTrainingVolume = calculateMonthlyTrainingVolume(structuredPlan.workouts);
 
     const analysisResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -250,8 +274,8 @@ serve(async (req) => {
         training_prescription_id: prescriptionId,
         current_objective: analysis.objetivo_treino || structuredPlan.header.objective || "Não informado",
         training_volume:
-          analysis.volume_total_series !== null
-            ? `${analysis.volume_total_series} séries totais nas 4 semanas`
+          monthlyTrainingVolume !== null
+            ? `${monthlyTrainingVolume} séries totais no mês (volume semanal x4)`
             : "Não informado",
         intensity: analysis.intensidade_faixa_reps || "Não informado",
         methods: analysis.metodo_utilizado || "Simples",
