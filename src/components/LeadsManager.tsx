@@ -242,53 +242,6 @@ export const LeadsManager: React.FC = () => {
     }
   };
 
-  const sendWebhookNotification = async (planType: string) => {
-    try {
-      console.log('🔄 Enviando webhook para:', 'https://webhook.n8n1.agenciaevodigital.com/webhook/planoilimitado');
-      console.log('📦 Payload:', { plano: planType });
-      
-      const response = await fetch('https://webhook.n8n1.agenciaevodigital.com/webhook/planoilimitado', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        body: JSON.stringify({
-          plano: planType
-        }),
-      });
-      
-      console.log('📡 Webhook response status:', response.status);
-      console.log('📡 Webhook response ok:', response.ok);
-      
-      if (response.ok) {
-        console.log('✅ Webhook enviado com sucesso');
-        toast({
-          title: "Webhook enviado com sucesso",
-          description: "Notificação do plano ilimitado foi enviada.",
-        });
-        return true;
-      } else {
-        const errorText = await response.text();
-        console.error('❌ Webhook falhou com status:', response.status, 'Resposta:', errorText);
-        toast({
-          title: "Erro no webhook",
-          description: `Falha ao enviar webhook. Status: ${response.status}`,
-          variant: "destructive",
-        });
-        return false;
-      }
-    } catch (error) {
-      console.error('❌ Erro ao enviar webhook:', error);
-      toast({
-        title: "Erro no webhook",
-        description: "Erro de conexão ao enviar webhook.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
   const handleToggleUnlimitedPlan = async (clientId: string, clientName: string, currentStatus: boolean) => {
     try {
       setToggleingUnlimited(clientId);
@@ -326,15 +279,9 @@ export const LeadsManager: React.FC = () => {
           console.error('Erro ao sincronizar plano ilimitado:', syncError);
         }
 
-        console.log('🚀 Habilitando plano ilimitado para:', clientName);
-        const webhookSuccess = await sendWebhookNotification('ilimitado - treino + dieta');
-
         toast({
-          title: webhookSuccess ? "Plano habilitado" : "Plano habilitado com ressalvas",
-          description: webhookSuccess
-            ? `Plano ilimitado habilitado para ${clientName} e webhook enviado com sucesso.`
-            : `Plano ilimitado habilitado para ${clientName}, mas o webhook falhou.`,
-          variant: webhookSuccess ? "default" : "destructive",
+          title: "Plano habilitado",
+          description: `Plano ilimitado habilitado para ${clientName}.`,
         });
       } else {
         toast({
