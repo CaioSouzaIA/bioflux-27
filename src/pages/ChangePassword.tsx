@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Lock, Eye, EyeClosed, Mail } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { ArrowLeft, Lock, Eye, EyeClosed } from 'lucide-react';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { cn } from "@/lib/utils";
+import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 function CustomInput({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -24,81 +25,59 @@ function CustomInput({ className, type, ...props }: React.ComponentProps<"input"
 
 const ChangePassword: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const { updatePassword } = useAuthContext();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [hasRecoverySession, setHasRecoverySession] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkRecoverySession = async () => {
+      const { data } = await supabase.auth.getSession();
+
+      if (!isMounted) {
+        return;
+      }
+
+      setHasRecoverySession(Boolean(data.session?.user));
+      setCheckingSession(false);
+    };
+
+    void checkRecoverySession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) {
+        return;
+      }
+
+      setHasRecoverySession(Boolean(session?.user));
+      setCheckingSession(false);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Erro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast({
-        title: "Erro", 
-        description: "A senha deve ter pelo menos 6 caracteres.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!email.includes('@') || email.length === 0) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira um email válido.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     try {
       setLoading(true);
-      
-      const response = await fetch('https://webhook.n8n1.agenciaevodigital.com/webhook/trocarsenha', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          nova_senha: newPassword
-        }),
-      });
 
-      if (response.ok) {
-        toast({
-          title: "Senha redefinida com sucesso",
-          description: "Sua senha foi atualizada com sucesso.",
-        });
-        
-        // Redirecionar após 1 segundo
+      const result = await updatePassword(newPassword);
+
+      if (result.success) {
         setTimeout(() => {
-          navigate('/client');
+          navigate('/');
         }, 1000);
-      } else {
-        toast({
-          title: "Erro ao atualizar",
-          description: "Não foi possível atualizar a senha.",
-          variant: "destructive",
-        });
       }
-    } catch (error) {
-      console.error('Erro ao enviar webhook:', error);
-      toast({
-        title: "Erro no envio",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
@@ -106,8 +85,16 @@ const ChangePassword: React.FC = () => {
 
   const passwordsMatch = newPassword === confirmPassword;
   const isPasswordValid = newPassword.length >= 6;
-  const isEmailValid = email.includes('@') && email.length > 0;
-  const canSubmit = passwordsMatch && isPasswordValid && isEmailValid && newPassword && confirmPassword && email;
+  const canSubmit = passwordsMatch && isPasswordValid && newPassword && confirmPassword && hasRecoverySession;
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
+        <BackgroundAnimation />
+        <div className="relative z-10 text-white text-xl">Validando link...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative bg-black overflow-hidden">
@@ -130,107 +117,98 @@ const ChangePassword: React.FC = () => {
           {/* Form card */}
           <div className="client-surface-panel rounded-3xl p-8">
             <h1 className="text-2xl font-bold text-white mb-6 text-center">
-              Trocar Senha
+              Redefinir Senha
             </h1>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email */}
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-white/40" />
-                <CustomInput
-                  type="email"
-                  placeholder="Digite seu email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="client-input-surface pl-10"
-                  required
-                />
-              </div>
 
-              {/* Nova senha */}
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
-                <CustomInput
-                  type={showNewPassword ? "text" : "password"}
-                  placeholder="Nova senha"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="client-input-surface pl-10 pr-10"
-                  required
-                />
-                <div 
-                  onClick={() => setShowNewPassword(!showNewPassword)} 
-                  className="absolute right-3 top-3 cursor-pointer"
-                >
-                  {showNewPassword ? (
-                    <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                  ) : (
-                    <EyeClosed className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
+            {hasRecoverySession ? (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
+                  <CustomInput
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="Nova senha"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="client-input-surface pl-10 pr-10"
+                    required
+                  />
+                  <div
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-3 cursor-pointer"
+                  >
+                    {showNewPassword ? (
+                      <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
+                    ) : (
+                      <EyeClosed className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
+                  <CustomInput
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirmar nova senha"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`client-input-surface pl-10 pr-10 ${
+                      confirmPassword && !passwordsMatch ? 'border-red-500/50' : ''
+                    }`}
+                    required
+                  />
+                  <div
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3 cursor-pointer"
+                  >
+                    {showConfirmPassword ? (
+                      <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
+                    ) : (
+                      <EyeClosed className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-xs">
+                  {newPassword && (
+                    <div className={`transition-colors duration-300 ${
+                      isPasswordValid ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {isPasswordValid ? '✓' : '✗'} Pelo menos 6 caracteres
+                    </div>
+                  )}
+                  {confirmPassword && (
+                    <div className={`transition-colors duration-300 ${
+                      passwordsMatch ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {passwordsMatch ? '✓' : '✗'} Senhas coincidem
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* Confirmar senha */}
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
-                <CustomInput
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirmar nova senha"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`client-input-surface pl-10 pr-10 ${
-                    confirmPassword && !passwordsMatch ? 'border-red-500/50' : ''
+                <Button
+                  type="submit"
+                  disabled={!canSubmit || loading}
+                  className={`w-full ${
+                    !canSubmit ? 'opacity-50 cursor-not-allowed' : 'client-action-button'
                   }`}
-                  required
-                />
-                <div 
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
-                  className="absolute right-3 top-3 cursor-pointer"
                 >
-                  {showConfirmPassword ? (
-                    <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                  ) : (
-                    <EyeClosed className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                  )}
-                </div>
+                  {loading ? "Atualizando..." : "Atualizar Senha"}
+                </Button>
+              </form>
+            ) : (
+              <div className="space-y-6 text-center">
+                <p className="text-sm text-white/70">
+                  Este link de recuperação é inválido ou expirou. Solicite um novo email na tela de login.
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => navigate('/client')}
+                  className="client-action-button w-full"
+                >
+                  Voltar para o login
+                </Button>
               </div>
-
-              {/* Validação visual */}
-              <div className="space-y-1 text-xs">
-                {email && (
-                  <div className={`transition-colors duration-300 ${
-                    isEmailValid ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {isEmailValid ? '✓' : '✗'} Email válido
-                  </div>
-                )}
-                {newPassword && (
-                  <div className={`transition-colors duration-300 ${
-                    isPasswordValid ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {isPasswordValid ? '✓' : '✗'} Pelo menos 6 caracteres
-                  </div>
-                )}
-                {confirmPassword && (
-                  <div className={`transition-colors duration-300 ${
-                    passwordsMatch ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {passwordsMatch ? '✓' : '✗'} Senhas coincidem
-                  </div>
-                )}
-              </div>
-              
-              {/* Botão de atualizar */}
-              <Button
-                type="submit"
-                disabled={!canSubmit || loading}
-                className={`w-full ${
-                  !canSubmit ? 'opacity-50 cursor-not-allowed' : 'client-action-button'
-                }`}
-              >
-                {loading ? "Atualizando..." : "Atualizar Senha"}
-              </Button>
-            </form>
+            )}
           </div>
         </div>
       </div>

@@ -1,12 +1,14 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { SignInCard } from "@/components/ui/sign-in-card-2";
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
+import ForgotPasswordCard from '@/components/ForgotPasswordCard';
 
 const AdminLogin = () => {
-  const { user, userType, signIn, loading } = useAuthContext();
+  const { user, userType, signIn, loading, sendPasswordResetEmail } = useAuthContext();
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   // Debug logs para AdminLogin
   useEffect(() => {
@@ -61,6 +63,31 @@ const AdminLogin = () => {
     );
   }
 
+  const handleForgotPassword = async (email: string) => {
+    try {
+      setForgotLoading(true);
+      const result = await sendPasswordResetEmail(email);
+
+      if (result.success) {
+        setShowForgotPassword(false);
+      }
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  if (showForgotPassword) {
+    return (
+      <ForgotPasswordCard
+        title="Recuperar Senha"
+        description="Informe seu email administrativo para receber o link de redefinição."
+        onBack={() => setShowForgotPassword(false)}
+        onSubmit={handleForgotPassword}
+        isLoading={forgotLoading}
+      />
+    );
+  }
+
   console.log('🔐 AdminLogin - Exibindo tela de login');
 
   return (
@@ -69,6 +96,8 @@ const AdminLogin = () => {
       subtitle="Faça login na área administrativa"
       showGoogleSignIn={false}
       showSignUpLink={false}
+      showForgotPassword
+      onForgotPasswordClick={() => setShowForgotPassword(true)}
       onSubmit={handleLogin}
       isLoading={loading}
     />

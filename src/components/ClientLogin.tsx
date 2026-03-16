@@ -4,10 +4,9 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Mail, Lock, Eye, EyeClosed, ArrowRight, Phone, ArrowLeft } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { toast } from '@/hooks/use-toast';
 import PasswordReset from './PasswordReset';
-import { supabase } from '@/integrations/supabase/client';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
+import ForgotPasswordCard from './ForgotPasswordCard';
 
 function CustomInput({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -60,9 +59,8 @@ const ClientLogin = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
-  const { signIn, signUp, loading } = useAuthContext();
+  const { signIn, signUp, loading, sendPasswordResetEmail } = useAuthContext();
 
   // For 3D card effect
   const mouseX = useMotionValue(0);
@@ -110,53 +108,14 @@ const ClientLogin = () => {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!forgotEmail.includes('@') || forgotEmail.length === 0) {
-      toast({
-        title: "Email inválido",
-        description: "Por favor, digite um email válido.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleForgotPassword = async (forgotEmail: string) => {
     try {
       setForgotLoading(true);
-      
-      // Enviar apenas o email para o webhook
-      const response = await fetch('https://webhook.n8n1.agenciaevodigital.com/webhook/recuperar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: forgotEmail
-        }),
-      });
+      const result = await sendPasswordResetEmail(forgotEmail);
 
-      if (response.ok) {
-        toast({
-          title: "Email enviado!",
-          description: "Verifique seu email para redefinir sua senha.",
-        });
+      if (result.success) {
         setShowForgotPassword(false);
-        setForgotEmail('');
-      } else {
-        toast({
-          title: "Erro no envio",
-          description: "Não foi possível enviar o email.",
-          variant: "destructive",
-        });
       }
-    } catch (error) {
-      console.error('Erro ao enviar email:', error);
-      toast({
-        title: "Erro no envio",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive",
-      });
     } finally {
       setForgotLoading(false);
     }
@@ -167,103 +126,11 @@ const ClientLogin = () => {
 
   if (showForgotPassword) {
     return (
-      <div className="min-h-screen relative bg-black overflow-hidden">
-        <BackgroundAnimation />
-
-        <div className="relative z-10 flex min-h-screen w-screen flex-col items-center justify-center px-4">
-        {/* Logo */}
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", duration: 0.8 }}
-          className="mb-8 z-10"
-        >
-          <img 
-            src="/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png" 
-            alt="BIOFLUX.AI" 
-            className="h-24 mx-auto"
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="w-full max-w-sm relative z-10"
-        >
-          <div className="client-glass-card relative rounded-3xl p-6" style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }}> 
-            <div className="text-center space-y-1 mb-5">
-              <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
-                Recuperar Senha
-              </h1>
-              <p className="text-white/60 text-xs">
-                Digite seu email para receber uma nova senha
-              </p>
-            </div>
-
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-white/40" />
-                <CustomInput
-                  type="email"
-                  placeholder="Digite seu email"
-                  value={forgotEmail}
-                  onChange={(e) => setForgotEmail(e.target.value)}
-                  className="pl-10 bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30"
-                  required
-                />
-              </div>
-              
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                disabled={forgotLoading}
-                className="w-full relative group/button mt-5"
-              >
-                <div className="relative overflow-hidden bg-white text-black font-medium h-10 rounded-lg transition-all duration-300 flex items-center justify-center">
-                  <AnimatePresence mode="wait">
-                    {forgotLoading ? (
-                      <motion.div
-                        key="loading"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center justify-center"
-                      >
-                        <div className="w-4 h-4 border-2 border-black/70 border-t-transparent rounded-full animate-spin" />
-                      </motion.div>
-                    ) : (
-                      <motion.span
-                        key="button-text"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center justify-center gap-1 text-sm font-medium"
-                      >
-                        Enviar Nova Senha
-                        <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="button"
-                onClick={() => setShowForgotPassword(false)}
-                className="client-back-button flex w-full items-center justify-center gap-2 text-sm"
-              >
-                <ArrowLeft className="w-3 h-3" />
-                Voltar
-              </motion.button>
-            </form>
-          </div>
-        </motion.div>
-        </div>
-      </div>
+      <ForgotPasswordCard
+        onBack={() => setShowForgotPassword(false)}
+        onSubmit={handleForgotPassword}
+        isLoading={forgotLoading}
+      />
     );
   }
 

@@ -99,11 +99,7 @@ const App = () => {
               <WorkoutCheckin />
             </ProtectedClientRoute>
           } />
-          <Route path="/change-password" element={
-            <ProtectedClientRoute>
-              <ChangePassword />
-            </ProtectedClientRoute>
-          } />
+          <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/home" element={
             <ProtectedRoute>
               <Index />

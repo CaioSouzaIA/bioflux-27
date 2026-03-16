@@ -30,6 +30,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, firstName: string, lastName: string, whatsapp: string) => Promise<{ success: boolean; error?: any; data?: any }>;
   signOut: () => Promise<{ success: boolean; error?: any }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: any }>;
+  sendPasswordResetEmail: (email: string) => Promise<{ success: boolean; error?: any }>;
   refreshUserType: () => Promise<void>;
 }
 
@@ -304,6 +305,39 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const sendPasswordResetEmail = async (email: string) => {
+    try {
+      const redirectTo = `${window.location.origin}/change-password`;
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+
+      if (error) {
+        toast({
+          title: 'Erro ao enviar recuperação',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return { success: false, error };
+      }
+
+      toast({
+        title: 'Link enviado',
+        description: 'Confira seu email para redefinir sua senha.',
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao enviar recuperação',
+        description: 'Ocorreu um erro inesperado. Tente novamente.',
+        variant: 'destructive',
+      });
+      return { success: false, error };
+    }
+  };
+
   const signOut = async () => {
     try {
       console.log('Iniciando logout...');
@@ -356,6 +390,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     signUp,
     signOut,
     updatePassword,
+    sendPasswordResetEmail,
     refreshUserType,
   };
 
