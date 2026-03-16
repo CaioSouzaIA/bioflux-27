@@ -4,6 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import { corsHeaders } from "../_shared/cors.ts";
 
+const PASSWORD_RESET_TEMPLATE_ALIAS = "recuperar-senha";
+const PASSWORD_RESET_TEMPLATE_VARIABLE = "CONFIRMATION_URL";
+
 const sanitizeOrigin = (origin: string | null | undefined) => {
   if (!origin) {
     return null;
@@ -25,14 +28,9 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
     if (!supabaseUrl || !serviceRoleKey) {
       throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
-    }
-
-    if (!resendApiKey) {
-      throw new Error("RESEND_API_KEY não configurada.");
     }
 
     const { email, origin } = await req.json();
@@ -60,7 +58,13 @@ serve(async (req) => {
     });
 
     if (error) {
-      if (error.message.toLowerCase().includes("user not found")) {
+      const normalizedMessage = error.message.toLowerCase();
+
+      if (
+        normalizedMessage.includes("user not found") ||
+        normalizedMessage.includes("email not found") ||
+        normalizedMessage.includes("user with this email not found")
+      ) {
         return new Response(
           JSON.stringify({ success: true }),
           {
@@ -79,6 +83,12 @@ serve(async (req) => {
       throw new Error("Não foi possível gerar o link de recuperação.");
     }
 
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY não configurada.");
+    }
+
     const resendResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -90,18 +100,10 @@ serve(async (req) => {
         to: [email],
         subject: "Recuperação de senha - BIOFLUX",
         template: {
-          id: "recuperar-senha",
+          id: PASSWORD_RESET_TEMPLATE_ALIAS,
           variables: {
-            reset_link: resetLink,
-            reset_url: resetLink,
-            resetLink,
-            resetUrl: resetLink,
-            action_link: resetLink,
-            actionLink: resetLink,
-            recovery_link: resetLink,
-            recoveryLink: resetLink,
-            cta_link: resetLink,
-            ctaLink: resetLink,
+            [PASSWORD_RESET_TEMPLATE_VARIABLE]: resetLink,
+            ConfirmationURL: resetLink,
           },
         },
       }),
@@ -109,6 +111,13 @@ serve(async (req) => {
 
     if (!resendResponse.ok) {
       const responseText = await resendResponse.text();
+
+      if (resendResponse.status === 422 && responseText.includes("validation_error")) {
+        throw new Error(
+          `Falha ao enviar email pelo Resend: o template "${PASSWORD_RESET_TEMPLATE_ALIAS}" precisa usar a variável ${PASSWORD_RESET_TEMPLATE_VARIABLE} no formato suportado pelo Resend e ser publicado novamente.`,
+        );
+      }
+
       throw new Error(`Falha ao enviar email pelo Resend: ${resendResponse.status} ${responseText}`);
     }
 

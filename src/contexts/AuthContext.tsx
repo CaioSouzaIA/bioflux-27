@@ -307,9 +307,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const sendPasswordResetEmail = async (email: string) => {
     try {
+      const normalizedEmail = email.trim();
       const { error } = await supabase.functions.invoke("send-password-reset-email", {
         body: {
-          email,
+          email: normalizedEmail,
           origin: window.location.origin,
         },
       });

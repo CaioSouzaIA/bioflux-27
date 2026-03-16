@@ -8,6 +8,11 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
+const clearAuthParamsFromUrl = () => {
+  const cleanUrl = `${window.location.pathname}${window.location.search}`;
+  window.history.replaceState({}, document.title, cleanUrl);
+};
+
 function CustomInput({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
     <input
@@ -26,7 +31,7 @@ function CustomInput({ className, type, ...props }: React.ComponentProps<'input'
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
-  const { updatePassword } = useAuthContext();
+  const { updatePassword, session, loading: authLoading } = useAuthContext();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -39,6 +44,46 @@ const ResetPassword: React.FC = () => {
     let isMounted = true;
 
     const checkRecoverySession = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const searchParams = new URLSearchParams(window.location.search);
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const hashType = hashParams.get('type');
+      const authCode = searchParams.get('code');
+
+      if (accessToken && refreshToken && hashType === 'recovery') {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!error) {
+          clearAuthParamsFromUrl();
+          setHasRecoverySession(Boolean(data.session?.user));
+          setCheckingSession(false);
+          return;
+        }
+      }
+
+      if (authCode) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!error) {
+          clearAuthParamsFromUrl();
+          setHasRecoverySession(Boolean(data.session?.user));
+          setCheckingSession(false);
+          return;
+        }
+      }
+
       const { data } = await supabase.auth.getSession();
 
       if (!isMounted) {
@@ -68,6 +113,13 @@ const ResetPassword: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (session?.user) {
+      setHasRecoverySession(true);
+      setCheckingSession(false);
+    }
+  }, [session]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -89,7 +141,7 @@ const ResetPassword: React.FC = () => {
   const isPasswordValid = newPassword.length >= 6;
   const canSubmit = passwordsMatch && isPasswordValid && Boolean(newPassword) && Boolean(confirmPassword) && hasRecoverySession;
 
-  if (checkingSession) {
+  if (checkingSession || authLoading) {
     return (
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
         <BackgroundAnimation />
