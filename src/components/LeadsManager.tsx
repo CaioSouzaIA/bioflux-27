@@ -292,24 +292,58 @@ export const LeadsManager: React.FC = () => {
   const handleToggleUnlimitedPlan = async (clientId: string, clientName: string, currentStatus: boolean) => {
     try {
       setToggleingUnlimited(clientId);
-      
-      // Apenas enviar webhook se estiver habilitando o plano ilimitado
-      if (!currentStatus) {
+
+      const enableUnlimited = !currentStatus;
+
+      const { data, error } = await supabase.rpc('toggle_unlimited_plan', {
+        client_user_id: clientId,
+        enable_unlimited: enableUnlimited,
+      });
+
+      if (error) {
+        console.error('Erro ao alternar plano ilimitado no banco:', error);
+        toast({
+          title: "Erro ao alterar plano",
+          description: "Não foi possível atualizar o plano ilimitado do cliente no banco de dados.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data) {
+        toast({
+          title: "Nenhuma alteração aplicada",
+          description: "O banco não confirmou a alteração do plano ilimitado.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (enableUnlimited) {
+        const { error: syncError } = await supabase.rpc('sync_unlimited_plan_data');
+
+        if (syncError) {
+          console.error('Erro ao sincronizar plano ilimitado:', syncError);
+        }
+
         console.log('🚀 Habilitando plano ilimitado para:', clientName);
         const webhookSuccess = await sendWebhookNotification('ilimitado - treino + dieta');
-        
-        if (webhookSuccess) {
-          toast({
-            title: "Plano habilitado",
-            description: `Plano ilimitado habilitado para ${clientName} e webhook enviado com sucesso.`,
-          });
-        }
+
+        toast({
+          title: webhookSuccess ? "Plano habilitado" : "Plano habilitado com ressalvas",
+          description: webhookSuccess
+            ? `Plano ilimitado habilitado para ${clientName} e webhook enviado com sucesso.`
+            : `Plano ilimitado habilitado para ${clientName}, mas o webhook falhou.`,
+          variant: webhookSuccess ? "default" : "destructive",
+        });
       } else {
         toast({
           title: "Plano desabilitado",
           description: `Plano ilimitado desabilitado para ${clientName}.`,
         });
       }
+
+      await loadClients();
     } catch (error) {
       console.error('Erro ao processar plano ilimitado:', error);
       toast({
