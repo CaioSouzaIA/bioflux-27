@@ -86,7 +86,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "BIOFLUX <onboarding@resend.dev>",
+        from: "BIOFLUX <app@biofluxapp.com>",
         to: [email],
         subject: "Recuperação de senha - BIOFLUX",
         template: {
