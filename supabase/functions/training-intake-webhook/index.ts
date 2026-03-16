@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import { corsHeaders } from "../_shared/cors.ts";
+import { resolveTrainingGenerationAgent } from "../_shared/training-plan.ts";
 
 const METABOLIC_ASSESSMENT_MAX_AGE_DAYS = 30;
 
@@ -148,12 +149,16 @@ serve(async (req) => {
       );
     }
 
+    const trainingAgent = resolveTrainingGenerationAgent(body);
+
     const generationPayload = {
       ...body,
       category,
       clientId: userId,
       userId,
       formResponseId,
+      trainingAgentKey: trainingAgent.key,
+      trainingAgentLabel: trainingAgent.label,
       aiConfig: ownerProfile?.ai_config ?? body.aiConfig ?? null,
       clientProfile,
       metabolicAssessment,

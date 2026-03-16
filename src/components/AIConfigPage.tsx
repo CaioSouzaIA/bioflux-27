@@ -187,11 +187,11 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-semibold text-white">Configurações do Bot</h1>
             <p className="mt-2 text-white/60">
-              Ajuste apenas os prompts e o versionamento dos agentes ativos de dieta, treino e periodização.
+              Ajuste os prompts e o versionamento dos agentes ativos de dieta, treino, readaptação e periodização.
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-8">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5 mb-8">
             <Card
               className="client-glass-card"
               style={{ ['--card-glow' as string]: 'rgba(255,255,255,0.18)' }}
@@ -263,7 +263,7 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
           <DialogHeader>
             <DialogTitle className="text-white">Prompts dos agentes</DialogTitle>
             <DialogDescription>
-              Edite os agentes de dieta, treino e periodização. Cada salvamento cria uma nova versão com nome de commit.
+              Edite os agentes de dieta, treino, readaptação e periodização. Cada salvamento cria uma nova versão com nome de commit.
             </DialogDescription>
           </DialogHeader>
 

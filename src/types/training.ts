@@ -37,6 +37,8 @@ export interface StructuredTrainingPlan {
     stimulus: string;
     objective: string;
     split: string;
+    time_away?: string;
+    phase_duration?: string;
   };
   cardio: StructuredTrainingCardio | null;
   workouts: StructuredTrainingWorkout[];

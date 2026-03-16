@@ -10,8 +10,8 @@ import {
   OPENROUTER_MODEL,
   parseStructuredTrainingPlan,
   parseTrainingPeriodizationAnalysis,
+  resolveTrainingGenerationAgent,
   selectRelevantTrainingInstructions,
-  TREINOAI_SYSTEM_PROMPT,
   TRAINING_PERIODIZATION_ANALYSIS_PROMPT,
 } from "../_shared/training-plan.ts";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -129,10 +129,11 @@ serve(async (req) => {
 
     const payload = (prescription.generation_payload ?? {}) as Record<string, unknown>;
     const instructionQuery = buildTrainingDocumentQuery(payload);
+    const selectedTrainingAgent = resolveTrainingGenerationAgent(payload);
     const activeTrainingPrompt = await loadActivePrompt(
       supabaseClient,
-      "training_generation",
-      TREINOAI_SYSTEM_PROMPT,
+      selectedTrainingAgent.key,
+      selectedTrainingAgent.defaultPrompt,
     );
     const activePeriodizationPrompt = await loadActivePrompt(
       supabaseClient,
