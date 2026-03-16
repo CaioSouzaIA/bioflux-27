@@ -21,7 +21,7 @@ interface AIConfigPageProps {
 
 type PromptVersionRow = Database['public']['Tables']['ai_agent_prompt_versions']['Row'];
 type AIAgentExecutionLogRow = Database['public']['Tables']['ai_agent_execution_logs']['Row'];
-const FIELD_CLASS = 'client-input-surface !text-white placeholder:text-white/35';
+const FIELD_CLASS = 'client-input-surface !border-white/10 !bg-black !text-white placeholder:text-white/35';
 const TEXTAREA_CLASS = 'min-h-[420px] achievements-config-input resize-none font-mono text-sm leading-6';
 const CARD_GLOWS = [
   'rgba(34,211,238,0.26)',
