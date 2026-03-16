@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Lock, Eye, EyeClosed } from 'lucide-react';
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { cn } from "@/lib/utils";
 import { useAuthContext } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 function CustomInput({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -25,45 +24,12 @@ function CustomInput({ className, type, ...props }: React.ComponentProps<"input"
 
 const ChangePassword: React.FC = () => {
   const navigate = useNavigate();
-  const { updatePassword } = useAuthContext();
+  const { updatePassword, user } = useAuthContext();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
-  const [hasRecoverySession, setHasRecoverySession] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkRecoverySession = async () => {
-      const { data } = await supabase.auth.getSession();
-
-      if (!isMounted) {
-        return;
-      }
-
-      setHasRecoverySession(Boolean(data.session?.user));
-      setCheckingSession(false);
-    };
-
-    void checkRecoverySession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) {
-        return;
-      }
-
-      setHasRecoverySession(Boolean(session?.user));
-      setCheckingSession(false);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,16 +51,7 @@ const ChangePassword: React.FC = () => {
 
   const passwordsMatch = newPassword === confirmPassword;
   const isPasswordValid = newPassword.length >= 6;
-  const canSubmit = passwordsMatch && isPasswordValid && newPassword && confirmPassword && hasRecoverySession;
-
-  if (checkingSession) {
-    return (
-      <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
-        <BackgroundAnimation />
-        <div className="relative z-10 text-white text-xl">Validando link...</div>
-      </div>
-    );
-  }
+  const canSubmit = passwordsMatch && isPasswordValid && newPassword && confirmPassword && Boolean(user);
 
   return (
     <div className="min-h-screen relative bg-black overflow-hidden">
@@ -117,10 +74,10 @@ const ChangePassword: React.FC = () => {
           {/* Form card */}
           <div className="client-surface-panel rounded-3xl p-8">
             <h1 className="text-2xl font-bold text-white mb-6 text-center">
-              Redefinir Senha
+              Trocar Senha
             </h1>
 
-            {hasRecoverySession ? (
+            {user ? (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
@@ -198,7 +155,7 @@ const ChangePassword: React.FC = () => {
             ) : (
               <div className="space-y-6 text-center">
                 <p className="text-sm text-white/70">
-                  Este link de recuperação é inválido ou expirou. Solicite um novo email na tela de login.
+                  Você precisa estar logado para trocar sua senha diretamente.
                 </p>
                 <Button
                   type="button"

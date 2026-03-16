@@ -16,6 +16,7 @@ import ProtectedClientRoute from "./components/ProtectedClientRoute";
 import ClientForms from "./pages/ClientForms";
 import ClientPrescriptions from "./pages/ClientPrescriptions";
 import ChangePassword from "./pages/ChangePassword";
+import ResetPassword from "./pages/ResetPassword";
 import Achievements from "./pages/Achievements";
 import WorkoutCheckin from "./pages/WorkoutCheckin";
 import DebugMonitor from "./components/DebugMonitor";
@@ -100,6 +101,7 @@ const App = () => {
             </ProtectedClientRoute>
           } />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/home" element={
             <ProtectedRoute>
               <Index />

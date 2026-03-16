@@ -307,10 +307,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const sendPasswordResetEmail = async (email: string) => {
     try {
-      const redirectTo = `${window.location.origin}/change-password`;
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo,
+      const { error } = await supabase.functions.invoke("send-password-reset-email", {
+        body: {
+          email,
+          origin: window.location.origin,
+        },
       });
 
       if (error) {
@@ -323,8 +324,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       toast({
-        title: 'Link enviado',
-        description: 'Confira seu email para redefinir sua senha.',
+        title: 'Email enviado',
+        description: 'Confira sua caixa de entrada para criar uma nova senha.',
       });
 
       return { success: true };

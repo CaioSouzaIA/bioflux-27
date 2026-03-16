@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Eye, EyeClosed, ArrowRight, ArrowLeft } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { toast } from '@/hooks/use-toast';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 function CustomInput({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -25,7 +25,7 @@ interface PasswordResetProps {
 }
 
 const PasswordReset: React.FC<PasswordResetProps> = ({ onBack }) => {
-  const [email, setEmail] = useState('');
+  const { updatePassword } = useAuthContext();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -45,42 +45,14 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ onBack }) => {
 
     try {
       setLoading(true);
-      
-      const response = await fetch('https://webhook.n8n1.agenciaevodigital.com/webhook/recuperar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          nova_senha: newPassword
-        }),
-      });
 
-      if (response.ok) {
-        toast({
-          title: "Senha atualizada!",
-          description: "Sua senha foi atualizada com sucesso.",
-        });
-        
-        // Redirecionar após 1 segundo
+      const result = await updatePassword(newPassword);
+
+      if (result.success) {
         setTimeout(() => {
           onBack();
         }, 1000);
-      } else {
-        toast({
-          title: "Erro ao atualizar",
-          description: "Não foi possível atualizar a senha.",
-          variant: "destructive",
-        });
       }
-    } catch (error) {
-      console.error('Erro ao enviar webhook:', error);
-      toast({
-        title: "Erro no envio",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
@@ -88,8 +60,7 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ onBack }) => {
 
   const passwordsMatch = newPassword === confirmPassword;
   const isPasswordValid = newPassword.length >= 6;
-  const isEmailValid = email.includes('@') && email.length > 0;
-  const canSubmit = passwordsMatch && isPasswordValid && isEmailValid && newPassword && confirmPassword && email;
+  const canSubmit = passwordsMatch && isPasswordValid && newPassword && confirmPassword;
 
   return (
     <>
@@ -168,19 +139,6 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ onBack }) => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Email */}
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
-                  <CustomInput
-                    type="email"
-                    placeholder="Digite seu email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30"
-                    required
-                  />
-                </div>
-
                 {/* Nova senha */}
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
@@ -231,13 +189,6 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ onBack }) => {
 
                 {/* Validação visual */}
                 <div className="space-y-1 text-xs">
-                  {email && (
-                    <div className={`transition-colors duration-300 ${
-                      isEmailValid ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {isEmailValid ? '✓' : '✗'} Email válido
-                    </div>
-                  )}
                   {newPassword && (
                     <div className={`transition-colors duration-300 ${
                       isPasswordValid ? 'text-green-400' : 'text-red-400'
