@@ -17,42 +17,6 @@ const sanitizeOrigin = (origin: string | null | undefined) => {
   }
 };
 
-const buildResetEmailHtml = (resetLink: string) => `
-  <div style="margin:0;padding:32px 16px;background:#040404;font-family:Arial,sans-serif;color:#ffffff;">
-    <div style="max-width:560px;margin:0 auto;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <img
-          src="https://bioflux-27.vercel.app/lovable-uploads/47b13cc6-5100-44ec-a86b-17a57bac71c6.png"
-          alt="BIOFLUX.AI"
-          style="max-width:180px;width:100%;height:auto;"
-        />
-      </div>
-
-      <div style="background:linear-gradient(180deg, rgba(18,18,22,0.96) 0%, rgba(8,8,11,0.96) 100%);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:32px 24px;box-shadow:0 24px 60px rgba(0,0,0,0.45);">
-        <p style="margin:0 0 12px;font-size:24px;font-weight:700;color:#ffffff;text-align:center;">
-          Redefinir senha
-        </p>
-        <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.72);text-align:center;">
-          Recebemos uma solicitação para redefinir sua senha. Clique no botão abaixo para criar uma nova senha com segurança.
-        </p>
-
-        <div style="text-align:center;margin:32px 0;">
-          <a
-            href="${resetLink}"
-            style="display:inline-block;padding:14px 24px;border-radius:999px;background:linear-gradient(135deg, #ffffff 0%, #dffcff 100%);color:#000000;text-decoration:none;font-size:14px;font-weight:700;"
-          >
-            Criar nova senha
-          </a>
-        </div>
-
-        <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(255,255,255,0.55);text-align:center;">
-          Se você não solicitou esta alteração, pode ignorar este email com segurança.
-        </p>
-      </div>
-    </div>
-  </div>
-`;
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -125,7 +89,21 @@ serve(async (req) => {
         from: "BIOFLUX <onboarding@resend.dev>",
         to: [email],
         subject: "Recuperação de senha - BIOFLUX",
-        html: buildResetEmailHtml(resetLink),
+        template: {
+          id: "recuperar-senha",
+          variables: {
+            reset_link: resetLink,
+            reset_url: resetLink,
+            resetLink,
+            resetUrl: resetLink,
+            action_link: resetLink,
+            actionLink: resetLink,
+            recovery_link: resetLink,
+            recoveryLink: resetLink,
+            cta_link: resetLink,
+            ctaLink: resetLink,
+          },
+        },
       }),
     });
 
