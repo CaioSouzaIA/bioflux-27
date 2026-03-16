@@ -83,10 +83,10 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
           <div>
             <Label className="text-gray-300">Tipo do Campo</Label>
             <Select value={field.type} onValueChange={(type) => updateField({ type: type as FormField['type'] })}>
-              <SelectTrigger className="client-input-surface text-white">
+              <SelectTrigger className="client-input-surface admin-form-editor-input text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="text-white">
+              <SelectContent className="bg-[#050505] text-white">
                 <SelectItem value="text" className="text-white hover:bg-green-600 focus:bg-green-600 hover:text-white focus:text-white">Texto</SelectItem>
                 <SelectItem value="textarea" className="text-white hover:bg-green-600 focus:bg-green-600 hover:text-white focus:text-white">Texto Longo</SelectItem>
                 <SelectItem value="number" className="text-white hover:bg-green-600 focus:bg-green-600 hover:text-white focus:text-white">Número</SelectItem>
@@ -103,7 +103,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
               value={field.label}
               onChange={(e) => updateField({ label: e.target.value })}
               placeholder="Digite o rótulo"
-              className="client-input-surface !text-white placeholder:text-white/35"
+              className="client-input-surface admin-form-editor-input !text-white placeholder:text-white/35"
             />
           </div>
           <div>
@@ -112,7 +112,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
               value={field.placeholder || ''}
               onChange={(e) => updateField({ placeholder: e.target.value })}
               placeholder="Texto de exemplo"
-              className="client-input-surface !text-white placeholder:text-white/35"
+              className="client-input-surface admin-form-editor-input !text-white placeholder:text-white/35"
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -135,7 +135,7 @@ export const DraggableFieldEditor: React.FC<DraggableFieldEditorProps> = ({
                     value={option}
                     onChange={(e) => updateOption(index, e.target.value)}
                     placeholder={`Opção ${index + 1}`}
-                    className="client-input-surface !text-white placeholder:text-white/35"
+                    className="client-input-surface admin-form-editor-input !text-white placeholder:text-white/35"
                   />
                   <Button
                     variant="outline"

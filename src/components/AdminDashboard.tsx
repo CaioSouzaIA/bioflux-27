@@ -210,7 +210,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               value={localFormConfig.title}
               onChange={(e) => updateFormTitle(e.target.value)}
               placeholder="Digite o título do formulário"
-              className="client-input-surface mt-2 !text-white placeholder:text-white/35"
+              className="client-input-surface admin-form-editor-input mt-2 !text-white placeholder:text-white/35"
             />
           </div>
           <div>
@@ -220,7 +220,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               value={localFormConfig.description}
               onChange={(e) => updateFormDescription(e.target.value)}
               placeholder="Digite a descrição do formulário"
-              className="client-input-surface mt-2 !text-white placeholder:text-white/35"
+              className="client-input-surface admin-form-editor-input mt-2 !text-white placeholder:text-white/35"
             />
           </div>
         </CardContent>

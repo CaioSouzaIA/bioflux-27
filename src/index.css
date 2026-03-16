@@ -128,6 +128,22 @@
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
   }
 
+  .admin-form-editor-input {
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: #050505 !important;
+    color: #ffffff !important;
+  }
+
+  .admin-form-editor-input::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  .admin-form-editor-input:focus,
+  .admin-form-editor-input:focus-visible {
+    border-color: rgba(101, 249, 215, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(101, 249, 215, 0.12) !important;
+  }
+
   .achievements-config-panel {
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     background: linear-gradient(180deg, rgba(18, 18, 22, 0.96) 0%, rgba(8, 8, 11, 0.98) 100%) !important;
