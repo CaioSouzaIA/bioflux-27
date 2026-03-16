@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -55,6 +54,51 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       dietPrescriptions.length,
       trainingPrescriptions.length,
     );
+
+  const normalizeFieldText = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+  const readaptationObjectiveField = useMemo(
+    () =>
+      formConfig.fields.find((field) =>
+        field.options?.some(
+          (option) => normalizeFieldText(option) === 'adaptacao - voltando aos treinos'
+        )
+      ) ?? null,
+    [formConfig.fields]
+  );
+
+  const emphasisField = useMemo(
+    () =>
+      formConfig.fields.find((field) => {
+        const normalizedLabel = normalizeFieldText(field.label);
+        return (
+          normalizedLabel.includes('enfase') ||
+          normalizedLabel.includes('musculo') ||
+          normalizedLabel.includes('grupo muscular')
+        );
+      }) ?? null,
+    [formConfig.fields]
+  );
+
+  const readaptationSelected =
+    !!readaptationObjectiveField &&
+    normalizeFieldText(String(formData[readaptationObjectiveField.id] ?? '')) ===
+      'adaptacao - voltando aos treinos';
+
+  useEffect(() => {
+    if (!readaptationSelected || !emphasisField) return;
+    if (formData[emphasisField.id] === undefined || formData[emphasisField.id] === '') return;
+
+    setFormData((prev) => ({
+      ...prev,
+      [emphasisField.id]: '',
+    }));
+  }, [emphasisField, formData, readaptationSelected]);
 
   // Debug logs para investigar problema com campos
   console.log('🔍 ClientForm - Debugging form fields:');
@@ -462,6 +506,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     });
 
     const value = formData[field.id];
+    const isReadaptationLockedField = readaptationSelected && emphasisField?.id === field.id;
+    const disabledPlaceholder = 'Campo desabilitado para treino de readaptação';
 
     switch (field.type) {
       case 'text':
@@ -471,8 +517,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
             type={field.type}
             value={typeof value === 'string' ? value : ''}
             onChange={(e) => updateFormData(field.id, e.target.value)}
-            placeholder={field.placeholder}
+            placeholder={isReadaptationLockedField ? disabledPlaceholder : field.placeholder}
             required={field.required}
+            disabled={isReadaptationLockedField}
             className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
           />
         );
@@ -483,8 +530,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
             type="number"
             value={typeof value === 'number' ? value : ''}
             onChange={(e) => updateFormData(field.id, parseFloat(e.target.value) || '')}
-            placeholder={field.placeholder}
+            placeholder={isReadaptationLockedField ? disabledPlaceholder : field.placeholder}
             required={field.required}
+            disabled={isReadaptationLockedField}
             className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
           />
         );
@@ -494,18 +542,23 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
           <Textarea
             value={typeof value === 'string' ? value : ''}
             onChange={(e) => updateFormData(field.id, e.target.value)}
-            placeholder={field.placeholder}
+            placeholder={isReadaptationLockedField ? disabledPlaceholder : field.placeholder}
             required={field.required}
             rows={4}
+            disabled={isReadaptationLockedField}
             className="bg-gray-800 border-gray-600 text-white placeholder:text-gray-400"
           />
         );
 
       case 'select':
         return (
-          <Select value={typeof value === 'string' ? value : ''} onValueChange={(val) => updateFormData(field.id, val)}>
+          <Select
+            value={typeof value === 'string' ? value : ''}
+            onValueChange={(val) => updateFormData(field.id, val)}
+            disabled={isReadaptationLockedField}
+          >
             <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
-              <SelectValue placeholder={field.placeholder || "Selecione uma opção"} />
+              <SelectValue placeholder={isReadaptationLockedField ? disabledPlaceholder : field.placeholder || "Selecione uma opção"} />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-600">
               {field.options?.map((option: string, index: number) => (
@@ -522,10 +575,16 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
           <RadioGroup
             value={typeof value === 'string' ? value : ''}
             onValueChange={(val) => updateFormData(field.id, val)}
+            disabled={isReadaptationLockedField}
           >
             {field.options?.map((option: string, index: number) => (
               <div key={index} className="flex items-center space-x-2">
-                <RadioGroupItem value={option} id={`${field.id}_${index}`} className="border-gray-600 text-cyan-400" />
+                <RadioGroupItem
+                  value={option}
+                  id={`${field.id}_${index}`}
+                  disabled={isReadaptationLockedField}
+                  className="border-gray-600 text-cyan-400"
+                />
                 <Label htmlFor={`${field.id}_${index}`} className="text-white">{option}</Label>
               </div>
             ))}
@@ -539,6 +598,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
               checked={value === true}
               onCheckedChange={(checked) => updateFormData(field.id, checked)}
               id={field.id}
+              disabled={isReadaptationLockedField}
               className="border-gray-600 data-[state=checked]:bg-green-600"
             />
             <Label htmlFor={field.id} className="text-white">{field.label}</Label>
@@ -660,6 +720,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
                     </Label>
                   )}
                   {renderField(field)}
+                  {readaptationSelected && emphasisField?.id === field.id && (
+                    <p className="text-xs text-amber-300">
+                      Esse campo fica desabilitado quando o objetivo selecionado e readaptação.
+                    </p>
+                  )}
                 </div>
               );
             })}
