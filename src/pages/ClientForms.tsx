@@ -162,7 +162,9 @@ const ClientForms: React.FC = () => {
     category === 'anamnese-dieta' || category === 'anamnese-treino';
 
   const isCategoryBlockedByFreePlan = (category: string) =>
-    hasFreePlan && isFreePlanCategoryLocked(category, dietPrescriptions.length, trainingPrescriptions.length);
+    !hasUnlimitedPlan &&
+    hasFreePlan &&
+    isFreePlanCategoryLocked(category, dietPrescriptions.length, trainingPrescriptions.length);
 
   const handleFormAccess = (formId: string, category: string) => {
     if (requiresMetabolicAssessment(category) && (!hasMetabolicAssessment || metabolicAssessmentExpired)) {

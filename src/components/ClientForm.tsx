@@ -19,7 +19,12 @@ import { getMetabolicAssessmentAgeInDays, isMetabolicAssessmentExpired, METABOLI
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
-import { getFreePlanCategoryLabel, hasFreePlan as userHasFreePlan, isFreePlanCategoryLocked } from '@/lib/subscriptionAccess';
+import {
+  getFreePlanCategoryLabel,
+  hasFreePlan as userHasFreePlan,
+  hasUnlimitedPlan as userHasUnlimitedPlan,
+  isFreePlanCategoryLocked,
+} from '@/lib/subscriptionAccess';
 
 interface ClientFormProps {
   formConfig: FormConfig;
@@ -41,11 +46,15 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
   const metabolicAssessmentExpired = isMetabolicAssessmentExpired(metabolicAssessment?.created_at);
   const metabolicAssessmentAgeInDays = getMetabolicAssessmentAgeInDays(metabolicAssessment?.created_at);
   const hasFreePlan = userHasFreePlan(subscriptions);
-  const freePlanCategoryLocked = isFreePlanCategoryLocked(
-    formConfig.category,
-    dietPrescriptions.length,
-    trainingPrescriptions.length,
-  );
+  const hasUnlimitedPlan = userHasUnlimitedPlan(subscriptions);
+  const freePlanCategoryLocked =
+    !hasUnlimitedPlan &&
+    hasFreePlan &&
+    isFreePlanCategoryLocked(
+      formConfig.category,
+      dietPrescriptions.length,
+      trainingPrescriptions.length,
+    );
 
   // Debug logs para investigar problema com campos
   console.log('🔍 ClientForm - Debugging form fields:');

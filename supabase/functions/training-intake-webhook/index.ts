@@ -61,6 +61,14 @@ serve(async (req) => {
     const formResponseId = body.formResponseId ?? null;
     const formOwnerId = body.formOwnerId ?? null;
 
+    const { data: clientProfile } = await supabaseClient
+      .from("profiles")
+      .select("unlimited_plan_enabled")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const hasUnlimitedPlan = clientProfile?.unlimited_plan_enabled === true;
+
     if (category !== "anamnese-treino") {
       return new Response(
         JSON.stringify({ error: "Esta função aceita apenas formulários de treino." }),
@@ -81,16 +89,18 @@ serve(async (req) => {
       );
     }
 
-    const { data: freePlanSubscription } = await supabaseClient
-      .from("client_subscriptions")
-      .select("id, service_type, responses_used, subscription_plans!inner(name)")
-      .eq("user_id", userId)
-      .eq("status", "ativo")
-      .eq("subscription_plans.name", FREE_PLAN_NAME)
-      .in("service_type", ["treino", "treino-dieta"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const { data: freePlanSubscription } = hasUnlimitedPlan
+      ? { data: null }
+      : await supabaseClient
+          .from("client_subscriptions")
+          .select("id, service_type, responses_used, subscription_plans!inner(name)")
+          .eq("user_id", userId)
+          .eq("status", "ativo")
+          .eq("subscription_plans.name", FREE_PLAN_NAME)
+          .in("service_type", ["treino", "treino-dieta"])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
     if (freePlanSubscription) {
       const { count: existingTrainingPrescriptionsCount, error: freePlanCountError } = await supabaseClient
