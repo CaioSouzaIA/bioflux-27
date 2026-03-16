@@ -76,6 +76,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
       const { data, error } = await supabase
         .from("badges")
         .select("*")
+        .order("achievement_title", { ascending: true })
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -818,9 +819,15 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                   <h3 className="client-card-title text-white font-semibold text-lg text-center mb-3">Avaliação<br />metabólica</h3>
                   {hasMetabolicAssessment && (
                     <div className="mb-6 flex items-center gap-2 justify-center">
-                      <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10 text-xs">
-                        Completa
-                      </Badge>
+                      {metabolicAssessmentExpired ? (
+                        <Badge variant="outline" className="border-amber-400 bg-amber-400/10 text-xs text-amber-200">
+                          Expirada
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10 text-xs">
+                          Completa
+                        </Badge>
+                      )}
                     </div>
                   )}
                   {!hasMetabolicAssessment && <div className="mb-6 flex-1"></div>}

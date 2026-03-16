@@ -79,6 +79,7 @@ export default function Achievements() {
       const { data, error } = await supabase
         .from("badges")
         .select("*")
+        .order("achievement_title", { ascending: true })
         .order("created_at", { ascending: true });
 
       if (error) throw error;

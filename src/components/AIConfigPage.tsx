@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, FileCode2, GitCommitHorizontal, History, Save, Sparkles } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, CheckCircle2, FileCode2, GitCommitHorizontal, History, Save, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -20,6 +20,7 @@ interface AIConfigPageProps {
 }
 
 type PromptVersionRow = Database['public']['Tables']['ai_agent_prompt_versions']['Row'];
+type AIAgentExecutionLogRow = Database['public']['Tables']['ai_agent_execution_logs']['Row'];
 const FIELD_CLASS = 'client-input-surface !text-white placeholder:text-white/35';
 const TEXTAREA_CLASS = 'min-h-[420px] achievements-config-input resize-none font-mono text-sm leading-6';
 const CARD_GLOWS = [
@@ -37,6 +38,8 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
   const [promptDraft, setPromptDraft] = useState('');
   const [promptFormat, setPromptFormat] = useState<PromptFormat>('markdown');
   const [commitName, setCommitName] = useState('');
+  const [logStatusFilter, setLogStatusFilter] = useState<'all' | 'success' | 'failed'>('all');
+  const [logAgentFilter, setLogAgentFilter] = useState<'all' | AIAgentKey>('all');
 
   const { data: promptVersions = [] } = useQuery({
     queryKey: ['ai-agent-prompt-versions'],
@@ -55,6 +58,24 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
     },
   });
 
+  const { data: executionLogs = [] } = useQuery({
+    queryKey: ['ai-agent-execution-logs'],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ai_agent_execution_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        throw error;
+      }
+
+      return (data ?? []) as AIAgentExecutionLogRow[];
+    },
+  });
+
   const promptVersionsByAgent = useMemo(() => {
     const map = new Map<AIAgentKey, PromptVersionRow[]>();
     for (const agent of AI_AGENT_DEFINITIONS) {
@@ -67,6 +88,22 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
   const selectedAgentVersions = promptVersionsByAgent.get(selectedAgentKey) ?? [];
   const activePromptVersion = selectedAgentVersions.find((version) => version.is_active) ?? null;
   const totalPromptVersions = promptVersions.length;
+  const filteredExecutionLogs = useMemo(
+    () =>
+      executionLogs.filter((log) => {
+        const matchesStatus = logStatusFilter === 'all' || log.status === logStatusFilter;
+        const matchesAgent = logAgentFilter === 'all' || log.agent_key === logAgentFilter;
+        return matchesStatus && matchesAgent;
+      }),
+    [executionLogs, logAgentFilter, logStatusFilter]
+  );
+  const successLogsCount = executionLogs.filter((log) => log.status === 'success').length;
+  const failedLogsCount = executionLogs.filter((log) => log.status === 'failed').length;
+  const averageDurationMs = executionLogs.length
+    ? Math.round(
+        executionLogs.reduce((total, log) => total + (log.duration_ms ?? 0), 0) / executionLogs.length
+      )
+    : 0;
 
   useEffect(() => {
     if (!isPromptModalOpen) return;
@@ -255,6 +292,141 @@ export const AIConfigPage: React.FC<AIConfigPageProps> = ({ onBack }) => {
               );
             })}
           </div>
+
+          <Card className="client-glass-card" style={{ ['--card-glow' as string]: 'rgba(239,68,68,0.18)' }}>
+            <CardHeader className="space-y-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Activity className="h-5 w-5 text-cyan-300" />
+                    Logs de Performance
+                  </CardTitle>
+                  <p className="mt-2 text-sm text-white/60">
+                    Registro persistente das execuções dos agentes, com sucesso e falha, para facilitar o diagnóstico das gerações.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                    <div className="flex items-center gap-2 text-sm text-white/60">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                      Sucessos
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{successLogsCount}</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                    <div className="flex items-center gap-2 text-sm text-white/60">
+                      <AlertTriangle className="h-4 w-4 text-red-300" />
+                      Falhas
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{failedLogsCount}</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                    <div className="text-sm text-white/60">Média de duração</div>
+                    <div className="mt-2 text-2xl font-semibold text-white">{averageDurationMs} ms</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => setLogStatusFilter('all')}
+                    className={logStatusFilter === 'all' ? 'client-action-button' : 'client-back-button'}
+                  >
+                    Todos
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setLogStatusFilter('failed')}
+                    className={logStatusFilter === 'failed' ? 'client-action-button' : 'client-back-button'}
+                  >
+                    Failed
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setLogStatusFilter('success')}
+                    className={logStatusFilter === 'success' ? 'client-action-button' : 'client-back-button'}
+                  >
+                    Sucesso
+                  </Button>
+                </div>
+
+                <div className="w-full lg:w-[280px]">
+                  <Select value={logAgentFilter} onValueChange={(value) => setLogAgentFilter(value as 'all' | AIAgentKey)}>
+                    <SelectTrigger className="client-input-surface text-white">
+                      <SelectValue placeholder="Filtrar agente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os agentes</SelectItem>
+                      {AI_AGENT_DEFINITIONS.map((agent) => (
+                        <SelectItem key={agent.key} value={agent.key}>
+                          {agent.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              <div className="space-y-3">
+                {filteredExecutionLogs.length > 0 ? (
+                  filteredExecutionLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                    >
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] ${
+                                log.status === 'success'
+                                  ? 'border-emerald-400/35 bg-emerald-400/10 text-emerald-200'
+                                  : 'border-red-400/35 bg-red-400/10 text-red-200'
+                              }`}
+                            >
+                              {log.status}
+                            </span>
+                            <span className="text-sm font-medium text-white">{log.agent_label}</span>
+                            <span className="text-xs text-white/45">{log.source_function}</span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/55">
+                            <span>Stage: {log.stage}</span>
+                            <span>Modelo: {log.model_slug ?? 'n/a'}</span>
+                            <span>Duração: {log.duration_ms ?? 0} ms</span>
+                            <span>{new Date(log.created_at).toLocaleString('pt-BR')}</span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/50">
+                            <span>Prompt: {log.prompt_commit_name ?? 'padrão'}</span>
+                            {log.secondary_prompt_commit_name && (
+                              <span>Análise: {log.secondary_prompt_commit_name}</span>
+                            )}
+                            {log.prescription_id && <span>Prescrição: {log.prescription_id}</span>}
+                          </div>
+
+                          {log.error_message && (
+                            <div className="rounded-2xl border border-red-400/20 bg-red-400/10 px-3 py-2 text-sm text-red-100">
+                              {log.error_message}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/55">
+                    Nenhum log encontrado para os filtros selecionados.
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

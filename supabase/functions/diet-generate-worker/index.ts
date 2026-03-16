@@ -8,8 +8,9 @@ import {
   OPENROUTER_MODEL,
   parseStructuredDietPlan,
 } from "../_shared/diet-plan.ts";
+import { recordAIAgentExecutionLog } from "../_shared/ai-agent-logging.ts";
 import { corsHeaders } from "../_shared/cors.ts";
-import { loadActivePrompt } from "../_shared/prompt-store.ts";
+import { loadActivePromptVersion } from "../_shared/prompt-store.ts";
 
 const getContentAsText = (content: unknown) => {
   if (typeof content === "string") {
@@ -42,6 +43,16 @@ serve(async (req) => {
   }
 
   let prescriptionId: string | null = null;
+  let logContext: {
+    userId: string | null;
+    formResponseId: string | null;
+    promptCommitName: string | null;
+  } = {
+    userId: null,
+    formResponseId: null,
+    promptCommitName: null,
+  };
+  const startedAt = Date.now();
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -99,11 +110,16 @@ serve(async (req) => {
       .eq("id", prescriptionId);
 
     const payload = (prescription.generation_payload ?? {}) as Record<string, unknown>;
-    const activeDietPrompt = await loadActivePrompt(
+    logContext.userId = prescription.user_id;
+    logContext.formResponseId = prescription.form_response_id;
+
+    const activeDietPrompt = await loadActivePromptVersion(
       supabaseClient,
       "diet_generation",
       NUTRIAI_SYSTEM_PROMPT,
+      "initial-diet-prompt",
     );
+    logContext.promptCommitName = activeDietPrompt.commitName;
 
     const requestToModel = {
       model: OPENROUTER_MODEL,
@@ -111,7 +127,7 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: activeDietPrompt,
+          content: activeDietPrompt.promptContent,
         },
         {
           role: "user",
@@ -172,6 +188,28 @@ serve(async (req) => {
         .eq("id", prescription.form_response_id);
     }
 
+    await recordAIAgentExecutionLog(supabaseClient, {
+      agentKey: "diet_generation",
+      agentLabel: "Dieta",
+      status: "success",
+      sourceFunction: "diet-generate-worker",
+      stage: "generation",
+      userId: prescription.user_id,
+      prescriptionId,
+      formResponseId: prescription.form_response_id,
+      modelSlug: OPENROUTER_MODEL,
+      durationMs: Date.now() - startedAt,
+      promptCommitName: activeDietPrompt.commitName,
+      metadata: {
+        generationStatus: "completed",
+      },
+      requestPayload: requestToModel as unknown as Record<string, unknown>,
+      responsePayload: {
+        generationStatus: "completed",
+        planName: prescription.plan_name,
+      },
+    });
+
     return new Response(
       JSON.stringify({
         prescriptionId,
@@ -199,8 +237,26 @@ serve(async (req) => {
               generation_status: "failed",
               error_message: error instanceof Error ? error.message : "Erro desconhecido ao gerar o plano alimentar.",
             })
-            .eq("id", prescriptionId);
+              .eq("id", prescriptionId);
         }
+
+        await recordAIAgentExecutionLog(supabaseClient, {
+          agentKey: "diet_generation",
+          agentLabel: "Dieta",
+          status: "failed",
+          sourceFunction: "diet-generate-worker",
+          stage: "generation",
+          userId: logContext.userId,
+          prescriptionId,
+          formResponseId: logContext.formResponseId,
+          modelSlug: OPENROUTER_MODEL,
+          durationMs: Date.now() - startedAt,
+          promptCommitName: logContext.promptCommitName,
+          errorMessage: error instanceof Error ? error.message : "Erro desconhecido ao gerar o plano alimentar.",
+          metadata: {
+            generationStatus: "failed",
+          },
+        });
       }
     } catch (loggingError) {
       console.error("Erro secundário ao marcar prescrição como failed:", loggingError);

@@ -14,6 +14,11 @@ export const isStandardPlanName = (planName?: string | null) =>
 export const hasFreePlan = (subscriptions: SubscriptionLike[] = []) =>
   subscriptions.some((subscription) => isFreePlanName(subscription.subscription_plans?.name));
 
+export const hasUnlimitedPlan = (subscriptions: SubscriptionLike[] = []) =>
+  subscriptions.some((subscription) =>
+    Boolean(subscription.subscription_plans?.name?.toLowerCase().includes('ilimitado'))
+  );
+
 export const isFreePlanCategoryLocked = (
   category: string,
   dietCount: number,

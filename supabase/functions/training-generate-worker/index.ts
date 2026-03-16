@@ -14,8 +14,9 @@ import {
   selectRelevantTrainingInstructions,
   TRAINING_PERIODIZATION_ANALYSIS_PROMPT,
 } from "../_shared/training-plan.ts";
+import { recordAIAgentExecutionLog } from "../_shared/ai-agent-logging.ts";
 import { corsHeaders } from "../_shared/cors.ts";
-import { loadActivePrompt } from "../_shared/prompt-store.ts";
+import { loadActivePromptVersion } from "../_shared/prompt-store.ts";
 
 const getContentAsText = (content: unknown) => {
   if (typeof content === "string") {
@@ -71,6 +72,22 @@ serve(async (req) => {
   }
 
   let prescriptionId: string | null = null;
+  let logContext: {
+    agentKey: string;
+    agentLabel: string;
+    userId: string | null;
+    formResponseId: string | null;
+    promptCommitName: string | null;
+    secondaryPromptCommitName: string | null;
+  } = {
+    agentKey: "training_generation",
+    agentLabel: "Treino",
+    userId: null,
+    formResponseId: null,
+    promptCommitName: null,
+    secondaryPromptCommitName: null,
+  };
+  const startedAt = Date.now();
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -130,16 +147,32 @@ serve(async (req) => {
     const payload = (prescription.generation_payload ?? {}) as Record<string, unknown>;
     const instructionQuery = buildTrainingDocumentQuery(payload);
     const selectedTrainingAgent = resolveTrainingGenerationAgent(payload);
-    const activeTrainingPrompt = await loadActivePrompt(
+    logContext = {
+      agentKey: selectedTrainingAgent.key,
+      agentLabel: selectedTrainingAgent.label,
+      userId: prescription.user_id,
+      formResponseId: prescription.form_response_id,
+      promptCommitName: null,
+      secondaryPromptCommitName: null,
+    };
+
+    const activeTrainingPrompt = await loadActivePromptVersion(
       supabaseClient,
       selectedTrainingAgent.key,
       selectedTrainingAgent.defaultPrompt,
+      selectedTrainingAgent.key === "training_readaptation"
+        ? "initial-training-readaptation-prompt"
+        : "initial-training-prompt",
     );
-    const activePeriodizationPrompt = await loadActivePrompt(
+    logContext.promptCommitName = activeTrainingPrompt.commitName;
+
+    const activePeriodizationPrompt = await loadActivePromptVersion(
       supabaseClient,
       "training_periodization",
       TRAINING_PERIODIZATION_ANALYSIS_PROMPT,
+      "initial-periodization-prompt",
     );
+    logContext.secondaryPromptCommitName = activePeriodizationPrompt.commitName;
 
     const { data: instructionDocuments, error: documentsError } = await supabaseClient
       .from("documents")
@@ -176,7 +209,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: activeTrainingPrompt,
+            content: activeTrainingPrompt.promptContent,
           },
           {
             role: "user",
@@ -215,7 +248,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: activePeriodizationPrompt,
+            content: activePeriodizationPrompt.promptContent,
           },
           {
             role: "user",
@@ -288,6 +321,33 @@ serve(async (req) => {
       throw periodizationError;
     }
 
+    await recordAIAgentExecutionLog(supabaseClient, {
+      agentKey: selectedTrainingAgent.key,
+      agentLabel: selectedTrainingAgent.label,
+      status: "success",
+      sourceFunction: "training-generate-worker",
+      stage: "generation",
+      userId: prescription.user_id,
+      prescriptionId,
+      formResponseId: prescription.form_response_id,
+      modelSlug: OPENROUTER_MODEL,
+      durationMs: Date.now() - startedAt,
+      promptCommitName: activeTrainingPrompt.commitName,
+      secondaryPromptCommitName: activePeriodizationPrompt.commitName,
+      metadata: {
+        generationStatus: "completed",
+        monthlyTrainingVolume,
+      },
+      requestPayload: {
+        instructionQuery,
+        trainingAgentKey: selectedTrainingAgent.key,
+      },
+      responsePayload: {
+        generationStatus: "completed",
+        planName: prescription.plan_name,
+      },
+    });
+
     return new Response(
       JSON.stringify({
         prescriptionId,
@@ -315,8 +375,27 @@ serve(async (req) => {
               generation_status: "failed",
               error_message: error instanceof Error ? error.message : "Erro desconhecido ao gerar o plano de treino.",
             })
-            .eq("id", prescriptionId);
+              .eq("id", prescriptionId);
         }
+
+        await recordAIAgentExecutionLog(supabaseClient, {
+          agentKey: logContext.agentKey,
+          agentLabel: logContext.agentLabel,
+          status: "failed",
+          sourceFunction: "training-generate-worker",
+          stage: "generation",
+          userId: logContext.userId,
+          prescriptionId,
+          formResponseId: logContext.formResponseId,
+          modelSlug: OPENROUTER_MODEL,
+          durationMs: Date.now() - startedAt,
+          promptCommitName: logContext.promptCommitName,
+          secondaryPromptCommitName: logContext.secondaryPromptCommitName,
+          errorMessage: error instanceof Error ? error.message : "Erro desconhecido ao gerar o plano de treino.",
+          metadata: {
+            generationStatus: "failed",
+          },
+        });
       }
     } catch (loggingError) {
       console.error("Erro secundário ao marcar treino como failed:", loggingError);

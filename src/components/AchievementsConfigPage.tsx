@@ -150,7 +150,8 @@ export const AchievementsConfigPage: React.FC = () => {
       const { data, error } = await supabase
         .from('badges')
         .select('*, achievement_categories(id, name, color, created_at)')
-        .order('created_at', { ascending: false });
+        .order('achievement_title', { ascending: true })
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       return (data || []) as BadgeWithCategory[];

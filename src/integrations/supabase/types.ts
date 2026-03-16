@@ -82,6 +82,84 @@ export type Database = {
           },
         ]
       }
+      ai_agent_execution_logs: {
+        Row: {
+          agent_key: string
+          agent_label: string
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          form_response_id: string | null
+          id: string
+          metadata: Json | null
+          model_slug: string | null
+          prescription_id: string | null
+          prompt_commit_name: string | null
+          request_payload: Json | null
+          response_payload: Json | null
+          secondary_prompt_commit_name: string | null
+          source_function: string
+          stage: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_key: string
+          agent_label: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          form_response_id?: string | null
+          id?: string
+          metadata?: Json | null
+          model_slug?: string | null
+          prescription_id?: string | null
+          prompt_commit_name?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          secondary_prompt_commit_name?: string | null
+          source_function: string
+          stage?: string
+          status: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_key?: string
+          agent_label?: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          form_response_id?: string | null
+          id?: string
+          metadata?: Json | null
+          model_slug?: string | null
+          prescription_id?: string | null
+          prompt_commit_name?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          secondary_prompt_commit_name?: string | null
+          source_function?: string
+          stage?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_execution_logs_form_response_id_fkey"
+            columns: ["form_response_id"]
+            isOneToOne: false
+            referencedRelation: "form_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agent_execution_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           achievement_title: string

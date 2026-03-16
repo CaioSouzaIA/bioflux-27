@@ -36,3 +36,46 @@ export const loadActivePrompt = async (
   return prompt || fallbackPrompt;
 };
 
+export const loadActivePromptVersion = async (
+  supabaseClient: {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (column: string, value: unknown) => {
+          order: (
+            column: string,
+            options?: { ascending?: boolean },
+          ) => {
+            limit: (count: number) => Promise<{
+              data: Array<{ commit_name: string | null; prompt_content: string | null }> | null;
+              error: { message: string } | null;
+            }>;
+          };
+        };
+      };
+    };
+  },
+  agentKey: string,
+  fallbackPrompt: string,
+  fallbackCommitName = "fallback-default-prompt",
+) => {
+  const { data, error } = await supabaseClient
+    .from("ai_agent_prompt_versions")
+    .select("commit_name, prompt_content")
+    .eq("agent_key", agentKey)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error(`Erro ao carregar prompt ativo de ${agentKey}:`, error.message);
+    return {
+      commitName: fallbackCommitName,
+      promptContent: fallbackPrompt,
+    };
+  }
+
+  return {
+    commitName: data?.[0]?.commit_name?.trim() || fallbackCommitName,
+    promptContent: data?.[0]?.prompt_content?.trim() || fallbackPrompt,
+  };
+};

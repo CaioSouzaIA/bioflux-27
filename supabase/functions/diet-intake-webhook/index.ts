@@ -2,15 +2,48 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import { recordAIAgentExecutionLog } from "../_shared/ai-agent-logging.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const METABOLIC_ASSESSMENT_MAX_AGE_DAYS = 30;
 const FREE_PLAN_NAME = "Free - Teste";
 
+const runDietGenerateWorker = async (
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  prescriptionId: string,
+) => {
+  const workerResponse = await fetch(`${supabaseUrl}/functions/v1/diet-generate-worker`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${serviceRoleKey}`,
+    },
+    body: JSON.stringify({
+      prescriptionId,
+    }),
+  });
+
+  const responseText = await workerResponse.text();
+  const responseJson = responseText ? JSON.parse(responseText) : null;
+
+  if (!workerResponse.ok) {
+    throw new Error(
+      responseJson?.error ||
+        `Falha ao disparar diet-generate-worker: ${workerResponse.status} ${responseText}`,
+    );
+  }
+
+  return responseJson;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startedAt = Date.now();
+  let logBody: Record<string, unknown> | null = null;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -22,6 +55,7 @@ serve(async (req) => {
 
     const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
     const body = await req.json();
+    logBody = body as Record<string, unknown>;
 
     const category = body.category ?? body.formCategory;
     const userId = body.userId ?? body.clientId;
@@ -96,29 +130,41 @@ serve(async (req) => {
         existingPrescription.generation_status === "pending" ||
         existingPrescription.generation_status === "failed"
       ) {
-        const retryRequest = fetch(`${supabaseUrl}/functions/v1/diet-generate-worker`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${serviceRoleKey}`,
-          },
-          body: JSON.stringify({
+        const workerResult = await runDietGenerateWorker(
+          supabaseUrl,
+          serviceRoleKey,
+          existingPrescription.id,
+        );
+
+        return new Response(
+          JSON.stringify({
             prescriptionId: existingPrescription.id,
+            generation_status: workerResult?.generation_status ?? "processing",
+            plan_name: existingPrescription.plan_name,
+            reused: true,
           }),
-        }).catch((error) => {
-          console.error("Erro ao redisparar diet-generate-worker:", error);
-        });
-
-        const edgeRuntime = globalThis as {
-          EdgeRuntime?: {
-            waitUntil?: (promise: Promise<unknown>) => void;
-          };
-        };
-
-        if (edgeRuntime.EdgeRuntime?.waitUntil) {
-          edgeRuntime.EdgeRuntime.waitUntil(retryRequest);
-        }
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
+
+      await recordAIAgentExecutionLog(supabaseClient, {
+        agentKey: "diet_generation",
+        agentLabel: "Dieta",
+        status: "success",
+        sourceFunction: "diet-intake-webhook",
+        stage: "generation",
+        userId,
+        prescriptionId: existingPrescription.id,
+        formResponseId,
+        durationMs: Date.now() - startedAt,
+        metadata: {
+          reused: true,
+          generationStatus: existingPrescription.generation_status,
+        },
+      });
 
       return new Response(
         JSON.stringify({
@@ -233,42 +279,66 @@ serve(async (req) => {
       }
     }
 
-    const workerRequest = fetch(`${supabaseUrl}/functions/v1/diet-generate-worker`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${serviceRoleKey}`,
+    const workerResult = await runDietGenerateWorker(
+      supabaseUrl,
+      serviceRoleKey,
+      prescription.id,
+    );
+
+    await recordAIAgentExecutionLog(supabaseClient, {
+      agentKey: "diet_generation",
+      agentLabel: "Dieta",
+      status: "success",
+      sourceFunction: "diet-intake-webhook",
+      stage: "generation",
+      userId,
+      prescriptionId: prescription.id,
+      formResponseId,
+      durationMs: Date.now() - startedAt,
+      metadata: {
+        reused: false,
+        generationStatus: workerResult?.generation_status ?? prescription.generation_status,
       },
-      body: JSON.stringify({
-        prescriptionId: prescription.id,
-      }),
-    }).catch((error) => {
-      console.error("Erro ao disparar diet-generate-worker:", error);
     });
-
-    const edgeRuntime = globalThis as {
-      EdgeRuntime?: {
-        waitUntil?: (promise: Promise<unknown>) => void;
-      };
-    };
-
-    if (edgeRuntime.EdgeRuntime?.waitUntil) {
-      edgeRuntime.EdgeRuntime.waitUntil(workerRequest);
-    }
 
     return new Response(
       JSON.stringify({
         prescriptionId: prescription.id,
-        generation_status: prescription.generation_status,
+        generation_status: workerResult?.generation_status ?? prescription.generation_status,
         plan_name: prescription.plan_name,
       }),
       {
-        status: 202,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
   } catch (error) {
     console.error("Erro em diet-intake-webhook:", error);
+
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+      if (supabaseUrl && serviceRoleKey) {
+        const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
+        await recordAIAgentExecutionLog(supabaseClient, {
+          agentKey: "diet_generation",
+          agentLabel: "Dieta",
+          status: "failed",
+          sourceFunction: "diet-intake-webhook",
+          stage: "generation",
+          userId: (logBody?.userId as string | undefined) ?? (logBody?.clientId as string | undefined) ?? null,
+          formResponseId: (logBody?.formResponseId as string | undefined) ?? null,
+          durationMs: Date.now() - startedAt,
+          errorMessage: error instanceof Error ? error.message : "Erro interno ao iniciar a geração da dieta.",
+          metadata: {
+            category: (logBody?.category as string | undefined) ?? (logBody?.formCategory as string | undefined) ?? null,
+          },
+        });
+      }
+    } catch (loggingError) {
+      console.error("Erro ao registrar log de falha do intake de dieta:", loggingError);
+    }
 
     return new Response(
       JSON.stringify({
