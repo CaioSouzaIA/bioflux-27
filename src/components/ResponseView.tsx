@@ -11,6 +11,8 @@ import { WhatsAppPopup } from './WhatsAppPopup';
 import { useNavigate } from 'react-router-dom';
 import type { DietPrescription } from '@/hooks/useDietPrescriptions';
 import type { TrainingPrescription } from '@/hooks/useTrainingPrescriptions';
+import { BackgroundAnimation } from '@/components/BackgroundAnimation';
+import ProfileDropdown from '@/components/ProfileDropdown';
 
 interface ResponseViewProps {
   formConfig: FormConfig;
@@ -378,58 +380,75 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Carregando respostas...</div>
+      <div className="min-h-screen relative overflow-hidden bg-black">
+        <BackgroundAnimation />
+        <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
+          <Card className="client-surface-panel w-full max-w-lg rounded-3xl text-white">
+            <CardContent className="p-8 text-center text-lg">Carregando respostas...</CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8 flex items-center justify-between">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                if (onBack) {
-                  onBack();
-                } else {
-                  navigate('/home');
-                }
-              }}
-              className="client-back-button"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
-            </Button>
-            <img 
-              src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
-              alt="BIOFLUX.AI" 
-              className="h-12"
-            />
-            <div className="w-[100px]"></div>
+    <div className="min-h-screen relative overflow-hidden bg-black">
+      <BackgroundAnimation />
+
+      <div className="relative z-10 min-h-screen p-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex items-center justify-between pt-8">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  if (onBack) {
+                    onBack();
+                  } else {
+                    navigate('/home');
+                  }
+                }}
+                className="client-back-button"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar
+              </Button>
+              <img 
+                src="/lovable-uploads/e99759f8-0f30-4356-96b6-5d8b2ef20802.png" 
+                alt="BIOFLUX.AI" 
+                className="h-10"
+              />
+            </div>
+
+            <ProfileDropdown />
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              {singleResponse && respondentName 
-                ? `Resposta de ${respondentName}` 
-                : `Respostas - ${formConfig.title}`
-              }
-            </h1>
-            <p className="text-gray-400">
-              {singleResponse 
-                ? 'Visualizando resposta individual'
-                : `Total de respostas: ${responses.length}`
-              }
-            </p>
-          </div>
+          <Card className="client-surface-panel mb-6 rounded-3xl text-white">
+            <CardHeader className="gap-4 p-6 sm:p-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="text-2xl font-semibold text-white sm:text-3xl">
+                  {singleResponse && respondentName 
+                    ? `Resposta de ${respondentName}` 
+                    : `Respostas - ${formConfig.title}`
+                  }
+                </CardTitle>
+                <div className="inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
+                  {singleResponse 
+                    ? 'Visualizando resposta individual'
+                    : `Total de respostas: ${responses.length}`
+                  }
+                </div>
+              </div>
+              <p className="max-w-3xl text-sm leading-relaxed text-white/60 sm:text-base">
+                Consulte os detalhes enviados, abra o plano relacionado quando existir e gerencie o registro dentro do padrão visual do admin.
+              </p>
+            </CardHeader>
+          </Card>
 
           {responses.length === 0 ? (
-            <Card className="bg-[#161616] border-gray-700">
+            <Card className="client-surface-panel rounded-3xl text-white">
               <CardContent className="p-8 text-center">
-                <p className="text-gray-400 text-lg">
+                <p className="text-lg text-white/60">
                   Nenhuma resposta foi enviada ainda.
                 </p>
               </CardContent>
@@ -437,87 +456,88 @@ export const ResponseView: React.FC<ResponseViewProps> = ({
           ) : (
             <div className="space-y-6">
               {responses.map((response, index) => (
-                <div key={response.id || index} className="space-y-4">
-                  <Card className="bg-[#161616] border-gray-700">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <User className="w-5 h-5 text-cyan-500" />
-                        {singleResponse && respondentName 
-                          ? respondentName
-                          : `Resposta #${response.id ? response.id.slice(-8) : index + 1}`
-                        }
-                      </CardTitle>
-                      <div className="flex items-center gap-2 sm:gap-4">
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <Calendar className="w-4 h-4" />
-                          <span className="hidden sm:inline">{formatDate(response.submittedAt)}</span>
+                <Card key={response.id || index} className="client-surface-panel rounded-3xl text-white">
+                  <CardHeader className="gap-4 p-6 sm:p-8">
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                      <div className="space-y-3">
+                        <CardTitle className="flex items-center gap-2 text-xl text-white sm:text-2xl">
+                          <User className="h-5 w-5 text-cyan-500" />
+                          {singleResponse && respondentName 
+                            ? respondentName
+                            : `Resposta #${response.id ? response.id.slice(-8) : index + 1}`
+                          }
+                        </CardTitle>
+                        <div className="flex items-center gap-2 text-sm text-white/60">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate(response.submittedAt)}</span>
                         </div>
-                        <div className="flex gap-1 sm:gap-2">
-                          {formConfig.category === 'anamnese-dieta' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewDiet(response)}
-                              className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white text-xs sm:text-sm px-2 sm:px-3"
-                            >
-                              <span className="sm:mr-1">Ver Dieta</span>
-                            </Button>
-                          )}
-                          {formConfig.category === 'anamnese-treino' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewTreino(response)}
-                              className="border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white text-xs sm:text-sm px-2 sm:px-3"
-                            >
-                              <span className="sm:mr-1">Ver Treino</span>
-                            </Button>
-                          )}
-                          {formConfig.category === 'anamnese-suplementacao' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewSupplementacao(response)}
-                              className="border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white text-xs sm:text-sm px-2 sm:px-3"
-                            >
-                              <span className="sm:mr-1">Ver Suplementação</span>
-                            </Button>
-                          )}
-                          {formConfig.category === 'feedback' && getRespondentWhatsApp(response) && (
-                            <WhatsAppPopup 
-                              leadWhatsApp={getRespondentWhatsApp(response)}
-                              leadName={getRespondentName(response)}
-                            />
-                          )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {formConfig.category === 'anamnese-dieta' && (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDelete(response.id || '')}
-                            className="bg-red-600 text-white border-red-600 hover:bg-white hover:text-red-600 text-xs sm:text-sm px-2 sm:px-3"
+                            onClick={() => handleViewDiet(response)}
+                            className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
                           >
-                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                            Ver Dieta
                           </Button>
-                        </div>
+                        )}
+                        {formConfig.category === 'anamnese-treino' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewTreino(response)}
+                            className="border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white"
+                          >
+                            Ver Treino
+                          </Button>
+                        )}
+                        {formConfig.category === 'anamnese-suplementacao' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewSupplementacao(response)}
+                            className="border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white"
+                          >
+                            Ver Suplementação
+                          </Button>
+                        )}
+                        {formConfig.category === 'feedback' && getRespondentWhatsApp(response) && (
+                          <WhatsAppPopup 
+                            leadWhatsApp={getRespondentWhatsApp(response)}
+                            leadName={getRespondentName(response)}
+                          />
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(response.id || '')}
+                          className="bg-red-600 text-white border-red-600 hover:bg-white hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-4">
-                        {Object.entries(response).filter(([key]) => 
-                          key !== 'submittedAt' && key !== 'id'
-                        ).map(([field, value]) => (
-                          <div key={field} className="border-b border-gray-700 pb-3 last:border-b-0">
-                            <label className="text-sm font-medium text-cyan-500 block mb-1">
-                              {field}
-                            </label>
-                            <div className="text-white">
-                              {formatResponseValue(value)}
-                            </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 pt-0 sm:p-8 sm:pt-0">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {Object.entries(response).filter(([key]) => 
+                        key !== 'submittedAt' && key !== 'id'
+                      ).map(([field, value]) => (
+                        <div key={field} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <label className="mb-2 block text-sm font-medium uppercase tracking-[0.08em] text-cyan-400">
+                            {field}
+                          </label>
+                          <div className="break-words text-white/90">
+                            {formatResponseValue(value)}
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
