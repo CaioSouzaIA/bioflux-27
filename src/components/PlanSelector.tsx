@@ -51,6 +51,7 @@ const PlanSelector: React.FC<PlanSelectorProps> = ({ onSubscriptionCreated, isUp
         .from('subscription_plans')
         .select('*')
         .neq('name', 'Plano Ilimitado') // Excluir plano ilimitado para clientes
+        .neq('name', 'Free - Teste')
         .order('price', { ascending: true });
 
       if (error) throw error;

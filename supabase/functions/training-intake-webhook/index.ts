@@ -6,6 +6,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { resolveTrainingGenerationAgent } from "../_shared/training-plan.ts";
 
 const METABOLIC_ASSESSMENT_MAX_AGE_DAYS = 30;
+const FREE_PLAN_NAME = "Free - Teste";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -46,6 +47,40 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    }
+
+    const { data: freePlanSubscription } = await supabaseClient
+      .from("client_subscriptions")
+      .select("id, service_type, responses_used, subscription_plans!inner(name)")
+      .eq("user_id", userId)
+      .eq("status", "ativo")
+      .eq("subscription_plans.name", FREE_PLAN_NAME)
+      .in("service_type", ["treino", "treino-dieta"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (freePlanSubscription) {
+      const { count: existingTrainingPrescriptionsCount, error: freePlanCountError } = await supabaseClient
+        .from("training_prescriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (freePlanCountError) {
+        throw freePlanCountError;
+      }
+
+      if ((existingTrainingPrescriptionsCount ?? 0) >= 1) {
+        return new Response(
+          JSON.stringify({
+            error: "O plano Free permite gerar apenas 1 treino. Faça upgrade para criar uma nova prescrição.",
+          }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
     }
 
     const { data: existingPrescription } = await supabaseClient
@@ -184,6 +219,21 @@ serve(async (req) => {
 
     if (!prescription?.id) {
       throw new Error("Não foi possível criar a prescrição de treino.");
+    }
+
+    if (freePlanSubscription?.id) {
+      const { error: updateFreePlanError } = await supabaseClient
+        .from("client_subscriptions")
+        .update({
+          responses_used: (freePlanSubscription.responses_used ?? 0) + 1,
+          forms_completed: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", freePlanSubscription.id);
+
+      if (updateFreePlanError) {
+        console.error("Erro ao atualizar uso do plano Free de treino:", updateFreePlanError);
+      }
     }
 
     const workerRequest = fetch(`${supabaseUrl}/functions/v1/training-generate-worker`, {

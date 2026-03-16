@@ -16,6 +16,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getMetabolicAssessmentAgeInDays, isMetabolicAssessmentExpired, METABOLIC_ASSESSMENT_MAX_AGE_DAYS, useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
+import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
+import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
+import { getFreePlanCategoryLabel, hasFreePlan as userHasFreePlan, isFreePlanCategoryLocked } from '@/lib/subscriptionAccess';
 
 interface ClientFormProps {
   formConfig: FormConfig;
@@ -28,11 +32,20 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
   const { toast } = useToast();
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const { data: subscriptions = [] } = useSubscriptions();
+  const { data: dietPrescriptions = [] } = useDietPrescriptions(user?.id);
+  const { data: trainingPrescriptions = [] } = useTrainingPrescriptions(user?.id);
   const { data: metabolicAssessment, isLoading: metabolicLoading } = useMetabolicAssessment(user?.id);
   const needsMetabolicAssessment = formConfig.category === 'anamnese-dieta' || formConfig.category === 'anamnese-treino';
   const hasMetabolicAssessment = !!metabolicAssessment;
   const metabolicAssessmentExpired = isMetabolicAssessmentExpired(metabolicAssessment?.created_at);
   const metabolicAssessmentAgeInDays = getMetabolicAssessmentAgeInDays(metabolicAssessment?.created_at);
+  const hasFreePlan = userHasFreePlan(subscriptions);
+  const freePlanCategoryLocked = isFreePlanCategoryLocked(
+    formConfig.category,
+    dietPrescriptions.length,
+    trainingPrescriptions.length,
+  );
 
   // Debug logs para investigar problema com campos
   console.log('🔍 ClientForm - Debugging form fields:');
@@ -322,6 +335,15 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       return;
     }
 
+    if (hasFreePlan && freePlanCategoryLocked) {
+      toast({
+        title: 'Limite do plano Free atingido',
+        description: `Você já utilizou sua geração de ${getFreePlanCategoryLabel(formConfig.category)} no plano Free. Faça upgrade para gerar novamente.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Verificar se o usuário está logado
     if (!user) {
       toast({
@@ -599,6 +621,22 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
           {formConfig.description && (
             <p className="text-gray-400">{formConfig.description}</p>
           )}
+          {hasFreePlan && (
+            <div className={`mt-4 rounded-2xl border p-4 ${
+              freePlanCategoryLocked
+                ? 'border-yellow-500/20 bg-yellow-500/8 text-yellow-200'
+                : 'border-cyan-500/20 bg-cyan-500/8 text-cyan-200'
+            }`}>
+              <p className="font-medium">
+                Plano Free: 1 dieta e 1 treino, uma única vez cada.
+              </p>
+              <p className="mt-1 text-sm opacity-90">
+                {freePlanCategoryLocked
+                  ? `Sua geração de ${getFreePlanCategoryLabel(formConfig.category)} já foi utilizada.`
+                  : `Sua geração de ${getFreePlanCategoryLabel(formConfig.category)} ainda está disponível.`}
+              </p>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="px-4 sm:px-6">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -629,10 +667,16 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
                 <Button 
                   type="submit" 
                   className="w-full bg-green-600 hover:bg-green-700 text-base py-3" 
-                  disabled={isSubmitting || (needsMetabolicAssessment && (!hasMetabolicAssessment || metabolicAssessmentExpired))}
+                  disabled={
+                    isSubmitting ||
+                    freePlanCategoryLocked ||
+                    (needsMetabolicAssessment && (!hasMetabolicAssessment || metabolicAssessmentExpired))
+                  }
                 >
                   {isSubmitting ? (
                     <>Enviando...</>
+                  ) : freePlanCategoryLocked ? (
+                    <>Limite do plano Free atingido</>
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />

@@ -23,6 +23,7 @@ import MetabolicAssessment from '@/components/MetabolicAssessment';
 import { TrainingPeriodization } from '@/components/TrainingPeriodization';
 import OnboardingModal from '@/components/OnboardingModal';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { hasFreePlan as userHasFreePlan, isFreePlanName, isStandardPlanName } from '@/lib/subscriptionAccess';
 
 interface Subscription {
   id: string;
@@ -180,8 +181,9 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
 
   // Verificar se o usuário tem plano Standard (bloquear funcionalidades)
   const hasStandardPlan = subscriptions.some(sub => 
-    sub.subscription_plans?.name?.includes('Standard')
+    isStandardPlanName(sub.subscription_plans?.name)
   );
+  const hasFreePlan = userHasFreePlan(subscriptions);
 
 
   useEffect(() => {
@@ -297,10 +299,10 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
   };
 
   const handleWhatsAppRedirect = () => {
-    if (hasStandardPlan) {
+    if (hasStandardPlan || hasFreePlan) {
       toast({
         title: "Recurso Indisponível",
-        description: "O AI Coach está disponível apenas no plano Pro. Faça upgrade para acessar este recurso.",
+        description: "O AI Coach está disponível apenas nos planos pagos elegíveis. Faça upgrade para acessar este recurso.",
         variant: "destructive",
       });
       return;
@@ -695,15 +697,17 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
                           <Badge 
                             variant="outline" 
                             className={
-                              (userProfile?.activated || subscription.subscription_plans?.name?.includes('ilimitado'))
+                              (userProfile?.activated || subscription.subscription_plans?.name?.includes('ilimitado') || isFreePlanName(subscription.subscription_plans?.name))
                                 ? "text-green-400 border-green-400 bg-green-400/10" 
                                 : "text-red-400 border-red-400 bg-red-400/10"
                             }
                           >
-                            {(userProfile?.activated || subscription.subscription_plans?.name?.includes('ilimitado')) ? 'ativo' : 'inativo'}
+                            {(userProfile?.activated || subscription.subscription_plans?.name?.includes('ilimitado') || isFreePlanName(subscription.subscription_plans?.name)) ? 'ativo' : 'inativo'}
                           </Badge>
                           <p className="text-gray-400 text-sm mt-1">
-                            R$ {subscription.subscription_plans?.price?.toFixed(2)}/mês
+                            {subscription.subscription_plans?.price === 0
+                              ? 'Gratuito'
+                              : `R$ ${subscription.subscription_plans?.price?.toFixed(2)}/mês`}
                           </p>
                           {userProfile?.updated_at && (
                             <p className="text-xs text-orange-300 mt-1">
@@ -830,34 +834,35 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
               </CardContent>
             </Card>
 
-            {/* AI Coach - Bloqueado para plano Standard */}
-            <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(34,197,94,0.30)' }}>
-              <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
-                <div className="client-card-top flex flex-col items-center flex-1 w-full">
-                  <div className="mb-4 mt-2 relative">
-                    <MessageCircle className="w-10 h-10 text-green-500" />
-                    {hasStandardPlan && (
-                      <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
-                    )}
+            {!hasFreePlan && (
+              <Card className="client-glass-card flex flex-col h-full transition-all" style={{ ['--card-glow' as string]: 'rgba(34,197,94,0.30)' }}>
+                <CardContent className="client-card-body flex flex-col items-center justify-between flex-1 p-6">
+                  <div className="client-card-top flex flex-col items-center flex-1 w-full">
+                    <div className="mb-4 mt-2 relative">
+                      <MessageCircle className="w-10 h-10 text-green-500" />
+                      {hasStandardPlan && (
+                        <Lock className="w-3 h-3 text-red-500 absolute -top-1 -right-1" />
+                      )}
+                    </div>
+                    <h3 className="client-card-title text-white font-semibold text-lg text-center mb-6">AI Coach</h3>
+                    <div className="client-card-copy text-center mb-6 flex-1 flex items-center justify-center">
+                      <p className="text-gray-400 text-sm">Tire dúvidas com seu AI coach</p>
+                    </div>
                   </div>
-                  <h3 className="client-card-title text-white font-semibold text-lg text-center mb-6">AI Coach</h3>
-                  <div className="client-card-copy text-center mb-6 flex-1 flex items-center justify-center">
-                    <p className="text-gray-400 text-sm">Tire dúvidas com seu AI coach</p>
-                  </div>
-                </div>
-                <Button
-                  className={`w-full font-medium ${
-                    !hasStandardPlan
-                      ? 'border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]'
-                      : 'bg-gray-600 cursor-not-allowed text-gray-400'
-                  }`}
-                  onClick={handleWhatsAppRedirect}
-                  disabled={hasStandardPlan}
-                >
-                  {!hasStandardPlan ? 'Chamar no WhatsApp' : 'Apenas no Plano Pro'}
-                </Button>
-              </CardContent>
-            </Card>
+                  <Button
+                    className={`w-full font-medium ${
+                      !hasStandardPlan
+                        ? 'border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] text-white shadow-lg shadow-black/30 hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]'
+                        : 'bg-gray-600 cursor-not-allowed text-gray-400'
+                    }`}
+                    onClick={handleWhatsAppRedirect}
+                    disabled={hasStandardPlan}
+                  >
+                    {!hasStandardPlan ? 'Chamar no WhatsApp' : 'Apenas no Plano Pro'}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Periodização de Treino - Bloqueado para plano Standard */}
             {hasTrainingSubscription && (

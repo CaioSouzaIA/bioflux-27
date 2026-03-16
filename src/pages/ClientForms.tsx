@@ -11,6 +11,9 @@ import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getMetabolicAssessmentAgeInDays, isMetabolicAssessmentExpired, METABOLIC_ASSESSMENT_MAX_AGE_DAYS, useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
+import { useDietPrescriptions } from '@/hooks/useDietPrescriptions';
+import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
+import { getFreePlanCategoryLabel, hasFreePlan as userHasFreePlan, isFreePlanCategoryLocked } from '@/lib/subscriptionAccess';
 
 interface Form {
   id: string;
@@ -25,9 +28,14 @@ const ClientForms: React.FC = () => {
   const navigate = useNavigate();
   const { data: subscriptions = [], isLoading: subscriptionLoading } = useSubscriptions();
   const { data: metabolicAssessment, isLoading: metabolicLoading } = useMetabolicAssessment(user?.id);
+  const { data: dietPrescriptions = [], isLoading: dietPrescriptionsLoading } = useDietPrescriptions(user?.id);
+  const { data: trainingPrescriptions = [], isLoading: trainingPrescriptionsLoading } = useTrainingPrescriptions(user?.id);
   const hasMetabolicAssessment = !!metabolicAssessment;
   const metabolicAssessmentExpired = isMetabolicAssessmentExpired(metabolicAssessment?.created_at);
   const metabolicAssessmentAgeInDays = getMetabolicAssessmentAgeInDays(metabolicAssessment?.created_at);
+  const hasFreePlan = userHasFreePlan(subscriptions);
+  const dietFreeLimitReached = dietPrescriptions.length >= 1;
+  const trainingFreeLimitReached = trainingPrescriptions.length >= 1;
 
   // Verificar se o cliente já completou os formulários
   const activeSubscription = subscriptions.find(sub => sub.status === 'ativo');
@@ -147,6 +155,9 @@ const ClientForms: React.FC = () => {
   const requiresMetabolicAssessment = (category: string) =>
     category === 'anamnese-dieta' || category === 'anamnese-treino';
 
+  const isCategoryBlockedByFreePlan = (category: string) =>
+    hasFreePlan && isFreePlanCategoryLocked(category, dietPrescriptions.length, trainingPrescriptions.length);
+
   const handleFormAccess = (formId: string, category: string) => {
     if (requiresMetabolicAssessment(category) && (!hasMetabolicAssessment || metabolicAssessmentExpired)) {
       toast({
@@ -160,8 +171,17 @@ const ClientForms: React.FC = () => {
       return;
     }
 
+    if (isCategoryBlockedByFreePlan(category)) {
+      toast({
+        title: "Limite do plano Free atingido",
+        description: `Você já utilizou sua geração de ${getFreePlanCategoryLabel(category)} no plano Free. Faça upgrade para gerar novamente.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Verificar se o usuário pode acessar formulários
-    if (formsCompleted) {
+    if (!hasFreePlan && formsCompleted) {
       toast({
         title: "Formulários já preenchidos",
         description: "Você já preencheu os formulários neste período. Aguarde a renovação da sua assinatura para preencher novamente.",
@@ -175,7 +195,7 @@ const ClientForms: React.FC = () => {
   };
 
   // Se ainda está carregando e o usuário existe
-  if ((isLoading || subscriptionLoading || metabolicLoading) && user) {
+  if ((isLoading || subscriptionLoading || metabolicLoading || dietPrescriptionsLoading || trainingPrescriptionsLoading) && user) {
     return (
       <div className="min-h-screen relative bg-black overflow-hidden flex items-center justify-center">
         <BackgroundAnimation />
@@ -243,7 +263,21 @@ const ClientForms: React.FC = () => {
             <p className="text-gray-300">
               Preencha os formulários para nos ajudar a criar a melhor prescrição para você
             </p>
-            {formsCompleted && (
+            {hasFreePlan && (
+              <div className="client-surface-subtle mt-4 rounded-2xl border-cyan-500/20 bg-cyan-500/8 p-4">
+                <div className="flex items-center gap-2 text-cyan-300">
+                  <Lock className="w-5 h-5" />
+                  <span className="font-medium">Plano Free ativo</span>
+                </div>
+                <p className="mt-2 text-sm text-cyan-200">
+                  Este plano é de teste: você pode gerar 1 dieta e 1 treino, uma única vez cada.
+                </p>
+                <p className="mt-2 text-xs text-cyan-100/80">
+                  Dieta: {dietFreeLimitReached ? 'já utilizada' : 'disponível'} | Treino: {trainingFreeLimitReached ? 'já utilizado' : 'disponível'}
+                </p>
+              </div>
+            )}
+            {!hasFreePlan && formsCompleted && (
               <div className="client-surface-subtle mt-4 rounded-2xl border-yellow-500/20 bg-yellow-500/8 p-4">
                 <div className="flex items-center gap-2 text-yellow-400">
                   <Lock className="w-5 h-5" />
@@ -289,12 +323,16 @@ const ClientForms: React.FC = () => {
               </Card>
             ) : (
               forms.map((form) => (
-                <Card key={form.id} className={`client-surface-panel rounded-3xl transition-all ${formsCompleted ? 'opacity-60' : 'hover:border-white/15'}`}>
+                <Card key={form.id} className={`client-surface-panel rounded-3xl transition-all ${
+                  (isCategoryBlockedByFreePlan(form.category) || (!hasFreePlan && formsCompleted)) ? 'opacity-60' : 'hover:border-white/15'
+                }`}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-white flex items-center gap-3">
-                          {formsCompleted ? <Lock className="w-5 h-5 text-yellow-400" /> : <FileText className="w-5 h-5" />}
+                          {(isCategoryBlockedByFreePlan(form.category) || (!hasFreePlan && formsCompleted))
+                            ? <Lock className="w-5 h-5 text-yellow-400" />
+                            : <FileText className="w-5 h-5" />}
                           {form.title}
                         </CardTitle>
                         {form.description && (
@@ -312,9 +350,15 @@ const ClientForms: React.FC = () => {
                     <Button 
                       className="client-action-button w-full"
                       onClick={() => handleFormAccess(form.id, form.category)}
-                      disabled={formsCompleted || (requiresMetabolicAssessment(form.category) && (!hasMetabolicAssessment || metabolicAssessmentExpired))}
+                      disabled={
+                        isCategoryBlockedByFreePlan(form.category) ||
+                        (!hasFreePlan && formsCompleted) ||
+                        (requiresMetabolicAssessment(form.category) && (!hasMetabolicAssessment || metabolicAssessmentExpired))
+                      }
                     >
-                      {formsCompleted
+                      {isCategoryBlockedByFreePlan(form.category)
+                        ? `Limite de ${getFreePlanCategoryLabel(form.category)} atingido`
+                        : !hasFreePlan && formsCompleted
                         ? 'Formulário Bloqueado'
                         : requiresMetabolicAssessment(form.category) && (!hasMetabolicAssessment || metabolicAssessmentExpired)
                           ? 'Atualize sua avaliação metabólica'
