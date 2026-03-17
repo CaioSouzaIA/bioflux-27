@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, Expand, FileCheck2, FileText, Flame, Loader2, Play, Target, Timer, Weight } from 'lucide-react';
 import { endOfMonth, format, getDate, isSameMonth } from 'date-fns';
@@ -86,6 +86,56 @@ const getExerciseEmbedUrl = (videoUrl?: string | null) => {
   return `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
 };
 
+const loadYouTubeIframeApi = () => {
+  if (typeof window === 'undefined') {
+    return Promise.resolve(null);
+  }
+
+  const ytWindow = window as typeof window & {
+    YT?: {
+      Player: new (
+        elementId: string,
+        options: {
+          videoId: string;
+          playerVars?: Record<string, string | number>;
+          events?: {
+            onStateChange?: (event: { data: number }) => void;
+          };
+        },
+      ) => { destroy?: () => void };
+      PlayerState: {
+        ENDED: number;
+      };
+    };
+    __biofluxYoutubeApiPromise?: Promise<unknown>;
+    onYouTubeIframeAPIReady?: () => void;
+  };
+
+  if (ytWindow.YT?.Player) {
+    return Promise.resolve(ytWindow.YT);
+  }
+
+  if (!ytWindow.__biofluxYoutubeApiPromise) {
+    ytWindow.__biofluxYoutubeApiPromise = new Promise((resolve) => {
+      const existingScript = document.querySelector('script[data-youtube-iframe-api="true"]');
+
+      ytWindow.onYouTubeIframeAPIReady = () => {
+        resolve(ytWindow.YT ?? null);
+      };
+
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://www.youtube.com/iframe_api';
+        script.async = true;
+        script.dataset.youtubeIframeApi = 'true';
+        document.body.appendChild(script);
+      }
+    });
+  }
+
+  return ytWindow.__biofluxYoutubeApiPromise;
+};
+
 const parseRestSeconds = (value?: string | null) => {
   const trimmed = value?.trim().toLowerCase() || '';
   if (!trimmed) return null;
@@ -132,6 +182,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const [expandedWorkout, setExpandedWorkout] = useState<string>('');
   const [loadDrafts, setLoadDrafts] = useState<Record<string, ExerciseLoadDraft>>({});
   const [restTimers, setRestTimers] = useState<Record<string, RestTimerState>>({});
+  const inlineVideoPlayerRef = useRef<{ destroy?: () => void } | null>(null);
   const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
   const { latestLoadsMap, saveLoad } = useExerciseLoadLogs(prescription.user_id, prescription.id);
   const [checkinAccordionValue, setCheckinAccordionValue] = useState('');
@@ -141,6 +192,25 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
     () => getDate(endOfMonth(selectedMonth)),
     [selectedMonth],
   );
+
+  const inlineVideoMap = useMemo(() => {
+    const entries = new Map<string, { title: string; url: string }>();
+
+    for (const workout of structuredPlan?.workouts ?? []) {
+      workout.exercises.forEach((exercise, index) => {
+        if (exercise.video_url) {
+          entries.set(`${workout.label}-${index}`, {
+            title: exercise.name,
+            url: exercise.video_url,
+          });
+        }
+      });
+    }
+
+    return entries;
+  }, [structuredPlan]);
+
+  const activeInlineVideo = activeInlineVideoKey ? inlineVideoMap.get(activeInlineVideoKey) ?? null : null;
 
   const splitLabel = useMemo(
     () => extractSplitLabel(structuredPlan?.header.split || ''),
@@ -260,6 +330,68 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
       return next;
     });
   }, [latestLoadsMap, structuredPlan]);
+
+  useEffect(() => {
+    if (!activeInlineVideoKey || !activeInlineVideo?.url) {
+      inlineVideoPlayerRef.current?.destroy?.();
+      inlineVideoPlayerRef.current = null;
+      return;
+    }
+
+    const videoId = extractYoutubeVideoId(activeInlineVideo.url);
+    const playerElementId = `inline-youtube-player-${activeInlineVideoKey.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+
+    if (!videoId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    loadYouTubeIframeApi().then((YT) => {
+      if (cancelled || !YT || !('Player' in YT)) {
+        return;
+      }
+
+      inlineVideoPlayerRef.current?.destroy?.();
+
+      const playerState = (YT as { PlayerState?: { ENDED: number } }).PlayerState;
+
+      inlineVideoPlayerRef.current = new (YT as {
+        Player: new (
+          elementId: string,
+          options: {
+            videoId: string;
+            playerVars?: Record<string, string | number>;
+            events?: {
+              onStateChange?: (event: { data: number }) => void;
+            };
+          },
+        ) => { destroy?: () => void };
+      }).Player(playerElementId, {
+        videoId,
+        playerVars: {
+          autoplay: 1,
+          playsinline: 1,
+          rel: 0,
+        },
+        events: {
+          onStateChange: (event) => {
+            if (playerState && event.data === playerState.ENDED) {
+              setActiveInlineVideoKey((current) =>
+                current === activeInlineVideoKey ? null : current,
+              );
+            }
+          },
+        },
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      inlineVideoPlayerRef.current?.destroy?.();
+      inlineVideoPlayerRef.current = null;
+    };
+  }, [activeInlineVideo, activeInlineVideoKey]);
 
   useEffect(() => {
     const hasRunningTimer = Object.values(restTimers).some((timer) => timer.running);
@@ -662,29 +794,23 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
 
                       const exerciseVideoKey = `${workout.label}-${index}`;
                       const previewImage = getExercisePreviewImage(exercise.video_url);
-                      const embedUrl = getExerciseEmbedUrl(exercise.video_url);
                       const isInlineVideoActive = activeInlineVideoKey === exerciseVideoKey;
 
-                      if (isInlineVideoActive && embedUrl) {
+                      if (isInlineVideoActive) {
                         return (
-                          <button
-                            type="button"
-                            onClick={() => setExpandedVideo({ title: exercise.name, url: exercise.video_url! })}
-                            className="group relative mt-1 block overflow-hidden rounded-2xl border border-cyan-400/30 bg-black/60 text-left"
-                          >
-                            <iframe
-                              src={embedUrl}
-                              title={`Preview de ${exercise.name}`}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                              allowFullScreen
-                              className="h-32 w-full pointer-events-none"
+                          <div className="group relative mt-1 overflow-hidden rounded-2xl border border-cyan-400/30 bg-black/60">
+                            <div
+                              id={`inline-youtube-player-${exerciseVideoKey.replace(/[^a-zA-Z0-9_-]/g, '-')}`}
+                              className="h-32 w-full"
                             />
-                            <div className="pointer-events-none absolute right-3 top-3">
-                              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-lg shadow-black/30">
-                                <Expand className="h-3.5 w-3.5" />
-                              </span>
-                            </div>
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedVideo({ title: exercise.name, url: exercise.video_url! })}
+                              className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-lg shadow-black/30 transition hover:bg-black/75"
+                            >
+                              <Expand className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         );
                       }
 

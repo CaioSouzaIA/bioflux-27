@@ -170,7 +170,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     }
 
     const interval = window.setInterval(() => {
-      setSubmissionPhaseIndex((current) => (current + 1) % submissionPhases.length);
+      setSubmissionPhaseIndex((current) => {
+        if (current >= submissionPhases.length - 1) {
+          return current;
+        }
+
+        return current + 1;
+      });
     }, 750);
 
     return () => window.clearInterval(interval);
