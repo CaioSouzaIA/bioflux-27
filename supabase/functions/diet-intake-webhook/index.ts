@@ -6,6 +6,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 
 const METABOLIC_ASSESSMENT_MAX_AGE_DAYS = 30;
 const FREE_PLAN_NAME = "Free - Teste";
+const DUPLICATE_REUSE_WINDOW_MINUTES = 30;
 
 const runDietGenerateWorker = async (
   supabaseUrl: string,
@@ -35,6 +36,28 @@ const runDietGenerateWorker = async (
   }
 
   return responseJson;
+};
+
+const markSupersededDietPrescriptions = async (
+  supabaseClient: ReturnType<typeof createClient>,
+  prescriptionIds: string[],
+) => {
+  if (!prescriptionIds.length) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("diet_prescriptions")
+    .update({
+      generation_status: "failed",
+      error_message: "Prescrição substituída por uma tentativa mais recente.",
+      updated_at: new Date().toISOString(),
+    })
+    .in("id", prescriptionIds);
+
+  if (error) {
+    console.error("Erro ao marcar dietas duplicadas como substituídas:", error);
+  }
 };
 
 serve(async (req) => {
@@ -162,7 +185,7 @@ serve(async (req) => {
       }
     }
 
-    const { data: existingPrescription } = await supabaseClient
+    const { data: exactExistingPrescription } = await supabaseClient
       .from("diet_prescriptions")
       .select("*")
       .eq("form_response_id", formResponseId)
@@ -171,22 +194,49 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (existingPrescription) {
+    const { data: recentReusablePrescriptions, error: recentReusablePrescriptionsError } = await supabaseClient
+      .from("diet_prescriptions")
+      .select("*")
+      .eq("user_id", userId)
+      .in("generation_status", ["pending", "processing", "failed"])
+      .gte(
+        "created_at",
+        new Date(Date.now() - DUPLICATE_REUSE_WINDOW_MINUTES * 60 * 1000).toISOString(),
+      )
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (recentReusablePrescriptionsError) {
+      throw recentReusablePrescriptionsError;
+    }
+
+    const reusablePrescription =
+      exactExistingPrescription ??
+      recentReusablePrescriptions?.find((prescription) => prescription.form_response_id !== formResponseId) ??
+      null;
+
+    if (reusablePrescription) {
+      const staleDuplicateIds = (recentReusablePrescriptions ?? [])
+        .filter((prescription) => prescription.id !== reusablePrescription.id)
+        .map((prescription) => prescription.id);
+
+      await markSupersededDietPrescriptions(supabaseClient, staleDuplicateIds);
+
       if (
-        existingPrescription.generation_status === "pending" ||
-        existingPrescription.generation_status === "failed"
+        reusablePrescription.generation_status === "pending" ||
+        reusablePrescription.generation_status === "failed"
       ) {
         const workerResult = await runDietGenerateWorker(
           supabaseUrl,
           internalFunctionSecret,
-          existingPrescription.id,
+          reusablePrescription.id,
         );
 
         return new Response(
           JSON.stringify({
-            prescriptionId: existingPrescription.id,
+            prescriptionId: reusablePrescription.id,
             generation_status: workerResult?.generation_status ?? "processing",
-            plan_name: existingPrescription.plan_name,
+            plan_name: reusablePrescription.plan_name,
             reused: true,
           }),
           {
@@ -198,9 +248,9 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({
-          prescriptionId: existingPrescription.id,
-          generation_status: existingPrescription.generation_status,
-          plan_name: existingPrescription.plan_name,
+          prescriptionId: reusablePrescription.id,
+          generation_status: reusablePrescription.generation_status,
+          plan_name: reusablePrescription.plan_name,
           reused: true,
         }),
         {
