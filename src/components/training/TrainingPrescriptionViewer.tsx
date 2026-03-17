@@ -95,12 +95,13 @@ export const TrainingPrescriptionViewer: React.FC<TrainingPrescriptionViewerProp
       onValueChange={setExpandedPrescription}
       className="space-y-4"
     >
-      {prescriptions.map((prescription) => {
+      {prescriptions.map((prescription, index) => {
         const status = statusMap[prescription.generation_status];
         const shouldShowStatusBadge = prescription.generation_status !== 'completed';
         const previewPlan = prescription.structured_plan;
         const accordionValue = prescription.id;
         const isCurrentPrescription = prescriptions[0]?.id === prescription.id;
+        const newerPrescription = index > 0 ? prescriptions[index - 1] : null;
 
         return (
           <AccordionItem
@@ -187,7 +188,12 @@ export const TrainingPrescriptionViewer: React.FC<TrainingPrescriptionViewerProp
               </div>
             </div>
             <AccordionContent className="pb-6">
-              <TrainingPlanContent prescription={prescription} enableCheckins={enableCheckins} />
+              <TrainingPlanContent
+                prescription={prescription}
+                enableCheckins={enableCheckins}
+                checkinStartDate={prescription.created_at}
+                checkinEndDateExclusive={newerPrescription?.created_at ?? null}
+              />
             </AccordionContent>
           </AccordionItem>
         );

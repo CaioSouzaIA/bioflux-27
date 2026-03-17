@@ -21,6 +21,8 @@ import type { TrainingPrescription } from '@/hooks/useTrainingPrescriptions';
 interface TrainingPlanContentProps {
   prescription: TrainingPrescription;
   enableCheckins?: boolean;
+  checkinStartDate?: string | null;
+  checkinEndDateExclusive?: string | null;
 }
 
 interface RestTimerState {
@@ -168,6 +170,8 @@ const formatCountdown = (seconds: number) => {
 export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   prescription,
   enableCheckins = false,
+  checkinStartDate = null,
+  checkinEndDateExclusive = null,
 }) => {
   const currentMonthKey = format(new Date(), 'yyyy-MM');
   const structuredPlan = prescription.structured_plan;
@@ -183,7 +187,13 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const [loadDrafts, setLoadDrafts] = useState<Record<string, ExerciseLoadDraft>>({});
   const [restTimers, setRestTimers] = useState<Record<string, RestTimerState>>({});
   const inlineVideoPlayerRef = useRef<{ destroy?: () => void } | null>(null);
-  const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
+  const { allCheckins, addCheckin } = useWorkoutCheckins(
+    enableCheckins ? prescription.user_id : undefined,
+    {
+      startDate: checkinStartDate,
+      endDateExclusive: checkinEndDateExclusive,
+    },
+  );
   const { latestLoadsMap, saveLoad } = useExerciseLoadLogs(prescription.user_id, prescription.id);
   const [checkinAccordionValue, setCheckinAccordionValue] = useState('');
   const [selectedMonthKey, setSelectedMonthKey] = useState(currentMonthKey);

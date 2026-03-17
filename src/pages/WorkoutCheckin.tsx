@@ -13,6 +13,7 @@ import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
 import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
+import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
 import { cn } from '@/lib/utils';
 
 const WorkoutCheckin: React.FC = () => {
@@ -22,6 +23,8 @@ const WorkoutCheckin: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { data: trainingPrescriptions = [] } = useTrainingPrescriptions(user?.id);
+  const currentTrainingPrescription = trainingPrescriptions[0];
 
   const {
     weeklyCheckins,
@@ -29,7 +32,9 @@ const WorkoutCheckin: React.FC = () => {
     isLoading,
     addCheckin,
     deleteCheckin,
-  } = useWorkoutCheckins(user?.id);
+  } = useWorkoutCheckins(user?.id, {
+    startDate: currentTrainingPrescription?.created_at ?? null,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +141,7 @@ const WorkoutCheckin: React.FC = () => {
                   Registrar novo treino
                 </CardTitle>
                 <CardDescription className="text-white/60">
-                  Informe a divisão e a data para manter seu histórico sempre organizado.
+                  Informe a divisão e a data para manter os registros organizados pelo treino atual.
                 </CardDescription>
               </CardHeader>
               <CardContent>

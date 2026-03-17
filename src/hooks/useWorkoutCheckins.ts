@@ -10,20 +10,42 @@ export interface WorkoutCheckin {
   created_at: string;
 }
 
-export const useWorkoutCheckins = (userId: string | undefined) => {
+interface UseWorkoutCheckinsOptions {
+  startDate?: string | null;
+  endDateExclusive?: string | null;
+}
+
+const normalizeDateFilter = (value?: string | null) => value?.slice(0, 10) ?? null;
+
+export const useWorkoutCheckins = (
+  userId: string | undefined,
+  options: UseWorkoutCheckinsOptions = {},
+) => {
   const queryClient = useQueryClient();
+  const startDate = normalizeDateFilter(options.startDate);
+  const endDateExclusive = normalizeDateFilter(options.endDateExclusive);
 
   // Buscar todos os check-ins do usuário
   const { data: allCheckins = [], isLoading } = useQuery<WorkoutCheckin[]>({
-    queryKey: ['workout-checkins', userId],
+    queryKey: ['workout-checkins', userId, startDate, endDateExclusive],
     queryFn: async () => {
       if (!userId) return [];
 
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('workout_checkins')
         .select('*')
         .eq('user_id', userId)
         .order('workout_date', { ascending: false });
+
+      if (startDate) {
+        query = query.gte('workout_date', startDate);
+      }
+
+      if (endDateExclusive) {
+        query = query.lt('workout_date', endDateExclusive);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return (data || []) as WorkoutCheckin[];
