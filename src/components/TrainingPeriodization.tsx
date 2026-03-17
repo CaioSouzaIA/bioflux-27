@@ -214,49 +214,49 @@ export const TrainingPeriodization: React.FC<TrainingPeriodizationProps> = ({
                   className="group client-surface-panel overflow-hidden rounded-3xl border border-white/10 px-6"
                 >
                   <div className="flex items-start gap-4 py-6">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-lg font-semibold text-white">{periodization.current_objective}</p>
-                        <Badge
-                          variant="outline"
-                          className="border-white/15 bg-white/5 text-white/70"
-                        >
-                          Registro
-                        </Badge>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-white/55">
-                        <span className="inline-flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Atualizado em: {formatDateTime(periodization.updated_at)}
-                        </span>
-                      </div>
-
-                      {expandedHistoryItem !== accordionValue && (
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
-                          <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                            {periodization.training_volume}
-                          </span>
-                          <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                            {periodization.intensity}
-                          </span>
-                          <span className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                            {periodization.methods}
-                          </span>
-                          {workoutPreview && (
-                            <span className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                              {workoutPreview}
-                            </span>
-                          )}
+                    <AccordionPrimitive.Header className="min-w-0 flex-1">
+                      <AccordionPrimitive.Trigger className="w-full space-y-3 text-left text-white hover:no-underline">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-lg font-semibold text-white">{periodization.current_objective}</p>
+                          <Badge
+                            variant="outline"
+                            className="border-white/15 bg-white/5 text-white/70"
+                          >
+                            Registro
+                          </Badge>
                         </div>
-                      )}
-                    </div>
 
-                    <AccordionPrimitive.Header className="flex">
-                      <AccordionPrimitive.Trigger className="inline-flex h-10 w-10 items-center justify-center bg-transparent text-white/70 transition-all hover:text-white [&[data-state=open]>svg]:rotate-180">
-                        <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-white/55">
+                          <span className="inline-flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Atualizado em: {formatDateTime(periodization.updated_at)}
+                          </span>
+                        </div>
+
+                        {expandedHistoryItem !== accordionValue && (
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
+                            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                              {periodization.training_volume}
+                            </span>
+                            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                              {periodization.intensity}
+                            </span>
+                            <span className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                              {periodization.methods}
+                            </span>
+                            {workoutPreview && (
+                              <span className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                                {workoutPreview}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </AccordionPrimitive.Trigger>
                     </AccordionPrimitive.Header>
+
+                    <div className="inline-flex h-10 w-10 items-center justify-center text-white/70 transition-all group-data-[state=open]:text-white">
+                      <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </div>
                   </div>
 
                   <AccordionContent className="space-y-6 pb-6">

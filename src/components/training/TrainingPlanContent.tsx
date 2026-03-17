@@ -741,33 +741,35 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
             className="group client-surface-subtle overflow-hidden rounded-2xl border border-white/8 px-5"
           >
             <div className="flex items-center gap-3 py-5">
-              <div className="flex-1 space-y-1 text-left">
-                <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
-                <p className="text-lg font-semibold text-white">{workout.title}</p>
-                {expandedWorkout !== `${prescription.id}-workout-${workout.label}` && (() => {
-                  const summary = workoutCheckinSummary.get(workout.label) ?? {
-                    total: 0,
-                    lastDate: null,
-                  };
+              <AccordionPrimitive.Header className="min-w-0 flex-1">
+                <AccordionPrimitive.Trigger className="w-full space-y-1 text-left text-white hover:no-underline">
+                  <p className="text-xs uppercase tracking-[0.24em] text-white/40">Treino {workout.label}</p>
+                  <p className="text-lg font-semibold text-white">{workout.title}</p>
+                  {expandedWorkout !== `${prescription.id}-workout-${workout.label}` && (() => {
+                    const summary = workoutCheckinSummary.get(workout.label) ?? {
+                      total: 0,
+                      lastDate: null,
+                    };
 
-                  if (summary.total === 0 && !summary.lastDate) {
-                    return null;
-                  }
+                    if (summary.total === 0 && !summary.lastDate) {
+                      return null;
+                    }
 
-                  return (
-                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-white/60">
-                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        {summary.total}x executado
-                      </span>
-                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
-                        {summary.lastDate
-                          ? `Última execução: ${format(new Date(summary.lastDate), 'dd/MM/yyyy', { locale: ptBR })}`
-                          : 'Sem registro'}
-                      </span>
-                    </div>
-                  );
-                })()}
-              </div>
+                    return (
+                      <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-white/60">
+                        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                          {summary.total}x executado
+                        </span>
+                        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+                          {summary.lastDate
+                            ? `Última execução: ${format(new Date(summary.lastDate), 'dd/MM/yyyy', { locale: ptBR })}`
+                            : 'Sem registro'}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </AccordionPrimitive.Trigger>
+              </AccordionPrimitive.Header>
               <div className="ml-auto flex items-center gap-2">
                 {enableCheckins && (
                   <Button
@@ -785,11 +787,9 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                     )}
                   </Button>
                 )}
-                <AccordionPrimitive.Header className="flex">
-                  <AccordionPrimitive.Trigger className="inline-flex h-10 w-10 items-center justify-center bg-transparent text-white/70 transition-all hover:text-white [&[data-state=open]>svg]:rotate-180">
-                    <ChevronDown className="h-4 w-4 transition-transform duration-200" />
-                  </AccordionPrimitive.Trigger>
-                </AccordionPrimitive.Header>
+                <div className="inline-flex h-10 w-10 items-center justify-center text-white/70 transition-all group-data-[state=open]:text-white">
+                  <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                </div>
               </div>
             </div>
             <AccordionContent className="space-y-4 pb-5">
