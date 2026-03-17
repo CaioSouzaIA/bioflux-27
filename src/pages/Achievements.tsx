@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface Achievement {
   id: string;
@@ -27,6 +27,22 @@ interface Achievement {
     description: string;
     image_url: string;
   };
+}
+
+interface BadgeWithCategory {
+  id: string;
+  name: string;
+  description: string;
+  image_url: string;
+  achievement_title: string;
+  created_at: string;
+  metadata: unknown;
+  category_color: string | null;
+  achievement_categories: {
+    id: string;
+    name: string;
+    color: string;
+  } | null;
 }
 
 const DEFAULT_BADGE_COLOR = '#22D3EE';
@@ -78,12 +94,11 @@ export default function Achievements() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("badges")
-        .select("*")
-        .order("achievement_title", { ascending: true })
+        .select("*, achievement_categories(id, name, color)")
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return data;
+      return (data ?? []) as BadgeWithCategory[];
     },
   });
 
@@ -135,6 +150,48 @@ export default function Achievements() {
   const achievementsMap = new Map(
     userAchievements?.map(a => [a.badge_id, a.earned_at]) || []
   );
+
+  const sortedBadges = useMemo(() => {
+    return [...(allBadges ?? [])].sort((left, right) => {
+      const leftCategory = left.achievement_categories?.name ?? 'Sem categoria';
+      const rightCategory = right.achievement_categories?.name ?? 'Sem categoria';
+      const categoryComparison = leftCategory.localeCompare(rightCategory, 'pt-BR', { sensitivity: 'base' });
+
+      if (categoryComparison !== 0) {
+        return categoryComparison;
+      }
+
+      const titleComparison = (left.achievement_title || left.name).localeCompare(
+        right.achievement_title || right.name,
+        'pt-BR',
+        { sensitivity: 'base', numeric: true },
+      );
+
+      if (titleComparison !== 0) {
+        return titleComparison;
+      }
+
+      return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+    });
+  }, [allBadges]);
+
+  const groupedBadges = useMemo(() => {
+    const groups = new Map<string, { label: string; color: string; badges: BadgeWithCategory[] }>();
+
+    for (const badge of sortedBadges) {
+      const key = badge.achievement_categories?.id ?? 'sem-categoria';
+      const currentGroup = groups.get(key) ?? {
+        label: badge.achievement_categories?.name ?? 'Sem categoria',
+        color: badge.achievement_categories?.color ?? badge.category_color ?? DEFAULT_BADGE_COLOR,
+        badges: [],
+      };
+
+      currentGroup.badges.push(badge);
+      groups.set(key, currentGroup);
+    }
+
+    return Array.from(groups.values());
+  }, [sortedBadges]);
 
   // Mutation para salvar novas conquistas
   const saveAchievementMutation = useMutation({
@@ -290,97 +347,112 @@ export default function Achievements() {
                 </Card>
               ))}
             </div>
-          ) : allBadges && allBadges.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {allBadges.map((badge) => {
-                const earnedDate = achievementsMap.get(badge.id);
-                const badgeColor = badge.category_color || DEFAULT_BADGE_COLOR;
+          ) : sortedBadges.length > 0 ? (
+            <div className="space-y-8">
+              {groupedBadges.map((group) => (
+                <div key={group.label} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: group.color }}
+                    />
+                    <h3 className="text-lg font-semibold text-white">{group.label}</h3>
+                    <span className="text-sm text-white/45">{group.badges.length} conquista(s)</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {group.badges.map((badge) => {
+                      const earnedDate = achievementsMap.get(badge.id);
+                      const badgeColor = badge.achievement_categories?.color || badge.category_color || DEFAULT_BADGE_COLOR;
                 
-                // Verificar metadados da badge
-                const metadata = badge.metadata as { type?: string; days_required?: number; monthly_checkins_required?: number } | null;
+                      // Verificar metadados da badge
+                      const metadata = badge.metadata as { type?: string; days_required?: number; monthly_checkins_required?: number } | null;
                 
-                // Conquista de Lealdade baseada em idade da conta
-                const isAccountAgeBadge = metadata?.type === 'account_age';
-                const daysRequired = metadata?.days_required || 0;
-                const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
+                      // Conquista de Lealdade baseada em idade da conta
+                      const isAccountAgeBadge = metadata?.type === 'account_age';
+                      const daysRequired = metadata?.days_required || 0;
+                      const isEarnedByTime = isAccountAgeBadge && accountAgeDays >= daysRequired;
                 
-                // Conquista Mestre do Ferro baseada em check-ins mensais
-                const isWorkoutCheckinBadge = metadata?.type === 'workout_checkins';
-                const checkinsRequired = metadata?.monthly_checkins_required || 0;
-                const isEarnedByCheckins = isWorkoutCheckinBadge && monthlyCheckinsCount >= checkinsRequired;
+                      // Conquista Mestre do Ferro baseada em check-ins mensais
+                      const isWorkoutCheckinBadge = metadata?.type === 'workout_checkins';
+                      const checkinsRequired = metadata?.monthly_checkins_required || 0;
+                      const isEarnedByCheckins = isWorkoutCheckinBadge && monthlyCheckinsCount >= checkinsRequired;
                 
-                // Badge é considerada conquistada se: já está registrada, atingiu dias necessários, ou atingiu check-ins necessários
-                const isEarned = !!earnedDate || isEarnedByTime || isEarnedByCheckins;
+                      // Badge é considerada conquistada se: já está registrada, atingiu dias necessários, ou atingiu check-ins necessários
+                      const isEarned = !!earnedDate || isEarnedByTime || isEarnedByCheckins;
                 
-                return (
-                  <Card 
-                    key={badge.id} 
-                    className={`p-6 backdrop-blur-sm transition-all ${
-                      isEarned 
-                        ? 'client-surface-panel hover:opacity-100' 
-                        : 'client-surface-panel border-white/6 opacity-60'
-                    }`}
-                    style={isEarned ? { borderColor: hexToRgba(badgeColor, 0.42) } : undefined}
-                  >
-                    <div className="flex flex-col items-center text-center">
-                      <div
-                        className={`mb-4 rounded-full p-1 border-2 ${
-                          isEarned ? '' : 'bg-gray-800/20 border-black/30'
-                        }`}
-                        style={
-                          isEarned
-                            ? {
-                                background: hexToRgba(badgeColor, 0.12),
-                                borderColor: hexToRgba(badgeColor, 0.72),
+                      return (
+                        <Card 
+                          key={badge.id} 
+                          className={`p-6 backdrop-blur-sm transition-all ${
+                            isEarned 
+                              ? 'client-surface-panel hover:opacity-100' 
+                              : 'client-surface-panel border-white/6 opacity-60'
+                          }`}
+                          style={isEarned ? { borderColor: hexToRgba(badgeColor, 0.42) } : undefined}
+                        >
+                          <div className="flex flex-col items-center text-center">
+                            <div
+                              className={`mb-4 rounded-full p-1 border-2 ${
+                                isEarned ? '' : 'bg-gray-800/20 border-black/30'
+                              }`}
+                              style={
+                                isEarned
+                                  ? {
+                                      background: hexToRgba(badgeColor, 0.12),
+                                      borderColor: hexToRgba(badgeColor, 0.72),
+                                    }
+                                  : undefined
                               }
-                            : undefined
-                        }
-                      >
-                        <img
-                          src={badge.image_url}
-                          alt={badge.name}
-                          className={`h-20 w-20 object-cover rounded-full ${!isEarned && 'grayscale'}`}
-                        />
-                      </div>
-                      <h3 className="font-semibold text-lg mb-2 text-white">
-                        {badge.name}
-                      </h3>
-                      <p className="text-sm text-gray-300 mb-3">
-                        {badge.description}
-                      </p>
-                      {isEarned ? (
-                        <div className="flex items-center gap-2 text-xs" style={{ color: badgeColor }}>
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            Conquistado em{" "}
-                            {earnedDate 
-                              ? format(new Date(earnedDate), "dd/MM/yyyy", { locale: ptBR })
-                              : isAccountAgeBadge && profile?.created_at
-                                ? format(
-                                    new Date(
-                                      new Date(profile.created_at).getTime() + 
-                                      daysRequired * 24 * 60 * 60 * 1000
-                                    ), 
-                                    "dd/MM/yyyy", 
-                                    { locale: ptBR }
-                                  )
-                                : format(new Date(), "dd/MM/yyyy", { locale: ptBR })
-                            }
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="text-xs text-gray-500 italic">
-                          {isAccountAgeBadge && daysRequired > 0 
-                            ? `Faltam ${daysRequired - accountAgeDays} dias`
-                            : isWorkoutCheckinBadge && checkinsRequired > 0
-                              ? `${monthlyCheckinsCount}/${checkinsRequired} treinos este mês`
-                              : 'Conquista bloqueada'}
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
+                            >
+                              <img
+                                src={badge.image_url}
+                                alt={badge.name}
+                                className={`h-20 w-20 object-cover rounded-full ${!isEarned && 'grayscale'}`}
+                              />
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2 text-white">
+                              {badge.name}
+                            </h3>
+                            <p className="text-sm text-gray-300 mb-3">
+                              {badge.description}
+                            </p>
+                            {isEarned ? (
+                              <div className="flex items-center gap-2 text-xs" style={{ color: badgeColor }}>
+                                <Calendar className="h-3 w-3" />
+                                <span>
+                                  Conquistado em{" "}
+                                  {earnedDate 
+                                    ? format(new Date(earnedDate), "dd/MM/yyyy", { locale: ptBR })
+                                    : isAccountAgeBadge && profile?.created_at
+                                      ? format(
+                                          new Date(
+                                            new Date(profile.created_at).getTime() + 
+                                            daysRequired * 24 * 60 * 60 * 1000
+                                          ), 
+                                          "dd/MM/yyyy", 
+                                          { locale: ptBR }
+                                        )
+                                      : format(new Date(), "dd/MM/yyyy", { locale: ptBR })
+                                  }
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-xs text-gray-500 italic">
+                                {isAccountAgeBadge && daysRequired > 0 
+                                  ? `Faltam ${daysRequired - accountAgeDays} dias`
+                                  : isWorkoutCheckinBadge && checkinsRequired > 0
+                                    ? `${monthlyCheckinsCount}/${checkinsRequired} treinos este mês`
+                                    : 'Conquista bloqueada'}
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <Card className="client-surface-panel rounded-3xl p-12 text-center">

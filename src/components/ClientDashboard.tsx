@@ -170,6 +170,19 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     const checkinsRequired = metadata?.monthly_checkins_required || 0;
     const isEarnedByCheckins = isWorkoutCheckinBadge && monthlyCheckinsCount >= checkinsRequired;
     return !!earnedDate || isEarnedByTime || isEarnedByCheckins;
+  }).sort((left, right) => {
+    const leftCategory = left.category_name ?? 'Sem categoria';
+    const rightCategory = right.category_name ?? 'Sem categoria';
+    const categoryComparison = leftCategory.localeCompare(rightCategory, 'pt-BR', { sensitivity: 'base' });
+
+    if (categoryComparison !== 0) {
+      return categoryComparison;
+    }
+
+    return (left.achievement_title ?? left.name).localeCompare(right.achievement_title ?? right.name, 'pt-BR', {
+      sensitivity: 'base',
+      numeric: true,
+    });
   });
   const earnedAchievementsCount = earnedBadges.length;
   const selectedBadge = earnedBadges.find((badge) => badge.id === userProfile?.selected_badge_id) || null;

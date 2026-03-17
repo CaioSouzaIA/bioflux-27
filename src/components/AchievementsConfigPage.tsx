@@ -175,6 +175,46 @@ export const AchievementsConfigPage: React.FC = () => {
     [categories]
   );
 
+  const sortedBadges = useMemo(() => {
+    return [...badges].sort((left, right) => {
+      const leftCategory = left.achievement_categories?.name ?? 'Sem categoria';
+      const rightCategory = right.achievement_categories?.name ?? 'Sem categoria';
+      const categoryComparison = leftCategory.localeCompare(rightCategory, 'pt-BR', { sensitivity: 'base' });
+
+      if (categoryComparison !== 0) {
+        return categoryComparison;
+      }
+
+      const titleComparison = left.achievement_title.localeCompare(right.achievement_title, 'pt-BR', {
+        sensitivity: 'base',
+        numeric: true,
+      });
+
+      if (titleComparison !== 0) {
+        return titleComparison;
+      }
+
+      return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+    });
+  }, [badges]);
+
+  const groupedBadges = useMemo(() => {
+    const groups = new Map<string, { name: string; badges: BadgeWithCategory[] }>();
+
+    for (const badge of sortedBadges) {
+      const categoryId = badge.achievement_categories?.id ?? 'sem-categoria';
+      const group = groups.get(categoryId) ?? {
+        name: badge.achievement_categories?.name ?? 'Sem categoria',
+        badges: [],
+      };
+
+      group.badges.push(badge);
+      groups.set(categoryId, group);
+    }
+
+    return Array.from(groups.values());
+  }, [sortedBadges]);
+
   useEffect(() => {
     if (!categories.length) return;
 
@@ -550,52 +590,63 @@ export const AchievementsConfigPage: React.FC = () => {
                 <div key={index} className="client-surface-subtle h-40 animate-pulse rounded-3xl" />
               ))}
             </div>
-          ) : badges.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {badges.map((badge) => {
-                const category = badge.achievement_categories;
-                const badgeColor = category?.color || badge.category_color || DEFAULT_BADGE_COLOR;
+          ) : sortedBadges.length > 0 ? (
+            <div className="space-y-8">
+              {groupedBadges.map((group) => (
+                <div key={group.name} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Shapes className="h-4 w-4 text-cyan-300" />
+                    <h3 className="text-lg font-semibold text-white">{group.name}</h3>
+                    <span className="text-sm text-white/45">{group.badges.length} conquista(s)</span>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {group.badges.map((badge) => {
+                      const category = badge.achievement_categories;
+                      const badgeColor = category?.color || badge.category_color || DEFAULT_BADGE_COLOR;
 
-                return (
-                  <Card
-                    key={badge.id}
-                    className={`${SUBTLE_CARD_CLASS} border`}
-                    style={{ borderColor: hexToRgba(badgeColor, 0.42) }}
-                  >
-                    <CardContent className="flex h-full flex-col gap-4 p-5">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className="rounded-full border-2 p-1"
-                          style={{
-                            borderColor: hexToRgba(badgeColor, 0.9),
-                            background: hexToRgba(badgeColor, 0.12),
-                          }}
+                      return (
+                        <Card
+                          key={badge.id}
+                          className={`${SUBTLE_CARD_CLASS} border`}
+                          style={{ borderColor: hexToRgba(badgeColor, 0.42) }}
                         >
-                          <img src={badge.image_url} alt={badge.name} className="h-16 w-16 rounded-full object-cover" />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="truncate text-base font-semibold text-white">{badge.name}</h3>
-                          <p className="mt-1 line-clamp-2 text-sm text-white/60">{badge.description}</p>
-                        </div>
-                      </div>
+                          <CardContent className="flex h-full flex-col gap-4 p-5">
+                            <div className="flex items-center gap-4">
+                              <div
+                                className="rounded-full border-2 p-1"
+                                style={{
+                                  borderColor: hexToRgba(badgeColor, 0.9),
+                                  background: hexToRgba(badgeColor, 0.12),
+                                }}
+                              >
+                                <img src={badge.image_url} alt={badge.name} className="h-16 w-16 rounded-full object-cover" />
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="truncate text-base font-semibold text-white">{badge.name}</h3>
+                                <p className="mt-1 line-clamp-2 text-sm text-white/60">{badge.description}</p>
+                              </div>
+                            </div>
 
-                      <div className="mt-auto flex items-center justify-between gap-3">
-                        <Badge
-                          variant="outline"
-                          className="border-white/10 text-white"
-                          style={{
-                            borderColor: hexToRgba(badgeColor, 0.45),
-                            color: badgeColor,
-                          }}
-                        >
-                          {category?.name || 'Sem categoria'}
-                        </Badge>
-                        <span className="text-xs text-white/45">{badge.achievement_title}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                            <div className="mt-auto flex items-center justify-between gap-3">
+                              <Badge
+                                variant="outline"
+                                className="border-white/10 text-white"
+                                style={{
+                                  borderColor: hexToRgba(badgeColor, 0.45),
+                                  color: badgeColor,
+                                }}
+                              >
+                                {category?.name || 'Sem categoria'}
+                              </Badge>
+                              <span className="text-xs text-white/45">{badge.achievement_title}</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="client-surface-subtle rounded-3xl p-10 text-center text-white/60">
@@ -940,126 +991,137 @@ export const AchievementsConfigPage: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-2">
-              {badges.map((badge) => {
-                const badgeState = existingBadgeValues[badge.id];
-                if (!badgeState) return null;
+            <div className="space-y-8">
+              {groupedBadges.map((group) => (
+                <div key={`edit-${group.name}`} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Shapes className="h-4 w-4 text-cyan-300" />
+                    <h3 className="text-lg font-semibold text-white">{group.name}</h3>
+                    <span className="text-sm text-white/45">{group.badges.length} conquista(s)</span>
+                  </div>
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {group.badges.map((badge) => {
+                      const badgeState = existingBadgeValues[badge.id];
+                      if (!badgeState) return null;
 
-                const selectedCategory = categoriesById.get(badgeState.categoryId);
-                const previewSrc = badgeState.previewUrl || badgeState.imageUrl;
-                const fullTitle = selectedCategory?.name
-                  ? `${selectedCategory.name} - ${badgeState.achievementTitle || 'Nome da conquista'}`
-                  : badge.name;
+                      const selectedCategory = categoriesById.get(badgeState.categoryId);
+                      const previewSrc = badgeState.previewUrl || badgeState.imageUrl;
+                      const fullTitle = selectedCategory?.name
+                        ? `${selectedCategory.name} - ${badgeState.achievementTitle || 'Nome da conquista'}`
+                        : badge.name;
 
-                return (
-                  <Card key={badge.id} className={SUBTLE_CARD_CLASS}>
-                    <CardContent className="space-y-5 p-5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-sm font-medium text-white">Editar conquista</p>
-                          <p className="text-xs text-white/50">{fullTitle}</p>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="border-white/10 text-white"
-                          style={{
-                            borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.45),
-                            color: selectedCategory?.color || DEFAULT_BADGE_COLOR,
-                          }}
-                        >
-                          {selectedCategory?.name || 'Sem categoria'}
-                        </Badge>
-                      </div>
+                      return (
+                        <Card key={badge.id} className={SUBTLE_CARD_CLASS}>
+                          <CardContent className="space-y-5 p-5">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className="text-sm font-medium text-white">Editar conquista</p>
+                                <p className="text-xs text-white/50">{fullTitle}</p>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="border-white/10 text-white"
+                                style={{
+                                  borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.45),
+                                  color: selectedCategory?.color || DEFAULT_BADGE_COLOR,
+                                }}
+                              >
+                                {selectedCategory?.name || 'Sem categoria'}
+                              </Badge>
+                            </div>
 
-                      <div className="flex flex-col gap-4 sm:flex-row">
-                        <div className="flex shrink-0 flex-col items-center gap-3">
-                          <div
-                            className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2"
-                            style={{
-                              borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.9),
-                              background: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.12),
-                            }}
-                          >
-                            {previewSrc ? (
-                              <img
-                                src={previewSrc}
-                                alt={badgeState.achievementTitle || 'Preview da conquista'}
-                                className="h-full w-full rounded-full object-cover"
-                              />
-                            ) : (
-                              <ImagePlus className="h-8 w-8 text-white/40" />
-                            )}
-                          </div>
+                            <div className="flex flex-col gap-4 sm:flex-row">
+                              <div className="flex shrink-0 flex-col items-center gap-3">
+                                <div
+                                  className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2"
+                                  style={{
+                                    borderColor: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.9),
+                                    background: hexToRgba(selectedCategory?.color || DEFAULT_BADGE_COLOR, 0.12),
+                                  }}
+                                >
+                                  {previewSrc ? (
+                                    <img
+                                      src={previewSrc}
+                                      alt={badgeState.achievementTitle || 'Preview da conquista'}
+                                      className="h-full w-full rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <ImagePlus className="h-8 w-8 text-white/40" />
+                                  )}
+                                </div>
 
-                          <Label
-                            htmlFor={`existing-badge-upload-${badge.id}`}
-                            className="inline-flex cursor-pointer items-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] px-3 py-2 text-sm font-medium text-white shadow-lg shadow-black/30 transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
-                          >
-                            <UploadCloud className="mr-2 h-4 w-4" />
-                            Trocar imagem
-                          </Label>
-                          <input
-                            id={`existing-badge-upload-${badge.id}`}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(event) => handleExistingBadgeImageChange(badge.id, event.target.files?.[0] || null)}
-                          />
-                        </div>
+                                <Label
+                                  htmlFor={`existing-badge-upload-${badge.id}`}
+                                  className="inline-flex cursor-pointer items-center rounded-xl border border-white/10 bg-[linear-gradient(135deg,#050505_0%,#1a1a1a_48%,#3a3a3a_100%)] px-3 py-2 text-sm font-medium text-white shadow-lg shadow-black/30 transition-all hover:bg-[linear-gradient(135deg,#101010_0%,#262626_48%,#4a4a4a_100%)]"
+                                >
+                                  <UploadCloud className="mr-2 h-4 w-4" />
+                                  Trocar imagem
+                                </Label>
+                                <input
+                                  id={`existing-badge-upload-${badge.id}`}
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(event) => handleExistingBadgeImageChange(badge.id, event.target.files?.[0] || null)}
+                                />
+                              </div>
 
-                        <div className="grid flex-1 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-white">Categoria</Label>
-                            <Select
-                              value={badgeState.categoryId}
-                              onValueChange={(value) => updateExistingBadge(badge.id, { categoryId: value })}
+                              <div className="grid flex-1 gap-4">
+                                <div className="space-y-2">
+                                  <Label className="text-white">Categoria</Label>
+                                  <Select
+                                    value={badgeState.categoryId}
+                                    onValueChange={(value) => updateExistingBadge(badge.id, { categoryId: value })}
+                                  >
+                                    <SelectTrigger className={`${DARK_INPUT_CLASS} achievements-config-select`}>
+                                      <SelectValue placeholder="Selecione uma categoria" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {categories.map((category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                          {category.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label className="text-white">Nome da conquista</Label>
+                                  <Input
+                                    value={badgeState.achievementTitle}
+                                    onChange={(event) => updateExistingBadge(badge.id, { achievementTitle: event.target.value })}
+                                    className={DARK_INPUT_CLASS}
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label className="text-white">Subtítulo</Label>
+                                  <Input
+                                    value={badgeState.description}
+                                    onChange={(event) => updateExistingBadge(badge.id, { description: event.target.value })}
+                                    className={DARK_INPUT_CLASS}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <Button
+                              type="button"
+                              onClick={() => updateBadgeMutation.mutate(badge.id)}
+                              disabled={updateBadgeMutation.isPending}
+                              className="client-action-button w-full"
                             >
-                              <SelectTrigger className={`${DARK_INPUT_CLASS} achievements-config-select`}>
-                                <SelectValue placeholder="Selecione uma categoria" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {categories.map((category) => (
-                                  <SelectItem key={category.id} value={category.id}>
-                                    {category.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label className="text-white">Nome da conquista</Label>
-                            <Input
-                              value={badgeState.achievementTitle}
-                              onChange={(event) => updateExistingBadge(badge.id, { achievementTitle: event.target.value })}
-                              className={DARK_INPUT_CLASS}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label className="text-white">Subtítulo</Label>
-                            <Input
-                              value={badgeState.description}
-                              onChange={(event) => updateExistingBadge(badge.id, { description: event.target.value })}
-                              className={DARK_INPUT_CLASS}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button
-                        type="button"
-                        onClick={() => updateBadgeMutation.mutate(badge.id)}
-                        disabled={updateBadgeMutation.isPending}
-                        className="client-action-button w-full"
-                      >
-                        <Save className="mr-2 h-4 w-4" />
-                        Salvar conquista
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                              <Save className="mr-2 h-4 w-4" />
+                              Salvar conquista
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </DialogContent>
