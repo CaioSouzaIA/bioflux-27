@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Send } from 'lucide-react';
 import { FormConfig, FormResponse } from '@/types/form';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getMetabolicAssessmentAgeInDays, isMetabolicAssessmentExpired, METABOLIC_ASSESSMENT_MAX_AGE_DAYS, useMetabolicAssessment } from '@/hooks/useMetabolicAssessment';
@@ -316,54 +316,73 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     webhookPayload: any,
     invalidSessionMessage: string,
   ) => {
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const getValidAccessToken = async (shouldRefresh: boolean) => {
+      const sessionResult = shouldRefresh
+        ? await supabase.auth.refreshSession()
+        : await supabase.auth.getSession();
 
-    if (sessionError) {
-      console.error(`❌ Erro ao obter sessão antes de chamar ${functionName}:`, sessionError);
-      throw sessionError;
-    }
+      if (sessionResult.error) {
+        console.error(
+          `❌ Erro ao ${shouldRefresh ? 'renovar' : 'obter'} sessão antes de chamar ${functionName}:`,
+          sessionResult.error,
+        );
+        throw sessionResult.error;
+      }
 
-    if (!sessionData.session?.access_token) {
-      throw new Error(invalidSessionMessage);
-    }
+      const accessToken = sessionResult.data.session?.access_token;
 
-    let lastError: unknown = null;
+      if (!accessToken) {
+        throw new Error(invalidSessionMessage);
+      }
+
+      return accessToken;
+    };
+
+    let accessToken = await getValidAccessToken(false);
+    let lastErrorMessage = `Não foi possível iniciar ${functionName}.`;
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
       if (attempt === 1) {
         console.warn(`⚠️ ${functionName} retornou 401. Renovando sessão e tentando novamente...`);
-
-        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-
-        if (refreshError) {
-          console.error(`❌ Erro ao renovar sessão antes de reenviar ${functionName}:`, refreshError);
-          throw refreshError;
-        }
-
-        if (!refreshData.session?.access_token) {
-          throw new Error(invalidSessionMessage);
-        }
+        accessToken = await getValidAccessToken(true);
       }
 
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: webhookPayload,
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(webhookPayload),
       });
 
-      if (!error) {
-        return data;
+      const responseText = await response.text();
+      let parsedResponse: any = null;
+
+      if (responseText) {
+        try {
+          parsedResponse = JSON.parse(responseText);
+        } catch (_parseError) {
+          parsedResponse = { message: responseText };
+        }
       }
 
-      lastError = error;
-      const status = (error as { context?: { status?: number } })?.context?.status;
+      if (response.ok) {
+        return parsedResponse;
+      }
 
-      if (status !== 401 || attempt === 1) {
+      lastErrorMessage =
+        parsedResponse?.error ||
+        parsedResponse?.message ||
+        `${functionName} retornou status ${response.status}.`;
+
+      if (response.status !== 401 || attempt === 1) {
         break;
       }
     }
 
-    throw lastError instanceof Error
-      ? lastError
-      : new Error(`Não foi possível iniciar ${functionName}.`);
+    throw new Error(lastErrorMessage);
   };
 
   const sendDietIntakeToSupabase = async (webhookPayload: any) => {
