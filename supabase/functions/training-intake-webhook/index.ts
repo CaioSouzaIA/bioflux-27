@@ -17,7 +17,8 @@ const runTrainingGenerateWorker = async (
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${serviceRoleKey}`,
+      apikey: serviceRoleKey,
+      "x-internal-service-key": serviceRoleKey,
     },
     body: JSON.stringify({ prescriptionId }),
   });

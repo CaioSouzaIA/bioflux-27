@@ -102,6 +102,18 @@ serve(async (req) => {
       throw new Error("OPENROUTER_API_KEY não configurada.");
     }
 
+    const internalServiceKey = req.headers.get("x-internal-service-key");
+
+    if (internalServiceKey !== serviceRoleKey) {
+      return new Response(
+        JSON.stringify({ error: "Chamada interna não autorizada." }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
     const body = await req.json();
     prescriptionId = body?.prescriptionId ?? null;
