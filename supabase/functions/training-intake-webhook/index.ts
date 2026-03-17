@@ -39,7 +39,7 @@ const runTrainingGenerateWorker = async (
   return responseJson;
 };
 
-const markSupersededTrainingPrescriptions = async (
+const deleteSupersededTrainingPrescriptions = async (
   supabaseClient: ReturnType<typeof createClient>,
   prescriptionIds: string[],
 ) => {
@@ -49,15 +49,11 @@ const markSupersededTrainingPrescriptions = async (
 
   const { error } = await supabaseClient
     .from("training_prescriptions")
-    .update({
-      generation_status: "failed",
-      error_message: "Prescrição substituída por uma tentativa mais recente.",
-      updated_at: new Date().toISOString(),
-    })
+    .delete()
     .in("id", prescriptionIds);
 
   if (error) {
-    console.error("Erro ao marcar treinos duplicados como substituídos:", error);
+    console.error("Erro ao excluir treinos duplicados substituídos:", error);
   }
 };
 
@@ -221,7 +217,7 @@ serve(async (req) => {
         .filter((prescription) => prescription.id !== reusablePrescription.id)
         .map((prescription) => prescription.id);
 
-      await markSupersededTrainingPrescriptions(supabaseClient, staleDuplicateIds);
+      await deleteSupersededTrainingPrescriptions(supabaseClient, staleDuplicateIds);
 
       if (
         reusablePrescription.generation_status === "pending" ||

@@ -38,7 +38,7 @@ const runDietGenerateWorker = async (
   return responseJson;
 };
 
-const markSupersededDietPrescriptions = async (
+const deleteSupersededDietPrescriptions = async (
   supabaseClient: ReturnType<typeof createClient>,
   prescriptionIds: string[],
 ) => {
@@ -48,15 +48,11 @@ const markSupersededDietPrescriptions = async (
 
   const { error } = await supabaseClient
     .from("diet_prescriptions")
-    .update({
-      generation_status: "failed",
-      error_message: "Prescrição substituída por uma tentativa mais recente.",
-      updated_at: new Date().toISOString(),
-    })
+    .delete()
     .in("id", prescriptionIds);
 
   if (error) {
-    console.error("Erro ao marcar dietas duplicadas como substituídas:", error);
+    console.error("Erro ao excluir dietas duplicadas substituídas:", error);
   }
 };
 
@@ -220,7 +216,7 @@ serve(async (req) => {
         .filter((prescription) => prescription.id !== reusablePrescription.id)
         .map((prescription) => prescription.id);
 
-      await markSupersededDietPrescriptions(supabaseClient, staleDuplicateIds);
+      await deleteSupersededDietPrescriptions(supabaseClient, staleDuplicateIds);
 
       if (
         reusablePrescription.generation_status === "pending" ||
