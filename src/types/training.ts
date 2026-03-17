@@ -19,6 +19,8 @@ export interface StructuredTrainingExercise {
   prescription: string;
   rest: string | null;
   method: string | null;
+  muscle_group?: string | null;
+  video_url?: string | null;
 }
 
 export interface StructuredTrainingWorkout {

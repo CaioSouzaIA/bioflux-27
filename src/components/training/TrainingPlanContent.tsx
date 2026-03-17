@@ -43,6 +43,30 @@ const formatWeight = (value: string) => {
   return `${numeric[0].replace(',', '.')} kg`;
 };
 
+const extractYoutubeVideoId = (value: string) => {
+  try {
+    const url = new URL(value);
+
+    if (url.hostname.includes('youtu.be')) {
+      return url.pathname.replace('/', '').trim() || null;
+    }
+
+    if (url.hostname.includes('youtube.com')) {
+      return url.searchParams.get('v') || null;
+    }
+  } catch (_error) {
+    return null;
+  }
+
+  return null;
+};
+
+const getExercisePreviewImage = (videoUrl?: string | null) => {
+  if (!videoUrl) return null;
+  const youtubeVideoId = extractYoutubeVideoId(videoUrl);
+  return youtubeVideoId ? `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg` : null;
+};
+
 export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   prescription,
   enableCheckins = false,
@@ -505,6 +529,33 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                 <div key={`${workout.label}-${index}`} className="client-surface-subtle rounded-2xl p-4 text-white">
                   <div className="flex flex-col gap-2">
                     <p className="text-base font-semibold text-white">{exercise.name}</p>
+                    {exercise.video_url && (
+                      <a
+                        href={exercise.video_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group mt-1 block overflow-hidden rounded-2xl border border-white/10 bg-black/40 transition hover:border-cyan-400/40"
+                      >
+                        {getExercisePreviewImage(exercise.video_url) ? (
+                          <img
+                            src={getExercisePreviewImage(exercise.video_url) ?? undefined}
+                            alt={`Preview de ${exercise.name}`}
+                            className="h-32 w-full object-cover opacity-80 transition group-hover:opacity-100"
+                          />
+                        ) : (
+                          <div className="flex h-24 items-center justify-center bg-black/60 text-sm text-white/60">
+                            Preview do exercício
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-white/75">
+                          <span className="truncate">Abrir preview do exercício</span>
+                          <span className="inline-flex items-center gap-1 text-cyan-300">
+                            <Eye className="h-4 w-4" />
+                            Ver vídeo
+                          </span>
+                        </div>
+                      </a>
+                    )}
                     <p className="text-sm text-white/80">{exercise.prescription || 'Prescrição não informada'}</p>
                     {exercise.rest && (
                       <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/70">

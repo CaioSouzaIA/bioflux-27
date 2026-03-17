@@ -5,8 +5,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   buildTrainingAnalysisPrompt,
   buildTrainingDocumentQuery,
+  buildTrainingExerciseCatalogContext,
   buildTrainingInstructionsContext,
   buildTrainingUserPrompt,
+  enrichStructuredTrainingPlanWithExerciseVideos,
   OPENROUTER_MODEL,
   parseStructuredTrainingPlan,
   parseTrainingPeriodizationAnalysis,
@@ -219,6 +221,33 @@ serve(async (req) => {
     }
 
     const instructionsContext = buildTrainingInstructionsContext(relevantDocuments);
+    const { data: exerciseVideos, error: exerciseVideosError } = await supabaseClient
+      .from("videos_exercicios")
+      .select("id, titulo_pt, titulo_original, grupo_muscular, video_url, playlist_url")
+      .not("video_url", "is", null)
+      .order("grupo_muscular", { ascending: true })
+      .order("titulo_pt", { ascending: true });
+
+    if (exerciseVideosError) {
+      throw exerciseVideosError;
+    }
+
+    const normalizedExerciseVideos = (exerciseVideos ?? [])
+      .map((video) => ({
+        id: String(video.id),
+        title: String(video.titulo_pt ?? video.titulo_original ?? "").trim(),
+        original_title: video.titulo_original ? String(video.titulo_original).trim() : null,
+        muscle_group: String(video.grupo_muscular ?? "").trim(),
+        video_url: String(video.video_url ?? "").trim(),
+        playlist_url: video.playlist_url ? String(video.playlist_url).trim() : null,
+      }))
+      .filter((video) => video.title && video.muscle_group && video.video_url);
+
+    if (!normalizedExerciseVideos.length) {
+      throw new Error("Nenhum exercício com vídeo válido foi encontrado em videos_exercicios.");
+    }
+
+    const exerciseCatalogContext = buildTrainingExerciseCatalogContext(normalizedExerciseVideos);
 
     const generationResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -238,7 +267,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: buildTrainingUserPrompt(payload, instructionsContext),
+            content: buildTrainingUserPrompt(payload, instructionsContext, exerciseCatalogContext),
           },
         ],
       }),
@@ -256,7 +285,10 @@ serve(async (req) => {
       throw new Error("O modelo não retornou um plano de treino em texto.");
     }
 
-    const structuredPlan = parseStructuredTrainingPlan(rawPlanText);
+    const structuredPlan = enrichStructuredTrainingPlanWithExerciseVideos(
+      parseStructuredTrainingPlan(rawPlanText),
+      normalizedExerciseVideos,
+    );
     const monthlyTrainingVolume = calculateMonthlyTrainingVolume(structuredPlan.workouts);
 
     const analysisResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
