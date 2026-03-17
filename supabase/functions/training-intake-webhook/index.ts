@@ -10,17 +10,19 @@ const FREE_PLAN_NAME = "Free - Teste";
 
 const runTrainingGenerateWorker = async (
   supabaseUrl: string,
-  serviceRoleKey: string,
+  internalFunctionSecret: string,
   prescriptionId: string,
 ) => {
   const workerResponse = await fetch(`${supabaseUrl}/functions/v1/training-generate-worker`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: serviceRoleKey,
-      "x-internal-service-key": serviceRoleKey,
+      "x-internal-service-key": internalFunctionSecret,
     },
-    body: JSON.stringify({ prescriptionId }),
+    body: JSON.stringify({
+      prescriptionId,
+      internalServiceKey: internalFunctionSecret,
+    }),
   });
 
   const responseText = await workerResponse.text();
@@ -44,6 +46,8 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const internalFunctionSecret =
+      Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? serviceRoleKey;
 
     if (!supabaseUrl || !serviceRoleKey) {
       throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
@@ -175,7 +179,7 @@ serve(async (req) => {
       ) {
         const workerResult = await runTrainingGenerateWorker(
           supabaseUrl,
-          serviceRoleKey,
+          internalFunctionSecret,
           existingPrescription.id,
         );
 
@@ -312,7 +316,7 @@ serve(async (req) => {
 
     const workerResult = await runTrainingGenerateWorker(
       supabaseUrl,
-      serviceRoleKey,
+      internalFunctionSecret,
       prescription.id,
     );
 

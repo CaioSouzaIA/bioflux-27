@@ -58,6 +58,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const openRouterApiKey = Deno.env.get("OPENROUTER_API_KEY");
+    const internalFunctionSecret =
+      Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? serviceRoleKey;
 
     if (!supabaseUrl || !serviceRoleKey) {
       throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
@@ -67,9 +69,23 @@ serve(async (req) => {
       throw new Error("OPENROUTER_API_KEY não configurada.");
     }
 
-    const internalServiceKey = req.headers.get("x-internal-service-key");
+    const requestBody = await req.json();
+    prescriptionId = requestBody?.prescriptionId ?? null;
+    const bodyInternalServiceKey = typeof requestBody?.internalServiceKey === "string"
+      ? requestBody.internalServiceKey.trim()
+      : null;
+    const internalServiceKey = req.headers.get("x-internal-service-key")?.trim();
+    const apiKeyHeader = req.headers.get("apikey")?.trim();
+    const authorizationHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
+    const bearerToken = authorizationHeader?.startsWith("Bearer ")
+      ? authorizationHeader.slice("Bearer ".length).trim()
+      : null;
+    const normalizedInternalFunctionSecret = internalFunctionSecret.trim();
+    const internalCallAuthorized = [bodyInternalServiceKey, internalServiceKey, apiKeyHeader, bearerToken].some(
+      (value) => value === normalizedInternalFunctionSecret,
+    );
 
-    if (internalServiceKey !== serviceRoleKey) {
+    if (!internalCallAuthorized) {
       return new Response(
         JSON.stringify({ error: "Chamada interna não autorizada." }),
         {
@@ -78,10 +94,7 @@ serve(async (req) => {
         },
       );
     }
-
     const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
-    const body = await req.json();
-    prescriptionId = body?.prescriptionId ?? null;
 
     if (!prescriptionId) {
       return new Response(

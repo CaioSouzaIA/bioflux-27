@@ -9,18 +9,18 @@ const FREE_PLAN_NAME = "Free - Teste";
 
 const runDietGenerateWorker = async (
   supabaseUrl: string,
-  serviceRoleKey: string,
+  internalFunctionSecret: string,
   prescriptionId: string,
 ) => {
   const workerResponse = await fetch(`${supabaseUrl}/functions/v1/diet-generate-worker`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      apikey: serviceRoleKey,
-      "x-internal-service-key": serviceRoleKey,
+      "x-internal-service-key": internalFunctionSecret,
     },
     body: JSON.stringify({
       prescriptionId,
+      internalServiceKey: internalFunctionSecret,
     }),
   });
 
@@ -45,6 +45,8 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const internalFunctionSecret =
+      Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? serviceRoleKey;
 
     if (!supabaseUrl || !serviceRoleKey) {
       throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
@@ -176,7 +178,7 @@ serve(async (req) => {
       ) {
         const workerResult = await runDietGenerateWorker(
           supabaseUrl,
-          serviceRoleKey,
+          internalFunctionSecret,
           existingPrescription.id,
         );
 
@@ -309,7 +311,7 @@ serve(async (req) => {
 
     const workerResult = await runDietGenerateWorker(
       supabaseUrl,
-      serviceRoleKey,
+      internalFunctionSecret,
       prescription.id,
     );
 
