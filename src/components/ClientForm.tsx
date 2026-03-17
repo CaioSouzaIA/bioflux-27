@@ -90,6 +90,25 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     normalizeFieldText(String(formData[readaptationObjectiveField.id] ?? '')) ===
       'adaptacao - voltando aos treinos';
 
+  const isMetabolicSnapshotField = (field: { label: string }) => {
+    if (formConfig.category !== 'anamnese-treino') {
+      return false;
+    }
+
+    const normalizedLabel = normalizeFieldText(field.label);
+
+    return (
+      normalizedLabel === 'idade' ||
+      normalizedLabel.includes('idade (anos)') ||
+      normalizedLabel === 'altura' ||
+      normalizedLabel.includes('altura (cm)') ||
+      normalizedLabel === 'peso' ||
+      normalizedLabel.includes('peso corporal') ||
+      normalizedLabel === 'sexo' ||
+      normalizedLabel.includes('sexo biologico')
+    );
+  };
+
   useEffect(() => {
     if (!readaptationSelected || !emphasisField) return;
     if (formData[emphasisField.id] === undefined || formData[emphasisField.id] === '') return;
@@ -126,6 +145,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
 
   const validateForm = () => {
     for (const field of formConfig.fields) {
+      if (isMetabolicSnapshotField(field)) {
+        continue;
+      }
+
       if (field.required && (!formData[field.id] || formData[field.id] === '')) {
         toast({
           title: "Erro de Validação",
@@ -457,7 +480,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
 
     // Converter os dados do formulário para usar os labels dos campos
     const formattedData: { [key: string]: any } = {};
-    formConfig.fields.forEach(field => {
+    visibleFields.forEach(field => {
       if (formData[field.id] !== undefined) {
         formattedData[field.label] = formData[field.id];
       }
@@ -718,7 +741,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
   }
 
   // Ordenar campos por ordem
-  const sortedFields = [...formConfig.fields].sort((a, b) => a.order - b.order);
+  const visibleFields = formConfig.fields.filter((field) => !isMetabolicSnapshotField(field));
+  const sortedFields = [...visibleFields].sort((a, b) => a.order - b.order);
   console.log('📊 Campos ordenados:', sortedFields.map(f => ({ id: f.id, label: f.label, order: f.order })));
 
   return (
