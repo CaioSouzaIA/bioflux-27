@@ -299,6 +299,21 @@ export const TREINOAI_READAPTATION_SYSTEM_PROMPT = `<prompt>
             Todo exercício deve incluir a URL do vídeo correspondente da tool
             "videos_exercicios" no campo Preview do formato de saída.
         </regra>
+        <regra id="14" nome="Divisão Curta">
+            A linha "Divisão Escolhida" deve conter SOMENTE o nome da divisão:
+            Full Body, AB ou Upper/Lower. Não adicione justificativa, explicação,
+            travessão ou texto complementar nessa linha.
+        </regra>
+        <regra id="15" nome="Estímulo Obrigatório">
+            A linha "Estímulo" é obrigatória e deve conter SOMENTE um destes valores:
+            Tensional, Metabólico ou Misto. Na readaptação, use preferencialmente
+            "Misto" quando não houver motivo forte para outro valor.
+        </regra>
+        <regra id="16" nome="Objetivo Curto">
+            A linha "Objetivo desta Fase" deve conter SOMENTE:
+            Readaptação ao treinamento.
+            Não adicione explicações extras nessa linha.
+        </regra>
     </regras>
 
     <tarefa>
@@ -319,9 +334,9 @@ export const TREINOAI_READAPTATION_SYSTEM_PROMPT = `<prompt>
 **Peso:** [peso]
 **Contato:** [numero do whatsapp]
 **Tempo de Afastamento:** [Ex: 4 meses]
-**Divisão Escolhida:** [Full Body / AB / Upper-Lower] — [justificativa breve]
-**Objetivo desta Fase:** Readaptação ao treinamento — restaurar padrões de movimento,
-reduzir DOMS e reativar a memória muscular.
+**Estímulo:** [Tensional / Metabólico / Misto]
+**Divisão Escolhida:** [Full Body / AB / Upper-Lower]
+**Objetivo desta Fase:** Readaptação ao treinamento
 **Duração Estimada da Fase:** [3 a 6 semanas, conforme evolução]
 
 ---
@@ -645,6 +660,39 @@ const normalizeExerciseKey = (value: string) =>
 const formatExerciseDisplayName = (title: string, muscleGroup: string) =>
   `${title} (${muscleGroup})`;
 
+const normalizeReadaptationSplit = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  const shortValue = trimmed.split(/\s+[—-]\s+/)[0]?.trim() || trimmed;
+  const normalized = normalizeForSearch(shortValue);
+
+  if (normalized.includes("upper lower")) return "Upper/Lower";
+  if (normalized === "ab" || normalized.startsWith("ab ")) return "AB";
+  if (normalized.includes("full body")) return "Full Body";
+
+  return shortValue;
+};
+
+const normalizeReadaptationObjective = (value: string) => {
+  const normalized = normalizeForSearch(value);
+  if (normalized.includes("readaptacao ao treinamento")) {
+    return "Readaptação ao treinamento";
+  }
+
+  return value.trim();
+};
+
+const normalizeStimulusValue = (value: string, fallback = "Misto") => {
+  const normalized = normalizeForSearch(value);
+
+  if (normalized.includes("tensional")) return "Tensional";
+  if (normalized.includes("metabol")) return "Metabólico";
+  if (normalized.includes("misto")) return "Misto";
+
+  return fallback;
+};
+
 export const enrichStructuredTrainingPlanWithExerciseVideos = (
   structuredPlan: StructuredTrainingPlan,
   exerciseCatalog: TrainingExerciseVideo[],
@@ -720,6 +768,7 @@ export const parseStructuredTrainingPlan = (rawPlanText: string): StructuredTrai
   let cardio: StructuredTrainingPlan["cardio"] = null;
   let currentWorkout: StructuredTrainingPlan["workouts"][number] | null = null;
   let inObservations = false;
+  let isReadaptationPlan = false;
 
   const pushCurrentWorkout = () => {
     if (currentWorkout) {
@@ -738,6 +787,7 @@ export const parseStructuredTrainingPlan = (rawPlanText: string): StructuredTrai
     const workoutMatch = line.match(/^Treino\s+([A-Z]):\s*(.+)$/i);
 
     if (/^Plano de Treino para /i.test(line) || /^Plano de Readapta[cç][aã]o para /i.test(line)) {
+      isReadaptationPlan = /^Plano de Readapta[cç][aã]o para /i.test(line);
       header.user_name = line
         .replace(/^Plano de Treino para /i, "")
         .replace(/^Plano de Readapta[cç][aã]o para /i, "")
@@ -869,6 +919,12 @@ export const parseStructuredTrainingPlan = (rawPlanText: string): StructuredTrai
   }
 
   pushCurrentWorkout();
+
+  if (isReadaptationPlan) {
+    header.split = normalizeReadaptationSplit(header.split);
+    header.objective = normalizeReadaptationObjective(header.objective || "Readaptação ao treinamento");
+    header.stimulus = normalizeStimulusValue(header.stimulus, "Misto");
+  }
 
   return {
     header,

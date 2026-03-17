@@ -319,6 +319,21 @@ export const TREINOAI_READAPTATION_DEFAULT_PROMPT = `<prompt>
             Todo exercício deve incluir a URL do vídeo correspondente da tool
             "videos_exercicios" no campo Preview do formato de saída.
         </regra>
+        <regra id="14" nome="Divisão Curta">
+            A linha "Divisão Escolhida" deve conter SOMENTE o nome da divisão:
+            Full Body, AB ou Upper/Lower. Não adicione justificativa, explicação,
+            travessão ou texto complementar nessa linha.
+        </regra>
+        <regra id="15" nome="Estímulo Obrigatório">
+            A linha "Estímulo" é obrigatória e deve conter SOMENTE um destes valores:
+            Tensional, Metabólico ou Misto. Na readaptação, use preferencialmente
+            "Misto" quando não houver motivo forte para outro valor.
+        </regra>
+        <regra id="16" nome="Objetivo Curto">
+            A linha "Objetivo desta Fase" deve conter SOMENTE:
+            Readaptação ao treinamento.
+            Não adicione explicações extras nessa linha.
+        </regra>
     </regras>
 
     <tarefa>
@@ -339,9 +354,9 @@ export const TREINOAI_READAPTATION_DEFAULT_PROMPT = `<prompt>
 **Peso:** [peso]
 **Contato:** [numero do whatsapp]
 **Tempo de Afastamento:** [Ex: 4 meses]
-**Divisão Escolhida:** [Full Body / AB / Upper-Lower] — [justificativa breve]
-**Objetivo desta Fase:** Readaptação ao treinamento — restaurar padrões de movimento,
-reduzir DOMS e reativar a memória muscular.
+**Estímulo:** [Tensional / Metabólico / Misto]
+**Divisão Escolhida:** [Full Body / AB / Upper-Lower]
+**Objetivo desta Fase:** Readaptação ao treinamento
 **Duração Estimada da Fase:** [3 a 6 semanas, conforme evolução]
 
 ---

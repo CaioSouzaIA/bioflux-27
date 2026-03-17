@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, FileCheck2, FileText, Flame, Loader2, Target, Timer, Weight } from 'lucide-react';
+import { Activity, AlertCircle, CalendarIcon, Check, ChevronDown, Eye, Expand, FileCheck2, FileText, Flame, Loader2, Play, Target, Timer, Weight } from 'lucide-react';
 import { endOfMonth, format, getDate, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -67,6 +67,17 @@ const getExercisePreviewImage = (videoUrl?: string | null) => {
   return youtubeVideoId ? `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg` : null;
 };
 
+const getExerciseEmbedUrl = (videoUrl?: string | null) => {
+  if (!videoUrl) return null;
+
+  const youtubeVideoId = extractYoutubeVideoId(videoUrl);
+  if (!youtubeVideoId) {
+    return null;
+  }
+
+  return `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
+};
+
 export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   prescription,
   enableCheckins = false,
@@ -79,6 +90,8 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeInlineVideoKey, setActiveInlineVideoKey] = useState<string | null>(null);
+  const [expandedVideo, setExpandedVideo] = useState<{ title: string; url: string } | null>(null);
   const [expandedWorkout, setExpandedWorkout] = useState<string>('');
   const [loadDrafts, setLoadDrafts] = useState<Record<string, ExerciseLoadDraft>>({});
   const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
@@ -529,33 +542,64 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                 <div key={`${workout.label}-${index}`} className="client-surface-subtle rounded-2xl p-4 text-white">
                   <div className="flex flex-col gap-2">
                     <p className="text-base font-semibold text-white">{exercise.name}</p>
-                    {exercise.video_url && (
-                      <a
-                        href={exercise.video_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="group mt-1 block overflow-hidden rounded-2xl border border-white/10 bg-black/40 transition hover:border-cyan-400/40"
-                      >
-                        {getExercisePreviewImage(exercise.video_url) ? (
-                          <img
-                            src={getExercisePreviewImage(exercise.video_url) ?? undefined}
-                            alt={`Preview de ${exercise.name}`}
-                            className="h-32 w-full object-cover opacity-80 transition group-hover:opacity-100"
-                          />
-                        ) : (
-                          <div className="flex h-24 items-center justify-center bg-black/60 text-sm text-white/60">
-                            Preview do exercício
+                    {(() => {
+                      if (!exercise.video_url) {
+                        return null;
+                      }
+
+                      const exerciseVideoKey = `${workout.label}-${index}`;
+                      const previewImage = getExercisePreviewImage(exercise.video_url);
+                      const embedUrl = getExerciseEmbedUrl(exercise.video_url);
+                      const isInlineVideoActive = activeInlineVideoKey === exerciseVideoKey;
+
+                      if (isInlineVideoActive && embedUrl) {
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedVideo({ title: exercise.name, url: exercise.video_url! })}
+                            className="group relative mt-1 block overflow-hidden rounded-2xl border border-cyan-400/30 bg-black/60 text-left"
+                          >
+                            <iframe
+                              src={embedUrl}
+                              title={`Preview de ${exercise.name}`}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                              className="h-48 w-full pointer-events-none"
+                            />
+                            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 transition group-hover:bg-black/20">
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white shadow-lg shadow-black/30">
+                                <Expand className="h-5 w-5" />
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      }
+
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => setActiveInlineVideoKey(exerciseVideoKey)}
+                          className="group relative mt-1 block overflow-hidden rounded-2xl border border-white/10 bg-black/40 transition hover:border-cyan-400/40"
+                        >
+                          {previewImage ? (
+                            <img
+                              src={previewImage}
+                              alt={`Preview de ${exercise.name}`}
+                              className="h-32 w-full object-cover opacity-80 transition group-hover:opacity-100"
+                            />
+                          ) : (
+                            <div className="flex h-24 items-center justify-center bg-black/60 text-sm text-white/60">
+                              Preview do exercício
+                            </div>
+                          )}
+                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                            <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/55 text-cyan-200 shadow-lg shadow-black/30">
+                              <Play className="ml-0.5 h-5 w-5" />
+                            </span>
                           </div>
-                        )}
-                        <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-white/75">
-                          <span className="truncate">Abrir preview do exercício</span>
-                          <span className="inline-flex items-center gap-1 text-cyan-300">
-                            <Eye className="h-4 w-4" />
-                            Ver vídeo
-                          </span>
-                        </div>
-                      </a>
-                    )}
+                        </button>
+                      );
+                    })()}
                     <p className="text-sm text-white/80">{exercise.prescription || 'Prescrição não informada'}</p>
                     {exercise.rest && (
                       <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/70">
@@ -824,6 +868,35 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
               {addCheckin.isPending ? 'Salvando...' : 'Salvar check-in'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!expandedVideo} onOpenChange={(open) => !open && setExpandedVideo(null)}>
+        <DialogContent className="max-w-4xl border-white/10 bg-[#111111] text-white">
+          <DialogHeader>
+            <DialogTitle>{expandedVideo?.title || 'Vídeo do exercício'}</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Preview expandido do exercício no mesmo fluxo do treino.
+            </DialogDescription>
+          </DialogHeader>
+
+          {expandedVideo && (
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
+              {getExerciseEmbedUrl(expandedVideo.url) ? (
+                <iframe
+                  src={`${getExerciseEmbedUrl(expandedVideo.url)}&mute=0`}
+                  title={expandedVideo.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="aspect-video w-full"
+                />
+              ) : (
+                <div className="flex aspect-video items-center justify-center text-white/60">
+                  Não foi possível carregar o vídeo deste exercício.
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
