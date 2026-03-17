@@ -23,6 +23,14 @@ interface TrainingPlanContentProps {
   enableCheckins?: boolean;
 }
 
+interface RestTimerState {
+  durationSeconds: number;
+  remainingSeconds: number;
+  completedCount: number;
+  running: boolean;
+  finished: boolean;
+}
+
 const extractSplitLabel = (value: string) => {
   const normalizedValue = value?.replace(/\(.*?\)/g, '').trim() || '';
   const tokenMatch = normalizedValue.match(/\b[A-F]{1,6}\b/i);
@@ -78,6 +86,35 @@ const getExerciseEmbedUrl = (videoUrl?: string | null) => {
   return `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&rel=0&playsinline=1`;
 };
 
+const parseRestSeconds = (value?: string | null) => {
+  const trimmed = value?.trim().toLowerCase() || '';
+  if (!trimmed) return null;
+
+  const clockMatch = trimmed.match(/(\d{1,2}):(\d{2})/);
+  if (clockMatch) {
+    return Number(clockMatch[1]) * 60 + Number(clockMatch[2]);
+  }
+
+  const minMatch = trimmed.match(/(\d+)\s*(min|mins|minuto|minutos)/);
+  const secMatch = trimmed.match(/(\d+)\s*(s|seg|segs|segundo|segundos)/);
+
+  if (minMatch || secMatch) {
+    const minutes = minMatch ? Number(minMatch[1]) : 0;
+    const seconds = secMatch ? Number(secMatch[1]) : 0;
+    const total = minutes * 60 + seconds;
+    return total > 0 ? total : null;
+  }
+
+  const numericMatch = trimmed.match(/(\d+)/);
+  return numericMatch ? Number(numericMatch[1]) : null;
+};
+
+const formatCountdown = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+};
+
 export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   prescription,
   enableCheckins = false,
@@ -94,6 +131,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const [expandedVideo, setExpandedVideo] = useState<{ title: string; url: string } | null>(null);
   const [expandedWorkout, setExpandedWorkout] = useState<string>('');
   const [loadDrafts, setLoadDrafts] = useState<Record<string, ExerciseLoadDraft>>({});
+  const [restTimers, setRestTimers] = useState<Record<string, RestTimerState>>({});
   const { allCheckins, addCheckin } = useWorkoutCheckins(enableCheckins ? prescription.user_id : undefined);
   const { latestLoadsMap, saveLoad } = useExerciseLoadLogs(prescription.user_id, prescription.id);
   const [checkinAccordionValue, setCheckinAccordionValue] = useState('');
@@ -223,6 +261,53 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
     });
   }, [latestLoadsMap, structuredPlan]);
 
+  useEffect(() => {
+    const hasRunningTimer = Object.values(restTimers).some((timer) => timer.running);
+
+    if (!hasRunningTimer) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setRestTimers((current) => {
+        let hasChanged = false;
+        const nextEntries = Object.entries(current).map(([key, timer]) => {
+          if (!timer.running) {
+            return [key, timer] as const;
+          }
+
+          hasChanged = true;
+
+          if (timer.remainingSeconds <= 1) {
+            return [
+              key,
+              {
+                ...timer,
+                remainingSeconds: 0,
+                running: false,
+                finished: true,
+                completedCount: timer.completedCount + 1,
+              },
+            ] as const;
+          }
+
+          return [
+            key,
+            {
+              ...timer,
+              remainingSeconds: timer.remainingSeconds - 1,
+              finished: false,
+            },
+          ] as const;
+        });
+
+        return hasChanged ? Object.fromEntries(nextEntries) : current;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [restTimers]);
+
   const updateLoadDraft = (key: string, patch: Partial<ExerciseLoadDraft>) => {
     setLoadDrafts((current) => ({
       ...current,
@@ -232,6 +317,34 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
         ...patch,
       },
     }));
+  };
+
+  const startRestTimer = (timerKey: string, restLabel?: string | null) => {
+    const durationSeconds = parseRestSeconds(restLabel);
+
+    if (!durationSeconds) {
+      toast({
+        title: 'Descanso indisponível',
+        description: 'Não foi possível interpretar o tempo de descanso desse exercício.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setRestTimers((current) => {
+      const previous = current[timerKey];
+
+      return {
+        ...current,
+        [timerKey]: {
+          durationSeconds,
+          remainingSeconds: durationSeconds,
+          completedCount: previous?.completedCount ?? 0,
+          running: true,
+          finished: false,
+        },
+      };
+    });
   };
 
   const handleSaveLoad = async ({
@@ -564,11 +677,11 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                               title={`Preview de ${exercise.name}`}
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                               allowFullScreen
-                              className="h-48 w-full pointer-events-none"
+                              className="h-32 w-full pointer-events-none"
                             />
-                            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 transition group-hover:bg-black/20">
-                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white shadow-lg shadow-black/30">
-                                <Expand className="h-5 w-5" />
+                            <div className="pointer-events-none absolute right-3 top-3">
+                              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-lg shadow-black/30">
+                                <Expand className="h-3.5 w-3.5" />
                               </span>
                             </div>
                           </button>
@@ -588,7 +701,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                               className="h-32 w-full object-cover opacity-80 transition group-hover:opacity-100"
                             />
                           ) : (
-                            <div className="flex h-24 items-center justify-center bg-black/60 text-sm text-white/60">
+                            <div className="flex h-32 items-center justify-center bg-black/60 text-sm text-white/60">
                               Preview do exercício
                             </div>
                           )}
@@ -597,15 +710,71 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                               <Play className="ml-0.5 h-5 w-5" />
                             </span>
                           </div>
+                          <div className="pointer-events-none absolute right-3 top-3">
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-lg shadow-black/30">
+                              <Expand className="h-3.5 w-3.5" />
+                            </span>
+                          </div>
                         </button>
                       );
                     })()}
-                    <p className="text-sm text-white/80">{exercise.prescription || 'Prescrição não informada'}</p>
+                    <p className="text-lg font-extrabold tracking-[0.08em] text-cyan-100">
+                      {exercise.prescription || 'Prescrição não informada'}
+                    </p>
                     {exercise.rest && (
-                      <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/70">
-                        <Timer className="h-3.5 w-3.5" />
-                        Descanso: {exercise.rest}
-                      </div>
+                      (() => {
+                        const restTimerKey = `${prescription.id}-${workout.label}-${index}-rest`;
+                        const timerState = restTimers[restTimerKey];
+
+                        return (
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => startRestTimer(restTimerKey, exercise.rest)}
+                              className={cn(
+                                'inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-xs transition-colors',
+                                timerState?.finished
+                                  ? 'border-red-400/70 bg-red-500/10 text-red-100'
+                                  : timerState?.running
+                                    ? 'border-cyan-400/60 bg-cyan-500/10 text-cyan-100'
+                                    : 'border-white/10 bg-white/[0.03] text-white/70',
+                              )}
+                            >
+                              <Timer className="h-3.5 w-3.5" />
+                              Descanso: {exercise.rest}
+                            </button>
+
+                            {timerState && (
+                              <>
+                                <div
+                                  className={cn(
+                                    'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold',
+                                    timerState.finished
+                                      ? 'border-red-400/70 bg-red-500/10 text-red-100'
+                                      : 'border-white/10 bg-white/[0.03] text-white/80',
+                                  )}
+                                >
+                                  {timerState.running
+                                    ? formatCountdown(timerState.remainingSeconds)
+                                    : timerState.finished
+                                      ? 'Descanso concluído'
+                                      : formatCountdown(timerState.durationSeconds)}
+                                </div>
+                                <div
+                                  className={cn(
+                                    'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold',
+                                    timerState.completedCount > 0
+                                      ? 'border-red-400/70 bg-red-500/10 text-red-100'
+                                      : 'border-white/10 bg-white/[0.03] text-white/55',
+                                  )}
+                                >
+                                  {timerState.completedCount}x
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })()
                     )}
                     {exercise.method && (
                       <div className="inline-flex w-fit rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/70">
