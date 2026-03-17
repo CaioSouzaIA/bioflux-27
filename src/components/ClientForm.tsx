@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Send } from 'lucide-react';
+import { BrainCircuit, CheckCircle2, DatabaseZap, Loader2, Send, SlidersHorizontal } from 'lucide-react';
 import { FormConfig, FormResponse } from '@/types/form';
 import { useToast } from '@/hooks/use-toast';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase } from '@/integrations/supabase/client';
@@ -33,6 +33,9 @@ interface ClientFormProps {
 export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) => {
   const [formData, setFormData] = useState<FormResponse>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmissionScreen, setShowSubmissionScreen] = useState(false);
+  const [submissionCompleted, setSubmissionCompleted] = useState(false);
+  const [submissionPhaseIndex, setSubmissionPhaseIndex] = useState(0);
   const { toast } = useToast();
   const { user } = useAuthContext();
   const navigate = useNavigate();
@@ -54,6 +57,48 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       dietPrescriptions.length,
       trainingPrescriptions.length,
     );
+  const isAIGenerationForm =
+    formConfig.category === 'anamnese-dieta' || formConfig.category === 'anamnese-treino';
+
+  const submissionPhases = useMemo(() => {
+    if (formConfig.category === 'anamnese-dieta') {
+      return [
+        {
+          title: 'Carregando informações',
+          description: 'Organizando suas respostas e o contexto metabólico.',
+          icon: DatabaseZap,
+        },
+        {
+          title: 'Ajustando envio',
+          description: 'Preparando o payload da prescrição alimentar.',
+          icon: SlidersHorizontal,
+        },
+        {
+          title: 'Ativando IA',
+          description: 'Encaminhando tudo para o motor de geração da dieta.',
+          icon: BrainCircuit,
+        },
+      ];
+    }
+
+    return [
+      {
+        title: 'Carregando informações',
+        description: 'Organizando suas respostas e o contexto metabólico.',
+        icon: DatabaseZap,
+      },
+      {
+        title: 'Ajustando envio',
+        description: 'Preparando o payload da prescrição de treino.',
+        icon: SlidersHorizontal,
+      },
+      {
+        title: 'Ativando IA',
+        description: 'Encaminhando tudo para o motor de geração do treino.',
+        icon: BrainCircuit,
+      },
+    ];
+  }, [formConfig.category]);
 
   const normalizeFieldText = (value: string) =>
     value
@@ -118,6 +163,18 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       [emphasisField.id]: '',
     }));
   }, [emphasisField, formData, readaptationSelected]);
+
+  useEffect(() => {
+    if (!showSubmissionScreen || submissionCompleted || !isAIGenerationForm) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setSubmissionPhaseIndex((current) => (current + 1) % submissionPhases.length);
+    }, 750);
+
+    return () => window.clearInterval(interval);
+  }, [isAIGenerationForm, showSubmissionScreen, submissionCompleted, submissionPhases.length]);
 
   // Debug logs para investigar problema com campos
   console.log('🔍 ClientForm - Debugging form fields:');
@@ -475,6 +532,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     }
 
     setIsSubmitting(true);
+    setSubmissionCompleted(false);
+    setSubmissionPhaseIndex(0);
+    setShowSubmissionScreen(isAIGenerationForm);
     console.log("📤 Iniciando envio do formulário");
     console.log("👤 Cliente logado:", user.id);
 
@@ -485,6 +545,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
         formattedData[field.label] = formData[field.id];
       }
     });
+
+    let submittedSuccessfully = false;
 
     try {
       // Primeiro salvar a resposta no Supabase
@@ -543,6 +605,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
               : "Suas respostas foram enviadas com sucesso. Obrigado!",
       });
 
+      submittedSuccessfully = true;
+      setSubmissionCompleted(true);
+
       // Usar callback onBack em vez de redirecionamento direto
       setTimeout(() => {
         onBack();
@@ -552,6 +617,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       setFormData({});
     } catch (error) {
       console.error('❌ Erro ao enviar formulário:', error);
+      setShowSubmissionScreen(false);
+      setSubmissionCompleted(false);
       const message = error instanceof Error ? error.message : 'Houve um problema ao enviar o formulário. Tente novamente.';
       toast({
         title: "Erro no Envio",
@@ -560,6 +627,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
       });
     } finally {
       setIsSubmitting(false);
+      if (!submittedSuccessfully) {
+        setShowSubmissionScreen(false);
+      }
     }
   };
 
@@ -744,6 +814,76 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
   const visibleFields = formConfig.fields.filter((field) => !isMetabolicSnapshotField(field));
   const sortedFields = [...visibleFields].sort((a, b) => a.order - b.order);
   console.log('📊 Campos ordenados:', sortedFields.map(f => ({ id: f.id, label: f.label, order: f.order })));
+
+  if (showSubmissionScreen && isAIGenerationForm) {
+    const activePhase = submissionPhases[Math.min(submissionPhaseIndex, submissionPhases.length - 1)];
+    const ActivePhaseIcon = activePhase?.icon ?? Loader2;
+
+    return (
+      <div className="max-w-2xl mx-auto px-4">
+        <Card className="bg-[#161616] border-gray-700">
+          <CardContent className="flex min-h-[420px] flex-col items-center justify-center px-6 py-10 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/10">
+              {submissionCompleted ? (
+                <CheckCircle2 className="h-10 w-10 text-emerald-300" />
+              ) : (
+                <ActivePhaseIcon className={`h-10 w-10 text-cyan-300 ${activePhase ? 'animate-pulse' : 'animate-spin'}`} />
+              )}
+            </div>
+
+            <div className="mt-8 space-y-3">
+              <p className="text-xs uppercase tracking-[0.32em] text-white/40">
+                {formConfig.category === 'anamnese-dieta' ? 'Gerando Dieta' : 'Gerando Treino'}
+              </p>
+              <h2 className="text-2xl font-semibold text-white">
+                {submissionCompleted ? 'Solicitação enviada com sucesso' : activePhase.title}
+              </h2>
+              <p className="mx-auto max-w-md text-sm leading-7 text-white/65">
+                {submissionCompleted
+                  ? 'Sua solicitação já entrou em geração. Você pode acompanhar o resultado na área de prescrições.'
+                  : activePhase.description}
+              </p>
+            </div>
+
+            <div className="mt-8 grid w-full max-w-lg gap-3">
+              {submissionPhases.map((phase, index) => {
+                const completed = submissionCompleted || index < submissionPhaseIndex;
+                const current = !submissionCompleted && index === submissionPhaseIndex;
+                const PhaseIcon = phase.icon;
+
+                return (
+                  <div
+                    key={phase.title}
+                    className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
+                      completed
+                        ? 'border-emerald-400/20 bg-emerald-400/10'
+                        : current
+                          ? 'border-cyan-400/20 bg-cyan-400/10'
+                          : 'border-white/8 bg-white/[0.03]'
+                    }`}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30">
+                      {completed ? (
+                        <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                      ) : current ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-cyan-300" />
+                      ) : (
+                        <PhaseIcon className="h-5 w-5 text-white/45" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{phase.title}</p>
+                      <p className="text-xs text-white/55">{phase.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4">
