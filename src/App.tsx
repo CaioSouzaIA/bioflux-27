@@ -15,6 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedClientRoute from "./components/ProtectedClientRoute";
 import ClientForms from "./pages/ClientForms";
 import ClientPrescriptions from "./pages/ClientPrescriptions";
+import ClientTrainingPrescription from "./pages/ClientTrainingPrescription";
 import ChangePassword from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import Achievements from "./pages/Achievements";
@@ -88,6 +89,11 @@ const App = () => {
           <Route path="/client/prescriptions" element={
             <ProtectedClientRoute>
               <ClientPrescriptions />
+            </ProtectedClientRoute>
+          } />
+          <Route path="/client/prescriptions/training/:prescriptionId" element={
+            <ProtectedClientRoute>
+              <ClientTrainingPrescription />
             </ProtectedClientRoute>
           } />
           <Route path="/client/achievements" element={

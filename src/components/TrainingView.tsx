@@ -10,12 +10,18 @@ interface TrainingViewProps {
   respondentName: string;
   prescription: TrainingPrescription;
   onBack: () => void;
+  enableCheckins?: boolean;
+  checkinStartDate?: string | null;
+  checkinEndDateExclusive?: string | null;
 }
 
 export const TrainingView: React.FC<TrainingViewProps> = ({
   respondentName,
   prescription,
   onBack,
+  enableCheckins = false,
+  checkinStartDate = null,
+  checkinEndDateExclusive = null,
 }) => {
   return (
     <div className="min-h-screen overflow-hidden bg-black">
@@ -50,7 +56,12 @@ export const TrainingView: React.FC<TrainingViewProps> = ({
             </p>
           </div>
 
-          <TrainingPlanContent prescription={prescription} />
+          <TrainingPlanContent
+            prescription={prescription}
+            enableCheckins={enableCheckins}
+            checkinStartDate={checkinStartDate}
+            checkinEndDateExclusive={checkinEndDateExclusive}
+          />
         </div>
       </div>
     </div>
