@@ -58,6 +58,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Prevent StrictMode from duplicating bootstrap
   const bootstrapped = useRef(false);
 
+  const clearInvalidSession = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('❌ Erro ao limpar sessão inválida:', error);
+    }
+
+    setUser(null);
+    setSession(null);
+    setUserType(null);
+    setUserProfile(null);
+  };
+
+  const validateSessionWithServer = async (candidateSession: Session | null) => {
+    if (!candidateSession?.access_token) {
+      return null;
+    }
+
+    const { data, error } = await supabase.auth.getUser(candidateSession.access_token);
+
+    if (error || !data.user) {
+      console.warn('⚠️ Sessão local inválida detectada. Limpando autenticação persistida.', error);
+      await clearInvalidSession();
+      return null;
+    }
+
+    return candidateSession;
+  };
+
   // Fetch user profile and type
   const fetchUserProfile = async (userId: string): Promise<UserType> => {
     try {
@@ -117,12 +146,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // 1) Get initial session
         console.log('🚀 AuthProvider: Bootstrapping session...');
         const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const validatedInitialSession = await validateSessionWithServer(initialSession);
 
-        if (initialSession?.user) {
-          console.log('✅ Initial session found:', initialSession.user.id);
-          setUser(initialSession.user);
-          setSession(initialSession);
-          await fetchUserProfile(initialSession.user.id);
+        if (validatedInitialSession?.user) {
+          console.log('✅ Initial session found:', validatedInitialSession.user.id);
+          setUser(validatedInitialSession.user);
+          setSession(validatedInitialSession);
+          await fetchUserProfile(validatedInitialSession.user.id);
         } else {
           console.log('🚫 No initial session');
         }
@@ -134,17 +164,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           console.log('🔔 Auth event:', event, session?.user?.id);
 
           void (async () => {
-            setUser(session?.user ?? null);
-            setSession(session);
+            const validatedSession =
+              session?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')
+                ? await validateSessionWithServer(session)
+                : session;
 
-            if (session?.user) {
+            setUser(validatedSession?.user ?? null);
+            setSession(validatedSession ?? null);
+
+            if (validatedSession?.user) {
               setLoading(true);
-              await fetchUserProfile(session.user.id);
+              await fetchUserProfile(validatedSession.user.id);
               setLoading(false);
               return;
             }
 
-            if (event === 'SIGNED_OUT' || !session?.user) {
+            if (event === 'SIGNED_OUT' || !validatedSession?.user) {
               setUserType(null);
               setUserProfile(null);
             }

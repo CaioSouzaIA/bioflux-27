@@ -50,12 +50,40 @@ serve(async (req) => {
     }
 
     const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
+    const authorizationHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
+    const accessToken = authorizationHeader?.startsWith("Bearer ")
+      ? authorizationHeader.slice("Bearer ".length).trim()
+      : null;
+
+    if (!accessToken) {
+      return new Response(
+        JSON.stringify({ error: "Authorization header ausente." }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const body = await req.json();
 
     const category = body.category ?? body.formCategory;
     const userId = body.userId ?? body.clientId;
     const formResponseId = body.formResponseId ?? null;
     const formOwnerId = body.formOwnerId ?? null;
+
+    const { data: authenticatedUserData, error: authenticatedUserError } =
+      await supabaseClient.auth.getUser(accessToken);
+
+    if (authenticatedUserError || !authenticatedUserData.user) {
+      return new Response(
+        JSON.stringify({ error: "Sessão inválida ou expirada. Faça login novamente." }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
     const { data: clientAccessProfile } = await supabaseClient
       .from("profiles")
@@ -80,6 +108,16 @@ serve(async (req) => {
         JSON.stringify({ error: "userId e formResponseId são obrigatórios." }),
         {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    if (authenticatedUserData.user.id !== userId) {
+      return new Response(
+        JSON.stringify({ error: "Usuário autenticado não corresponde ao cliente do formulário." }),
+        {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );

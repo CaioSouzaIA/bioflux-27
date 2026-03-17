@@ -377,6 +377,14 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
         parsedResponse?.message ||
         `${functionName} retornou status ${response.status}.`;
 
+      if (
+        response.status === 401 &&
+        typeof lastErrorMessage === 'string' &&
+        lastErrorMessage.toLowerCase().includes('sessão inválida')
+      ) {
+        await supabase.auth.signOut();
+      }
+
       if (response.status !== 401 || attempt === 1) {
         break;
       }
