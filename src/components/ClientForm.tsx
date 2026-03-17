@@ -311,61 +311,78 @@ export const ClientForm: React.FC<ClientFormProps> = ({ formConfig, onBack }) =>
     }
   };
 
-  const sendDietIntakeToSupabase = async (webhookPayload: any) => {
+  const invokeProtectedIntakeFunction = async (
+    functionName: 'diet-intake-webhook' | 'training-intake-webhook',
+    webhookPayload: any,
+    invalidSessionMessage: string,
+  ) => {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
-      console.error('❌ Erro ao obter sessão antes de chamar a Edge Function:', sessionError);
+      console.error(`❌ Erro ao obter sessão antes de chamar ${functionName}:`, sessionError);
       throw sessionError;
     }
 
-    const accessToken = sessionData.session?.access_token;
-
-    if (!accessToken) {
-      throw new Error('Sessão inválida para iniciar a geração da dieta.');
+    if (!sessionData.session?.access_token) {
+      throw new Error(invalidSessionMessage);
     }
 
-    const { data, error } = await supabase.functions.invoke('diet-intake-webhook', {
-      body: webhookPayload,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    let lastError: unknown = null;
 
-    if (error) {
-      console.error('❌ Erro ao iniciar geração da dieta:', error);
-      throw error;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      if (attempt === 1) {
+        console.warn(`⚠️ ${functionName} retornou 401. Renovando sessão e tentando novamente...`);
+
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+
+        if (refreshError) {
+          console.error(`❌ Erro ao renovar sessão antes de reenviar ${functionName}:`, refreshError);
+          throw refreshError;
+        }
+
+        if (!refreshData.session?.access_token) {
+          throw new Error(invalidSessionMessage);
+        }
+      }
+
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: webhookPayload,
+      });
+
+      if (!error) {
+        return data;
+      }
+
+      lastError = error;
+      const status = (error as { context?: { status?: number } })?.context?.status;
+
+      if (status !== 401 || attempt === 1) {
+        break;
+      }
     }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(`Não foi possível iniciar ${functionName}.`);
+  };
+
+  const sendDietIntakeToSupabase = async (webhookPayload: any) => {
+    const data = await invokeProtectedIntakeFunction(
+      'diet-intake-webhook',
+      webhookPayload,
+      'Sessão inválida para iniciar a geração da dieta.',
+    );
 
     console.log('✅ Fluxo de dieta iniciado:', data);
     return data;
   };
 
   const sendTrainingIntakeToSupabase = async (webhookPayload: any) => {
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
-    if (sessionError) {
-      console.error('❌ Erro ao obter sessão antes de chamar a Edge Function de treino:', sessionError);
-      throw sessionError;
-    }
-
-    const accessToken = sessionData.session?.access_token;
-
-    if (!accessToken) {
-      throw new Error('Sessão inválida para iniciar a geração do treino.');
-    }
-
-    const { data, error } = await supabase.functions.invoke('training-intake-webhook', {
-      body: webhookPayload,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (error) {
-      console.error('❌ Erro ao iniciar geração do treino:', error);
-      throw error;
-    }
+    const data = await invokeProtectedIntakeFunction(
+      'training-intake-webhook',
+      webhookPayload,
+      'Sessão inválida para iniciar a geração do treino.',
+    );
 
     console.log('✅ Fluxo de treino iniciado:', data);
     return data;
