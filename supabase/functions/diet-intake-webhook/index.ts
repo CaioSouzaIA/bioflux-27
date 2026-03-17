@@ -2,7 +2,6 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-import { recordAIAgentExecutionLog } from "../_shared/ai-agent-logging.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const METABOLIC_ASSESSMENT_MAX_AGE_DAYS = 30;
@@ -42,9 +41,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const startedAt = Date.now();
-  let logBody: Record<string, unknown> | null = null;
-
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -55,20 +51,19 @@ serve(async (req) => {
 
     const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
     const body = await req.json();
-    logBody = body as Record<string, unknown>;
 
     const category = body.category ?? body.formCategory;
     const userId = body.userId ?? body.clientId;
     const formResponseId = body.formResponseId ?? null;
     const formOwnerId = body.formOwnerId ?? null;
 
-    const { data: clientProfile } = await supabaseClient
+    const { data: clientAccessProfile } = await supabaseClient
       .from("profiles")
       .select("unlimited_plan_enabled")
       .eq("id", userId)
       .maybeSingle();
 
-    const hasUnlimitedPlan = clientProfile?.unlimited_plan_enabled === true;
+    const hasUnlimitedPlan = clientAccessProfile?.unlimited_plan_enabled === true;
 
     if (category !== "anamnese-dieta") {
       return new Response(
@@ -159,22 +154,6 @@ serve(async (req) => {
           },
         );
       }
-
-      await recordAIAgentExecutionLog(supabaseClient, {
-        agentKey: "diet_generation",
-        agentLabel: "Dieta",
-        status: "success",
-        sourceFunction: "diet-intake-webhook",
-        stage: "generation",
-        userId,
-        prescriptionId: existingPrescription.id,
-        formResponseId,
-        durationMs: Date.now() - startedAt,
-        metadata: {
-          reused: true,
-          generationStatus: existingPrescription.generation_status,
-        },
-      });
 
       return new Response(
         JSON.stringify({
@@ -295,22 +274,6 @@ serve(async (req) => {
       prescription.id,
     );
 
-    await recordAIAgentExecutionLog(supabaseClient, {
-      agentKey: "diet_generation",
-      agentLabel: "Dieta",
-      status: "success",
-      sourceFunction: "diet-intake-webhook",
-      stage: "generation",
-      userId,
-      prescriptionId: prescription.id,
-      formResponseId,
-      durationMs: Date.now() - startedAt,
-      metadata: {
-        reused: false,
-        generationStatus: workerResult?.generation_status ?? prescription.generation_status,
-      },
-    });
-
     return new Response(
       JSON.stringify({
         prescriptionId: prescription.id,
@@ -324,31 +287,6 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Erro em diet-intake-webhook:", error);
-
-    try {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL");
-      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-      if (supabaseUrl && serviceRoleKey) {
-        const supabaseClient = createClient(supabaseUrl, serviceRoleKey);
-        await recordAIAgentExecutionLog(supabaseClient, {
-          agentKey: "diet_generation",
-          agentLabel: "Dieta",
-          status: "failed",
-          sourceFunction: "diet-intake-webhook",
-          stage: "generation",
-          userId: (logBody?.userId as string | undefined) ?? (logBody?.clientId as string | undefined) ?? null,
-          formResponseId: (logBody?.formResponseId as string | undefined) ?? null,
-          durationMs: Date.now() - startedAt,
-          errorMessage: error instanceof Error ? error.message : "Erro interno ao iniciar a geração da dieta.",
-          metadata: {
-            category: (logBody?.category as string | undefined) ?? (logBody?.formCategory as string | undefined) ?? null,
-          },
-        });
-      }
-    } catch (loggingError) {
-      console.error("Erro ao registrar log de falha do intake de dieta:", loggingError);
-    }
 
     return new Response(
       JSON.stringify({
