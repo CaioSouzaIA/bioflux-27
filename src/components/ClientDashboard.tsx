@@ -24,6 +24,7 @@ import { TrainingPeriodization } from '@/components/TrainingPeriodization';
 import OnboardingModal from '@/components/OnboardingModal';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { hasFreePlan as userHasFreePlan, isFreePlanName, isStandardPlanName } from '@/lib/subscriptionAccess';
+import { getCurrentSaoPauloDate, getMonthBoundsForWorkoutDate } from '@/lib/workoutDate';
 
 interface Subscription {
   id: string;
@@ -107,8 +108,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ onLogout }) => {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      const monthStart = startOfMonth(new Date()).toISOString();
-      const monthEnd = endOfMonth(new Date()).toISOString();
+      const { start: monthStart, end: monthEnd } = getMonthBoundsForWorkoutDate(getCurrentSaoPauloDate());
 
       const { data, error } = await (supabase as any)
         .from("workout_checkins")

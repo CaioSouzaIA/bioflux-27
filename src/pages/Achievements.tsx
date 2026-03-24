@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Calendar, ArrowLeft, Sparkles } from "lucide-react";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BackgroundAnimation } from "@/components/BackgroundAnimation";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect, useMemo } from "react";
+import { getCurrentSaoPauloDate, getMonthBoundsForWorkoutDate } from "@/lib/workoutDate";
 
 interface Achievement {
   id: string;
@@ -126,8 +127,7 @@ export default function Achievements() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const monthStart = startOfMonth(new Date()).toISOString();
-      const monthEnd = endOfMonth(new Date()).toISOString();
+      const { start: monthStart, end: monthEnd } = getMonthBoundsForWorkoutDate(getCurrentSaoPauloDate());
 
       const { data, error } = await (supabase as any)
         .from("workout_checkins")

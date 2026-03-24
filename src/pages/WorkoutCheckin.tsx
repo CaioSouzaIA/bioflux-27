@@ -14,13 +14,15 @@ import { ptBR } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
 import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
 import { useTrainingPrescriptions } from '@/hooks/useTrainingPrescriptions';
+import { formatWorkoutDate, getCurrentSaoPauloDate } from '@/lib/workoutDate';
 import { cn } from '@/lib/utils';
 
 const WorkoutCheckin: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const todayInSaoPaulo = getCurrentSaoPauloDate();
   const [workoutDivision, setWorkoutDivision] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(todayInSaoPaulo);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const { data: trainingPrescriptions = [] } = useTrainingPrescriptions(user?.id);
@@ -60,7 +62,7 @@ const WorkoutCheckin: React.FC = () => {
       });
 
       setWorkoutDivision('');
-      setSelectedDate(new Date());
+      setSelectedDate(getCurrentSaoPauloDate());
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Não foi possível registrar o check-in.';
@@ -185,7 +187,7 @@ const WorkoutCheckin: React.FC = () => {
                           mode="single"
                           selected={selectedDate}
                           onSelect={(date) => {
-                            setSelectedDate(date || new Date());
+                            setSelectedDate(date || getCurrentSaoPauloDate());
                             setIsCalendarOpen(false);
                           }}
                           initialFocus
@@ -211,8 +213,8 @@ const WorkoutCheckin: React.FC = () => {
               <CardHeader className="space-y-2">
                 <CardTitle className="text-white">Frequência semanal</CardTitle>
                 <CardDescription className="text-white/60">
-                  Semana de {format(startOfWeek(new Date(), { locale: ptBR }), 'dd/MM')} a{' '}
-                  {format(endOfWeek(new Date(), { locale: ptBR }), 'dd/MM')}
+                  Semana de {format(startOfWeek(todayInSaoPaulo, { locale: ptBR }), 'dd/MM')} a{' '}
+                  {format(endOfWeek(todayInSaoPaulo, { locale: ptBR }), 'dd/MM')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -256,7 +258,7 @@ const WorkoutCheckin: React.FC = () => {
                           <div>
                             <p className="font-medium text-white">{checkin.workout_division}</p>
                             <p className="text-sm text-white/60">
-                              {format(new Date(checkin.workout_date), "dd 'de' MMMM 'de' yyyy", {
+                              {formatWorkoutDate(checkin.workout_date, "dd 'de' MMMM 'de' yyyy", {
                                 locale: ptBR,
                               })}
                             </p>

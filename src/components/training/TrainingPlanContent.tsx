@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useExerciseLoadLogs, type ExerciseLoadDraft, type ExerciseLoadUnit, buildExerciseLoadKey } from '@/hooks/useExerciseLoadLogs';
 import { useToast } from '@/hooks/use-toast';
 import { useWorkoutCheckins } from '@/hooks/useWorkoutCheckins';
+import { formatWorkoutDate, getCurrentSaoPauloDate, parseWorkoutDate } from '@/lib/workoutDate';
 import { cn } from '@/lib/utils';
 import type { TrainingPrescription } from '@/hooks/useTrainingPrescriptions';
 
@@ -173,12 +174,12 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   checkinStartDate = null,
   checkinEndDateExclusive = null,
 }) => {
-  const currentMonthKey = format(new Date(), 'yyyy-MM');
+  const currentMonthKey = format(getCurrentSaoPauloDate(), 'yyyy-MM');
   const structuredPlan = prescription.structured_plan;
   const { toast } = useToast();
   const [selectedWorkoutKey, setSelectedWorkoutKey] = useState<string | null>(null);
   const [selectedWorkoutName, setSelectedWorkoutName] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(getCurrentSaoPauloDate());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeInlineVideoKey, setActiveInlineVideoKey] = useState<string | null>(null);
@@ -197,7 +198,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const { latestLoadsMap, saveLoad } = useExerciseLoadLogs(prescription.user_id, prescription.id);
   const [checkinAccordionValue, setCheckinAccordionValue] = useState('');
   const [selectedMonthKey, setSelectedMonthKey] = useState(currentMonthKey);
-  const selectedMonth = useMemo(() => new Date(`${selectedMonthKey}-01T00:00:00`), [selectedMonthKey]);
+  const selectedMonth = useMemo(() => parseWorkoutDate(`${selectedMonthKey}-01`), [selectedMonthKey]);
   const daysInCurrentMonth = useMemo(
     () => getDate(endOfMonth(selectedMonth)),
     [selectedMonth],
@@ -239,8 +240,8 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
       }
 
       const current = summary.get(workoutLabel) ?? { total: 0, lastDate: null };
-      const currentTime = current.lastDate ? new Date(current.lastDate).getTime() : 0;
-      const nextTime = new Date(checkin.workout_date).getTime();
+      const currentTime = current.lastDate ? parseWorkoutDate(current.lastDate).getTime() : 0;
+      const nextTime = parseWorkoutDate(checkin.workout_date).getTime();
 
       summary.set(workoutLabel, {
         total: current.total + 1,
@@ -254,7 +255,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const currentMonthCheckins = useMemo(
     () =>
       allCheckins.filter((checkin) =>
-        isSameMonth(new Date(checkin.workout_date), selectedMonth),
+        isSameMonth(parseWorkoutDate(checkin.workout_date), selectedMonth),
       ),
     [allCheckins, selectedMonth],
   );
@@ -263,7 +264,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
     const days = new Set<number>();
 
     for (const checkin of currentMonthCheckins) {
-      days.add(getDate(new Date(checkin.workout_date)));
+      days.add(getDate(parseWorkoutDate(checkin.workout_date)));
     }
 
     return days;
@@ -310,7 +311,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
 
       return {
         value,
-        label: format(new Date(`${value}-01T00:00:00`), "MMMM 'de' yyyy", { locale: ptBR }),
+        label: formatWorkoutDate(`${value}-01`, "MMMM 'de' yyyy", { locale: ptBR }),
       };
     });
   }, [currentMonthKey]);
@@ -539,7 +540,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
   const openCheckinModal = (workoutLabel: string, workoutTitle: string) => {
     setSelectedWorkoutKey(workoutLabel);
     setSelectedWorkoutName(`Treino ${workoutLabel} - ${workoutTitle}`);
-    setSelectedDate(new Date());
+    setSelectedDate(getCurrentSaoPauloDate());
     setIsCalendarOpen(false);
     setIsDialogOpen(true);
   };
@@ -563,7 +564,7 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
       setIsDialogOpen(false);
       setSelectedWorkoutKey(null);
       setSelectedWorkoutName('');
-      setSelectedDate(new Date());
+      setSelectedDate(getCurrentSaoPauloDate());
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Não foi possível registrar o check-in.';
@@ -1142,10 +1143,10 @@ export const TrainingPlanContent: React.FC<TrainingPlanContentProps> = ({
                   <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={(date) => {
-                      setSelectedDate(date || new Date());
-                      setIsCalendarOpen(false);
-                    }}
+                          onSelect={(date) => {
+                            setSelectedDate(date || getCurrentSaoPauloDate());
+                            setIsCalendarOpen(false);
+                          }}
                     initialFocus
                     locale={ptBR}
                     className="rounded-xl"

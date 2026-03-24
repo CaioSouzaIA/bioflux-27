@@ -1,6 +1,7 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek } from 'date-fns';
+import { getCurrentSaoPauloDate, parseWorkoutDate } from '@/lib/workoutDate';
 
 export interface WorkoutCheckin {
   id: string;
@@ -55,9 +56,10 @@ export const useWorkoutCheckins = (
 
   // Filtrar check-ins da semana atual
   const weeklyCheckins = allCheckins.filter((checkin) => {
-    const checkinDate = new Date(checkin.workout_date);
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
-    const weekEnd = endOfWeek(new Date(), { weekStartsOn: 0 });
+    const todayInSaoPaulo = getCurrentSaoPauloDate();
+    const checkinDate = parseWorkoutDate(checkin.workout_date);
+    const weekStart = startOfWeek(todayInSaoPaulo, { weekStartsOn: 0 });
+    const weekEnd = endOfWeek(todayInSaoPaulo, { weekStartsOn: 0 });
 
     return checkinDate >= weekStart && checkinDate <= weekEnd;
   });
